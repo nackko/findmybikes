@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_alignRight="@+id/action_bar_find_bike_parking_switch"
+        android:layout_alignEnd="@+id/action_bar_find_bike_parking_switch"
+        android:src="@drawable/ic_action_find_dock"
+        />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_alignLeft="@+id/action_bar_find_bike_parking_switch"
+        android:layout_alignStart="@+id/action_bar_find_bike_parking_switch"
+        android:src="@drawable/ic_action_find_bike"
+        />
+
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/action_bar_find_bike_parking_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:text="" />
+
+
+
+</RelativeLayout>

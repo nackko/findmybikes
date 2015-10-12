@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp"
+    android:background="?android:attr/activatedBackgroundIndicator"
+    android:baselineAligned="true">
+
+    <TextView
+        android:layout_width="0px"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:padding="5dp"
+        android:id="@+id/station_distance"
+        android:layout_weight="@dimen/station_list_distance_column_weight"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:singleLine="true"
+        android:textStyle="bold"
+
+        />
+
+    <TextView
+        android:layout_width="0px"
+        android:layout_height="fill_parent"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-condensed"
+        android:gravity="center"
+        android:id="@+id/station_name"
+        android:layout_weight="@dimen/station_list_name_column_weight"
+        android:ellipsize="end"
+        />
+
+    <TextView
+        android:layout_width="0px"
+        android:layout_height="fill_parent"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:id="@+id/station_availability"
+        android:layout_weight="@dimen/station_list_availability_column_weight"
+        android:textStyle="bold"
+        />
+
+
+</LinearLayout>
