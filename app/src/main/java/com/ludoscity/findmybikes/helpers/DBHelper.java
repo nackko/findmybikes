@@ -492,6 +492,7 @@ public class DBHelper {
         END of failed attempts*/
     }
 
+    //TODO: use Room android architecture component
     private static StationItem createStationItem(Document d){
 
         Map<String, Object> properties = d.getProperties();

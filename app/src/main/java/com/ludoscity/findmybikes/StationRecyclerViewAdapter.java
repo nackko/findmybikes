@@ -44,6 +44,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
     private static final String OUTDATED_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "OUT";
     private static final String ERROR_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "ERR";
 
+    //TODO : hold this in a ModelView ? Or each station in a modelView ? (android architecture components)
     private ArrayList<StationItem> mStationList = new ArrayList<>();
     private Comparator<StationItem> mStationSortComparator;
 

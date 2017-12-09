@@ -40,6 +40,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
     private boolean mSheetEditing = false;
 
+    //TODO: Use ViewModel (Android architecture componente)
     private ArrayList<FavoriteItemBase> mFavoriteList = new ArrayList<>();
 
     @Override
