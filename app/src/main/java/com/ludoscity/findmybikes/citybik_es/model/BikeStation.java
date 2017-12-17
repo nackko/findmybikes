@@ -15,14 +15,16 @@ public class BikeStation {
     @SerializedName("id")
     @PrimaryKey
     @NonNull
-    private String location_hash; //used as a uid
+    private String locationHash; //used as a uid
 
     @ColumnInfo(name = "empty_slots")
-    private Integer empty_slots;
+    @SerializedName("empty_slots")
+    private Integer emptySlots;
     @Embedded
     private BikeStationExtra extra;
     @ColumnInfo(name = "free_bikes")
-    private Integer free_bikes;
+    @SerializedName("free_bikes")
+    private Integer freeBikes;
     @ColumnInfo(name = "latitude")
     private Double latitude;
     @ColumnInfo(name = "longitude")
@@ -33,20 +35,20 @@ public class BikeStation {
     private String timestamp;
 
     @NonNull
-    public String getLocation_hash() {
-        return location_hash;
+    public String getLocationHash() {
+        return locationHash;
     }
 
-    public void setLocation_hash(String id) {
-        this.location_hash = id;
+    public void setLocationHash(String locationHash) {
+        this.locationHash = locationHash;
     }
 
-    public Integer getEmpty_slots() {
-        return empty_slots;
+    public Integer getEmptySlots() {
+        return emptySlots;
     }
 
-    public void setEmpty_slots(Integer empty_slots) {
-        this.empty_slots = empty_slots;
+    public void setEmptySlots(Integer empty_slots) {
+        this.emptySlots = empty_slots;
     }
 
     public BikeStationExtra getExtra() {
@@ -57,12 +59,12 @@ public class BikeStation {
         this.extra = bikeStationExtra;
     }
 
-    public Integer getFree_bikes() {
-        return free_bikes;
+    public Integer getFreeBikes() {
+        return freeBikes;
     }
 
-    public void setFree_bikes(Integer free_bikes) {
-        this.free_bikes = free_bikes;
+    public void setFreeBikes(Integer freeBikes) {
+        this.freeBikes = freeBikes;
     }
 
     public Double getLatitude() {

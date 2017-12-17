@@ -108,8 +108,8 @@ public class RootApplication extends Application {
 
         for (BikeStation bikeStation : _bikeStationList) {
 
-            if (bikeStation.getEmpty_slots() == null)
-                bikeStation.setEmpty_slots(-1);
+            if (bikeStation.getEmptySlots() == null)
+                bikeStation.setEmptySlots(-1);
             //Some systems have empty_slots to null (like nextbike SZ-bike in Dresden, Germany)
             //-1 is used to encode this case
 

@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 public class BikeStationExtra {
     private Boolean locked;
     @SerializedName("name")
-    private String extra_name;
+    private String extraName;
 
     public Boolean getLocked() {
         return locked;
@@ -15,11 +15,11 @@ public class BikeStationExtra {
         this.locked = locked;
     }
 
-    public String getExtra_name() {
-        return extra_name;
+    public String getExtraName() {
+        return extraName;
     }
 
-    public void setExtra_name(String extra_name) {
-        this.extra_name = extra_name;
+    public void setExtraName(String extraName) {
+        this.extraName = extraName;
     }
 }

@@ -44,11 +44,11 @@ public class StationItem implements Parcelable {
 
     public StationItem(BikeStation _bikeStation) {
 
-        this.id = _bikeStation.getLocation_hash();
+        this.id = _bikeStation.getLocationHash();
 
-        if (null != _bikeStation.getExtra().getExtra_name()) {
+        if (null != _bikeStation.getExtra().getExtraName()) {
             try {
-                this.name = new String(_bikeStation.getExtra().getExtra_name().getBytes("UTF-8"), "UTF-8");
+                this.name = new String(_bikeStation.getExtra().getExtraName().getBytes("UTF-8"), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 Log.d("StationItem constructor", "String trouble",e );
             }
@@ -83,8 +83,8 @@ public class StationItem implements Parcelable {
             this.free_bikes = 31;
         } else {*/
 
-        this.empty_slots = _bikeStation.getEmpty_slots();
-        this.free_bikes = _bikeStation.getFree_bikes();
+        this.empty_slots = _bikeStation.getEmptySlots();
+        this.free_bikes = _bikeStation.getFreeBikes();
         //}
         this.latitude = _bikeStation.getLatitude();
         this.longitude = _bikeStation.getLongitude();
