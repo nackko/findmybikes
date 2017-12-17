@@ -35,7 +35,7 @@ public class FavoriteItemStation extends FavoriteItemBase {
     @Override
     public LatLng getLocation() {
         return null;
-        //return DBHelper.getStation(getId()).getLocation();
+        //return DBHelper.getStation(getLocation_hash()).getLocation();
         //TODO: Rework saving algorithm. See DBHelper.getStation
     }
 

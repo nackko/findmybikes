@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI;
-import com.ludoscity.findmybikes.citybik_es.model.Station;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class RootApplication extends Application {
 
     Citybik_esAPI mCitybik_esAPI;
     Twitter mTwitterAPI;
-    //Station list data is kept here to survive screen orientation change
+    //Station list data is kept here to survive screen orientation change. TODO: use ViewModel
     //It's built from the database on launch (if there's a complete record available) and updated in memory after data download
     private static ArrayList<StationItem> mBikeshareStationList;
     //TODO: refactor with MVC in mind. This is model
@@ -54,7 +54,7 @@ public class RootApplication extends Application {
             try {
                 mBikeshareStationList = DBHelper.getStationsNetwork();
             } catch (CouchbaseLiteException | IllegalStateException e) {
-                Log.d("RootApplication", "Couldn't retrieve Station Network from db",e );
+                Log.d("RootApplication", "Couldn't retrieve BikeStation Network from db",e );
                 mBikeshareStationList = new ArrayList<>();
             }
 
@@ -102,18 +102,18 @@ public class RootApplication extends Application {
         return mBikeshareStationList;
     }
 
-    public static ArrayList<StationItem> addAllToBikeNetworkStationList(List<Station> _stationList, Context _ctx){
+    public static ArrayList<StationItem> addAllToBikeNetworkStationList(List<BikeStation> _bikeStationList, Context _ctx){
 
         ArrayList<StationItem> newList = new ArrayList<>(mBikeshareStationList.size());
 
-        for (Station station : _stationList) {
+        for (BikeStation bikeStation : _bikeStationList) {
 
-            if (station.empty_slots == null)
-                station.empty_slots = -1;
+            if (bikeStation.getEmpty_slots() == null)
+                bikeStation.setEmpty_slots(-1);
             //Some systems have empty_slots to null (like nextbike SZ-bike in Dresden, Germany)
             //-1 is used to encode this case
 
-            StationItem stationItem = new StationItem(station);
+            StationItem stationItem = new StationItem(bikeStation);
             newList.add(stationItem);
         }
 

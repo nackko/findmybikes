@@ -587,7 +587,7 @@ public class NearbyActivity extends AppCompatActivity
         });
     }
 
-    //returns true if _toAdd.getId is NOT already in favorites
+    //returns true if _toAdd.getLocation_hash is NOT already in favorites
     private boolean setupAddFavoriteFab(final FavoriteItemBase _toAdd){
         //This is a full add/remove code
 
@@ -3516,7 +3516,7 @@ public class NearbyActivity extends AppCompatActivity
             try {
                 statusAnswer = call.execute();
 
-                ArrayList<StationItem> newBikeNetworkStationList = RootApplication.addAllToBikeNetworkStationList(statusAnswer.body().network.stations, NearbyActivity.this);
+                ArrayList<StationItem> newBikeNetworkStationList = RootApplication.addAllToBikeNetworkStationList(statusAnswer.body().network.getBikeStationList(), NearbyActivity.this);
 
                 //Calculate bounds
                 LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
@@ -3638,7 +3638,7 @@ public class NearbyActivity extends AppCompatActivity
             DBHelper.saveLastUpdateTimestampAsNow(getApplicationContext());
             DBHelper.saveBikeNetworkBounds(mDownloadedBikeNetworkBounds, NearbyActivity.this);
 
-            Log.d("nearbyActivity", RootApplication.getBikeNetworkStationList().size() + " stations downloaded from citibik.es");
+            Log.d("nearbyActivity", RootApplication.getBikeNetworkStationList().size() + " bikeStationList downloaded from citibik.es");
 
             //users are inside bounds
             if (mCurrentUserLatLng == null || DBHelper.getBikeNetworkBounds(NearbyActivity.this, 5).contains(mCurrentUserLatLng) ){

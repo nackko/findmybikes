@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
-import com.ludoscity.findmybikes.citybik_es.model.Station;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.utils.Utils;
 
@@ -17,7 +17,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * Created by Gevrai on 2015-04-03.
  *
- * Simple item holding the data necessary for each stations to be shown in listViewAdapter
+ * Simple item holding the data necessary for each station to be shown in listViewAdapter
  */
 public class StationItem implements Parcelable {
     private String id;
@@ -42,54 +42,54 @@ public class StationItem implements Parcelable {
         this.timestamp = timestamp;
     }
 
-    public StationItem(Station _station) {
+    public StationItem(BikeStation _bikeStation) {
 
-        this.id = _station.id;
+        this.id = _bikeStation.getLocation_hash();
 
-        if (null != _station.extra.name) {
+        if (null != _bikeStation.getExtra().getExtra_name()) {
             try {
-                this.name = new String(_station.extra.name.getBytes("UTF-8"), "UTF-8");
+                this.name = new String(_bikeStation.getExtra().getExtra_name().getBytes("UTF-8"), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 Log.d("StationItem constructor", "String trouble",e );
             }
         }
         else {
             try {
-                this.name = new String(_station.name.getBytes("UTF-8"), "UTF-8");
+                this.name = new String(_bikeStation.getName().getBytes("UTF-8"), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 Log.d("StationItem constructor", "String trouble", e);
             }
         }
 
-        if (null != _station.extra.locked)
-            this.locked = _station.extra.locked;
+        if (null != _bikeStation.getExtra().getLocked())
+            this.locked = _bikeStation.getExtra().getLocked();
 
 
         //Laurier / Brebeuf
-        /*if (_station.id.equalsIgnoreCase("f132843c3c740cce6760167985bc4d17")){
+        /*if (_bikeStation.id.equalsIgnoreCase("f132843c3c740cce6760167985bc4d17")){
             this.empty_slots = 35;
             this.free_bikes = 0;
 
             //Lanaudiere / Laurier
-        }else if (_station.id.equalsIgnoreCase("92d97d6adec177649b366c36f3e8e2ff")){
+        }else if (_bikeStation.id.equalsIgnoreCase("92d97d6adec177649b366c36f3e8e2ff")){
             this.empty_slots = 17;
             this.free_bikes = 2;
 
-        }else if (_station.id.equalsIgnoreCase("d20fea946f06e7e64e6da7d95b3c3a89")){
+        }else if (_bikeStation.id.equalsIgnoreCase("d20fea946f06e7e64e6da7d95b3c3a89")){
             this.empty_slots = 1;
             this.free_bikes = 19;
-        }else if (_station.id.equalsIgnoreCase("3500704c9971a0c13924e696f5804bbd")){
+        }else if (_bikeStation.id.equalsIgnoreCase("3500704c9971a0c13924e696f5804bbd")){
             this.empty_slots = 0;
             this.free_bikes = 31;
         } else {*/
 
-        this.empty_slots = _station.empty_slots;
-        this.free_bikes = _station.free_bikes;
+        this.empty_slots = _bikeStation.getEmpty_slots();
+        this.free_bikes = _bikeStation.getFree_bikes();
         //}
-        this.latitude = _station.latitude;
-        this.longitude = _station.longitude;
-        //this.position = new LatLng(_station.latitude, _station.longitude);
-        this.timestamp = _station.timestamp;
+        this.latitude = _bikeStation.getLatitude();
+        this.longitude = _bikeStation.getLongitude();
+        //this.position = new LatLng(_bikeStation.latitude, _bikeStation.longitude);
+        this.timestamp = _bikeStation.getTimestamp();
     }
 
     private StationItem(Parcel in){
