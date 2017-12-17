@@ -12,6 +12,7 @@ import com.google.gson.annotations.SerializedName;
 @Entity
 public class BikeStation {
 
+    @SuppressWarnings("NullableProblems")
     @SerializedName("id")
     @PrimaryKey
     @NonNull
@@ -20,7 +21,7 @@ public class BikeStation {
     @ColumnInfo(name = "empty_slots")
     @SerializedName("empty_slots")
     private Integer emptySlots;
-    @Embedded
+    @Embedded(prefix = "extra_")
     private BikeStationExtra extra;
     @ColumnInfo(name = "free_bikes")
     @SerializedName("free_bikes")
@@ -39,7 +40,7 @@ public class BikeStation {
         return locationHash;
     }
 
-    public void setLocationHash(String locationHash) {
+    public void setLocationHash(@NonNull String locationHash) {
         this.locationHash = locationHash;
     }
 

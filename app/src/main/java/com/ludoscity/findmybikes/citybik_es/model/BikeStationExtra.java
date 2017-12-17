@@ -1,11 +1,8 @@
 package com.ludoscity.findmybikes.citybik_es.model;
 
-import com.google.gson.annotations.SerializedName;
-
 public class BikeStationExtra {
     private Boolean locked;
-    @SerializedName("name")
-    private String extraName;
+    private String name;
 
     public Boolean getLocked() {
         return locked;
@@ -15,11 +12,11 @@ public class BikeStationExtra {
         this.locked = locked;
     }
 
-    public String getExtraName() {
-        return extraName;
+    public String getName() {
+        return name;
     }
 
-    public void setExtraName(String extraName) {
-        this.extraName = extraName;
+    public void setName(String name) {
+        this.name = name;
     }
 }

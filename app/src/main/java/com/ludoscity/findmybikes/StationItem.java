@@ -42,13 +42,13 @@ public class StationItem implements Parcelable {
         this.timestamp = timestamp;
     }
 
-    public StationItem(BikeStation _bikeStation) {
+    StationItem(BikeStation _bikeStation) {
 
         this.id = _bikeStation.getLocationHash();
 
-        if (null != _bikeStation.getExtra().getExtraName()) {
+        if (null != _bikeStation.getExtra().getName()) {
             try {
-                this.name = new String(_bikeStation.getExtra().getExtraName().getBytes("UTF-8"), "UTF-8");
+                this.name = new String(_bikeStation.getExtra().getName().getBytes("UTF-8"), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 Log.d("StationItem constructor", "String trouble",e );
             }
