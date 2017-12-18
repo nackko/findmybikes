@@ -3178,6 +3178,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     toReturn.put("new_network_city", closestNetwork.location.city);
 
+                    DBHelper.deleteAllStations();
                     DBHelper.saveBikeNetworkDesc(closestNetwork, NearbyActivity.this);
                 }
 
@@ -3272,19 +3273,8 @@ public class NearbyActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Void... params) {
 
-            ArrayList<StationItem> networkStationList = RootApplication.getBikeNetworkStationList();
+            DBHelper.saveStationNetwork(RootApplication.getBikeNetworkStationList());
 
-            try {
-                //TODO: This is ugly.
-                //This process shouldn't use an asynctask anyway as it's long running :/
-                DBHelper.deleteAllStations();
-
-                for (StationItem station : networkStationList) {
-                    DBHelper.saveStation(station);
-                }
-            } catch (Exception e) {
-                Log.d("NearbyActivity", "Error saving network", e );
-            }
             return null;
         }
 

@@ -4,6 +4,11 @@ public class BikeStationExtra {
     private Boolean locked;
     private String name;
 
+    public BikeStationExtra(boolean locked, String name) {
+        this.locked = locked;
+        this.name = name;
+    }
+
     public Boolean getLocked() {
         return locked;
     }

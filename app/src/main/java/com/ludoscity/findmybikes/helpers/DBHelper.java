@@ -1,23 +1,14 @@
 package com.ludoscity.findmybikes.helpers;
 
 import android.annotation.SuppressLint;
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.couchbase.lite.CouchbaseLiteException;
-import com.couchbase.lite.Document;
-import com.couchbase.lite.Manager;
-import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryEnumerator;
-import com.couchbase.lite.QueryOptions;
-import com.couchbase.lite.QueryRow;
-import com.couchbase.lite.UnsavedRevision;
-import com.couchbase.lite.android.AndroidContext;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.FavoriteItemBase;
@@ -25,6 +16,7 @@ import com.ludoscity.findmybikes.FavoriteItemPlace;
 import com.ludoscity.findmybikes.FavoriteItemStation;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.StationItem;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.citybik_es.model.NetworkDesc;
 
 import org.json.JSONArray;
@@ -47,7 +39,7 @@ import java.util.Map;
 public class DBHelper {
 
     private  static final String TAG = "DBHelper";
-    private static Manager mManager = null;
+    private static AppDatabase mDatabase = null;
     private static final String mTRACKS_DB_NAME = "tracksdb";
 
     private static final String mSTATIONS_DB_NAME = "stationsdb";
@@ -77,8 +69,8 @@ public class DBHelper {
 
     private DBHelper() {}
 
-    public static void init(Context context) throws IOException, CouchbaseLiteException, PackageManager.NameNotFoundException {
-        mManager = new Manager(new AndroidContext(context), Manager.DEFAULT_OPTIONS);
+    public static void init(Context context) throws IOException, PackageManager.NameNotFoundException {
+        mDatabase = Room.databaseBuilder(context, AppDatabase.class, "findmybikes-database").build();
 
         //Check for SharedPreferences versioning
         int sharedPrefVersion = context.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE).getInt(SHARED_PREF_VERSION_CODE, 0);
@@ -297,7 +289,7 @@ public class DBHelper {
         _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE).edit()
                 .putBoolean(PREF_LAST_SAVE_CORRUPTED, true).apply();
 
-        Log.d(TAG, "Begin saving stations");
+        Log.d(TAG, "Begin saving bikeStationList");
     }
 
     public static void notifyEndSavingStations(Context _ctx){
@@ -306,7 +298,7 @@ public class DBHelper {
                 .putBoolean(PREF_LAST_SAVE_CORRUPTED, false).apply();
 
         mSaving = false;
-        Log.d(TAG, "End saving stations");
+        Log.d(TAG, "End saving bikeStationList");
     }
 
     public static boolean wasLastSavePartial(Context _ctx) {
@@ -314,43 +306,6 @@ public class DBHelper {
         return !mSaving && _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE)
                 .getBoolean(PREF_LAST_SAVE_CORRUPTED, true);
 
-    }
-
-    /*public static void saveTrack(Track toSave) throws CouchbaseLiteException, JSONException {
-        Document doc = mManager.getDatabase(mTRACKS_DB_NAME).getDocument(toSave.getKeyTimeUTC());
-        doc.putProperties(new Gson().<Map<String, Object>>fromJson(toSave.toString(), new TypeToken<HashMap<String, Object>>() {
-        }.getType()));
-        mGotTracks = true; // mGotTracks = !getAllTracks().isEmpty(); in init()
-    }*/
-
-    public static void saveStation(final StationItem toSave) throws CouchbaseLiteException, JSONException {
-
-        try {
-            Document doc = mManager.getDatabase(mSTATIONS_DB_NAME).getDocument(toSave.getId());
-
-            doc.update(new Document.DocumentUpdater() {
-                @Override
-                public boolean update(UnsavedRevision newRevision) {
-                    Map<String, Object> properties = newRevision.getUserProperties();
-                    properties.put("id", toSave.getId());
-                    properties.put("name", toSave.getName());
-                    properties.put("locked", toSave.isLocked());
-                    properties.put("empty_slots", toSave.getEmpty_slots());
-                    properties.put("free_bikes", toSave.getFree_bikes());
-                    properties.put("latitude", toSave.getLocation().latitude);
-                    properties.put("longitude", toSave.getLocation().longitude);
-                    properties.put("timestamp", toSave.getTimestamp());
-                    newRevision.setUserProperties(properties);
-                    return true;
-                }
-            });
-        } catch (SQLiteException e){
-            Log.d("DBHelper", "Couldn't save station", e);
-        }
-
-        //doc.putProperties(new Gson().<Map<String, Object>>fromJson(new Gson().toJson(toSave), new TypeToken<HashMap<String, Object>>() {
-        //}.getType()));
-        //mGotTracks = true; // mGotTracks = !getAllTracks().isEmpty(); in init()
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -387,144 +342,46 @@ public class DBHelper {
         return toReturn;
     }*/
 
-    public static List<QueryRow> getAllTracks() throws CouchbaseLiteException {
-        Map<String, Object> allDocs;
-        allDocs = mManager.getDatabase(mTRACKS_DB_NAME).getAllDocs(new QueryOptions());
-
-        return (List<QueryRow>) allDocs.get("rows");
+    public static void deleteAllStations() {
+        mDatabase.bikeStationDao().deleteAllBikeStation();
     }
 
-    private static List<QueryRow> getAllStations() throws CouchbaseLiteException{
-
-        List<QueryRow> toReturn = new ArrayList<>();
-
-        Query query = mManager.getDatabase(mSTATIONS_DB_NAME).createAllDocumentsQuery();
-
-        QueryEnumerator result = query.run();
-
-        for (; result.hasNext(); ) {
-            QueryRow row = result.next();
-
-            toReturn.add(row);
-
-        }
-
-        return toReturn;
-    }
-
-    public static void deleteAllStations() throws CouchbaseLiteException{
-        try
-        {
-            mManager.getDatabase(mSTATIONS_DB_NAME).delete();
-        }
-        catch (SQLiteException e){
-            Log.d(TAG, "exception raised, doing nothing", e);
-        }
-
-    }
-
-    //Not used because only potential client (so far) BudgetTrackDetails duplicates this data
-    /*public static boolean isTrackPointDataCached(String trackID) throws CouchbaseLiteException {
-        Document doc = mManager.getDatabase(mTRACKS_DB_NAME).getExistingDocument(trackID);
-
-        return doc.getProperties().containsKey("points");
-    }*/
-
-    //Used to add a new entry in corresponding Couchbase Document, only if not already present
-    public static void putNewTrackPropertyAndSave(String _trackID, final String _newPropertyKey, final Object _newPropertyObject ) throws CouchbaseLiteException {
-        Document doc = mManager.getDatabase(mTRACKS_DB_NAME).getExistingDocument(_trackID);
-
-        if (!doc.getProperties().containsKey(_newPropertyKey))
-        {
-            doc.update(new Document.DocumentUpdater() {
-                @Override
-                public boolean update(UnsavedRevision newRevision) {
-                    newRevision.getProperties().put(_newPropertyKey, _newPropertyObject);
-                    return true;
-                }
-            });
-        }
-    }
-
-
-    /**
-     * retrieveTrack
-     * @return Map String&Object
-     * @param trackID in form "yyyy-MM-dd'T'HH:mm:ss'Z'"
-     * Retrieves a track from Couchbase from a String complete id. Can't be of API model Track type
-     * because processed data like cost is added to documents and wouldn't map to model fields.
-     */
-    public static Map<String,Object> retrieveTrack(String trackID) throws CouchbaseLiteException {
-        Document doc = mManager.getDatabase(mTRACKS_DB_NAME).getExistingDocument(trackID);
-
-        if (doc != null){
-            return doc.getCurrentRevision().getProperties();
-        }
-
-        return null;
-
-        //This is a failed attempt at converting directly into a Track class
-        //It is not usefull for this case right now but I just want to keep this piece of code around
-        //https://google-gson.googlecode.com/svn/trunk/gson/docs/javadocs/com/google/gson/TypeAdapter.html
-        /*Map<String, Object> convertedProperties = new HashMap<>();
-        for(String key : docProperties.keySet())
-        {
-            if (key.equalsIgnoreCase("rating"))
-            {
-                Double rating = (Double) docProperties.get(key);
-                int intRating = rating.intValue();
-                convertedProperties.put(key, (Integer)intRating);
-            }
-            else
-            {
-                convertedProperties.put(key,docProperties.get(key));
-            }
-
-        }
-
-        //convertedProperties.remove("rating");
-        //convertedProperties.put("rating", 666);
-
-        String JSONTruc = convertedProperties.toString();
-
-        return new Gson().fromJson(convertedProperties.toString(), new TypeToken<Track>() {
-        }.getType());
-        END of failed attempts*/
-    }
-
-    //TODO: use Room android architecture component
-    private static StationItem createStationItem(Document d){
-
-        Map<String, Object> properties = d.getProperties();
-
-        String id = (String) properties.get("id");
-        String name = (String)properties.get("name");
-        double latitude = (Double) properties.get("latitude");
-        double longitude = (Double) properties.get("longitude");
-        int free_bikes = ((Number) properties.get("free_bikes")).intValue();
-        int empty_slots = ((Number) properties.get("empty_slots")).intValue();
-        String timestamp = (String) properties.get("timestamp");
-        boolean locked = (Boolean) properties.get("locked");
-
-        LatLng position = new LatLng(latitude,longitude);
-
-        return new StationItem(id,name,position,free_bikes,empty_slots,timestamp,locked);
-
-    }
-
-    public static ArrayList<StationItem> getStationsNetwork() throws CouchbaseLiteException {
+    public static ArrayList<StationItem> getStationsNetwork() {
         ArrayList<StationItem> stationsNetwork = new ArrayList<>();
 
-        List<QueryRow> allStations = getAllStations();
+        List<BikeStation> allStationList;
 
-        for (QueryRow qr : allStations)
+        allStationList = mDatabase.bikeStationDao().getAll().getValue();
+
+        if (allStationList == null)
         {
-            Document d = qr.getDocument();
+            allStationList = new ArrayList<>();
+        }
 
-            stationsNetwork.add(createStationItem(d));
+
+        for (BikeStation bs : allStationList)
+        {
+            //Épic !!
+            stationsNetwork.add(new StationItem(
+                    bs.getLocationHash(), bs.getName(),
+                    new LatLng(bs.getLatitude(), bs.getLongitude()),
+                    bs.getFreeBikes(), bs.getEmptySlots(), bs.getTimestamp(),
+                    bs.getExtra().getLocked()));
         }
 
         return stationsNetwork;
+    }
+
+    public static void saveStationNetwork(List<StationItem> stationListNetwork) {
+
+        ArrayList<BikeStation> toSave = new ArrayList<>(stationListNetwork.size());
+
+        for (StationItem si : stationListNetwork)
+        {
+            toSave.add(new BikeStation(si));
+        }
+
+        mDatabase.bikeStationDao().insertBikeStationList(toSave);
     }
 
     //TODO: Add validation of IDs to handle the case were a favorite station been removed
@@ -580,7 +437,7 @@ public class DBHelper {
         return toReturn;
     }
 
-    //TODO: Build a cache of stations that have already been checked
+    //TODO: Build a cache of bikeStationList that have already been checked
     //This is called every time the list binds a station
     //it happens a lot (every time user location is updated).
     //getFavoriteAll loads a JSON from SharedPref
@@ -634,7 +491,7 @@ public class DBHelper {
 
         //JSONArray favoriteJSONArray;
         //contains JSONObject elements
-        //Station favorite
+        //BikeStation favorite
         //{
         //    favorite_id: string, (a station ID)
         //    display_name: string,

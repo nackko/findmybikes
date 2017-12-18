@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.support.multidex.MultiDex;
 import android.util.Log;
 
-import com.couchbase.lite.CouchbaseLiteException;
 import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
@@ -45,18 +44,15 @@ public class RootApplication extends Application {
 
         try {
             DBHelper.init(this);
-        } catch (IOException | CouchbaseLiteException | PackageManager.NameNotFoundException e) {
+        } catch (IOException | PackageManager.NameNotFoundException e) {
             Log.d(TAG, "Error initializing database", e);
         }
 
         if(!DBHelper.wasLastSavePartial(this)){
 
-            try {
-                mBikeshareStationList = DBHelper.getStationsNetwork();
-            } catch (CouchbaseLiteException | IllegalStateException e) {
-                Log.d("RootApplication", "Couldn't retrieve BikeStation Network from db",e );
-                mBikeshareStationList = new ArrayList<>();
-            }
+
+            mBikeshareStationList = DBHelper.getStationsNetwork();
+
 
             Log.i("RootApplication", mBikeshareStationList.size() + " stations loaded from DB");
         }

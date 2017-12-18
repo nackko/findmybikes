@@ -7,13 +7,17 @@ import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
+import com.ludoscity.findmybikes.StationItem;
 
 @SuppressWarnings("unused")
 @Entity
 public class BikeStation {
 
+    public BikeStation() {}
+
     @SuppressWarnings("NullableProblems")
     @SerializedName("id")
+    @ColumnInfo(name = "location_hash")
     @PrimaryKey
     @NonNull
     private String locationHash; //used as a uid
@@ -34,6 +38,17 @@ public class BikeStation {
     private String name;
     @ColumnInfo(name = "timestamp")
     private String timestamp;
+
+    public BikeStation(StationItem toSave) {
+        this.locationHash = toSave.getId();
+        this.emptySlots = toSave.getEmpty_slots();
+        this.extra = new BikeStationExtra(toSave.isLocked(), toSave.getName());
+        this.freeBikes = toSave.getFree_bikes();
+        this.latitude = toSave.getLocation().latitude;
+        this.longitude = toSave.getLocation().longitude;
+        this.name = toSave.getName();
+        this.timestamp = toSave.getTimestamp();
+    }
 
     @NonNull
     public String getLocationHash() {
