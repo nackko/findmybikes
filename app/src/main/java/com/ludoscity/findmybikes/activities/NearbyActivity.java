@@ -323,18 +323,18 @@ public class NearbyActivity extends AppCompatActivity
 
 
         // Update Bar
-        mStatusTextView = (TextView) findViewById(R.id.status_textView);
+        mStatusTextView = findViewById(R.id.status_textView);
         mStatusBar = findViewById(R.id.app_status_bar);
 
         if(mDataOutdated)
             mStatusBar.setBackgroundColor(ContextCompat.getColor(NearbyActivity.this, R.color.theme_accent));
 
-        mStationListViewPager = (ViewPager)findViewById(R.id.station_list_viewpager);
+        mStationListViewPager = findViewById(R.id.station_list_viewpager);
         mStationListViewPager.setAdapter(new StationListPagerAdapter(getSupportFragmentManager()));
         mStationListViewPager.addOnPageChangeListener(this);
 
         // Give the TabLayout the ViewPager
-        mTabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
+        mTabLayout = findViewById(R.id.sliding_tabs);
         mTabLayout.setupWithViewPager(mStationListViewPager);
 
         //Taking care of tabs icons here as pageradapter handles only title CharSequence for now
@@ -346,27 +346,27 @@ public class NearbyActivity extends AppCompatActivity
             mTabLayout.getTabAt(i).setIcon(ContextCompat.getDrawable(this,TABS_ICON_RES_ID[i]));
         }
 
-        mAppBarLayout = (AppBarLayout) findViewById(R.id.action_toolbar_layout);
+        mAppBarLayout = findViewById(R.id.action_toolbar_layout);
 
-        mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.snackbar_coordinator);
+        mCoordinatorLayout = findViewById(R.id.snackbar_coordinator);
         mSplashScreen = findViewById(R.id.splashscreen);
-        mSplashScreenTextTop = (TextView)findViewById(R.id.splashscreen_text_top);
-        mSplashScreenTextBottom = (TextView)findViewById(R.id.splashscreen_text_bottom);
+        mSplashScreenTextTop = findViewById(R.id.splashscreen_text_top);
+        mSplashScreenTextBottom = findViewById(R.id.splashscreen_text_bottom);
 
         mTripDetailsWidget = findViewById(R.id.trip_details);
-        mTripDetailsProximityA = (TextView) findViewById(R.id.trip_details_proximity_a);
-        mTripDetailsProximityB = (TextView) findViewById(R.id.trip_details_proximity_b);
-        mTripDetailsProximitySearch = (TextView) findViewById(R.id.trip_details_proximity_search);
-        mTripDetailsProximityTotal = (TextView) findViewById(R.id.trip_details_proximity_total);
-        mTripDetailsSumSeparator = (FrameLayout) findViewById(R.id.trip_details_sum_separator);
+        mTripDetailsProximityA = findViewById(R.id.trip_details_proximity_a);
+        mTripDetailsProximityB = findViewById(R.id.trip_details_proximity_b);
+        mTripDetailsProximitySearch = findViewById(R.id.trip_details_proximity_search);
+        mTripDetailsProximityTotal = findViewById(R.id.trip_details_proximity_total);
+        mTripDetailsSumSeparator = findViewById(R.id.trip_details_sum_separator);
         mTripDetailsBToDestinationRow = findViewById(R.id.trip_details_b_to_search);
         mTripDetailsPinSearch = findViewById(R.id.trip_details_to_search);
         mTripDetailsPinFavorite = findViewById(R.id.trip_details_to_favorite);
 
-        mSearchFAB = (FloatingActionButton) findViewById(R.id.search_fab);
-        mAddFavoriteFAB = (FloatingActionButton) findViewById(R.id.favorite_add_remove_fab);
-        mDirectionsLocToAFab = (FloatingActionButton) findViewById(R.id.directions_loc_to_a_fab);
-        mPlaceAutocompleteLoadingProgressBar = (ProgressBar) findViewById(R.id.place_autocomplete_loading);
+        mSearchFAB = findViewById(R.id.search_fab);
+        mAddFavoriteFAB = findViewById(R.id.favorite_add_remove_fab);
+        mDirectionsLocToAFab = findViewById(R.id.directions_loc_to_a_fab);
+        mPlaceAutocompleteLoadingProgressBar = findViewById(R.id.place_autocomplete_loading);
         if (autoCompleteLoadingProgressBarVisible)
             mPlaceAutocompleteLoadingProgressBar.setVisibility(View.VISIBLE);
 
@@ -554,7 +554,7 @@ public class NearbyActivity extends AppCompatActivity
     }
 
     private void setupAutoselectBikeFab() {
-        mAutoSelectBikeFab = (FloatingActionButton) findViewById(R.id.autoselect_closest_bike);
+        mAutoSelectBikeFab = findViewById(R.id.autoselect_closest_bike);
 
         //Flipping this bool gives way to bike auto selection and found Snackbar animation
         //TODO : BonPlatDePates. Spaghetti monster must be contained.
@@ -878,7 +878,7 @@ public class NearbyActivity extends AppCompatActivity
 
         mFavoriteItemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
 
-        RecyclerView favoriteRecyclerView = (RecyclerView) findViewById(R.id.favorites_sheet_recyclerview);
+        RecyclerView favoriteRecyclerView = findViewById(R.id.favorites_sheet_recyclerview);
 
         favoriteRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
         favoriteRecyclerView.setLayoutManager(new ScrollingLinearLayoutManager(this, LinearLayoutManager.VERTICAL, false, 300));
@@ -1172,7 +1172,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private void setupFavoritePickerFab() {
 
-        mFavoritePickerFAB = (Fab) findViewById(R.id.favorite_picker_fab);
+        mFavoritePickerFAB = findViewById(R.id.favorite_picker_fab);
 
         View sheetView = findViewById(R.id.fab_sheet);
         View overlay = findViewById(R.id.overlay);
@@ -1214,7 +1214,7 @@ public class NearbyActivity extends AppCompatActivity
     }
 
     private void setupClearFab() {
-        mClearFAB = (FloatingActionButton) findViewById(R.id.clear_fab);
+        mClearFAB = findViewById(R.id.clear_fab);
 
         mClearFAB.setOnClickListener(new View.OnClickListener() {
             @Override
