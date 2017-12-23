@@ -19,14 +19,14 @@ import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.maps.model.LatLng;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.RootApplication;
-import com.ludoscity.findmybikes.StationItem;
 import com.ludoscity.findmybikes.StationRecyclerViewAdapter;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.utils.DividerItemDecoration;
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager;
 
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 import static android.support.v7.widget.RecyclerView.NO_POSITION;
 import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
@@ -124,7 +124,7 @@ public class StationListFragment extends Fragment
         super.onSaveInstanceState(outState);
 
         outState.putInt("selected_pos", getStationRecyclerViewAdapter().getSelectedPos());
-        Comparator<StationItem> comparator = getStationRecyclerViewAdapter().getSortComparator();
+        Comparator<BikeStation> comparator = getStationRecyclerViewAdapter().getSortComparator();
         if (comparator instanceof StationRecyclerViewAdapter.DistanceComparator)
             outState.putParcelable("sort_comparator", (StationRecyclerViewAdapter.DistanceComparator) comparator);
         else
@@ -148,7 +148,7 @@ public class StationListFragment extends Fragment
 
         if (savedInstanceState != null) {
 
-            Comparator<StationItem> comparator = savedInstanceState.getParcelable("sort_comparator");
+            Comparator<BikeStation> comparator = savedInstanceState.getParcelable("sort_comparator");
 
             if (savedInstanceState.getBoolean("availability_outdated")) {
                 getStationRecyclerViewAdapter().setAvailabilityOutdated(true);
@@ -191,10 +191,10 @@ public class StationListFragment extends Fragment
         }
     }
 
-    public void setupUI(ArrayList<StationItem> _stationsNetwork, boolean _lookingForBike, boolean _showProximity,
+    public void setupUI(List<BikeStation> _stationsNetwork, boolean _lookingForBike, boolean _showProximity,
                         Integer _headerFromIconResId, Integer _headerToIconResId,
                         String _stringIfEmpty,
-                        Comparator<StationItem> _sortComparator) {
+                        Comparator<BikeStation> _sortComparator) {
 
         //TODO: fix glitch when coming back from place widget (Note to past self : describe glitch)
         mEmptyListTextView.setText(_stringIfEmpty);
@@ -222,7 +222,7 @@ public class StationListFragment extends Fragment
         mStationRecap.setVisibility(View.VISIBLE);
     }
 
-    public boolean setupStationRecap(StationItem _station, boolean _outdated){
+    public boolean setupStationRecap(BikeStation _station, boolean _outdated){
 
         if (getContext() == null)
             return false;
@@ -234,7 +234,7 @@ public class StationListFragment extends Fragment
             mStationRecapName.setText(_station.getName());
         }
 
-        mStationRecapAvailability.setText(String.format(getResources().getString(R.string.station_recap_bikes), _station.getFree_bikes()));
+        mStationRecapAvailability.setText(String.format(getResources().getString(R.string.station_recap_bikes), _station.getFreeBikes()));
 
         if (_outdated){
             mStationRecapAvailability.getPaint().setStrikeThruText(true);
@@ -246,9 +246,9 @@ public class StationListFragment extends Fragment
             mStationRecapAvailability.getPaint().setTypeface(Typeface.DEFAULT_BOLD);
             mStationRecapAvailability.getPaint().setStrikeThruText(false);
 
-            if (_station.getFree_bikes() <= DBHelper.getCriticalAvailabilityMax(getContext()))
+            if (_station.getFreeBikes() <= DBHelper.getCriticalAvailabilityMax(getContext()))
                 mStationRecapAvailability.setTextColor(ContextCompat.getColor(getContext(), R.color.station_recap_red));
-            else if (_station.getFree_bikes() <= DBHelper.getBadAvailabilityMax(getContext()))
+            else if (_station.getFreeBikes() <= DBHelper.getBadAvailabilityMax(getContext()))
                 mStationRecapAvailability.setTextColor(ContextCompat.getColor(getContext(), R.color.station_recap_yellow));
             else
                 mStationRecapAvailability.setTextColor(ContextCompat.getColor(getContext(), R.color.station_recap_green));
@@ -258,7 +258,7 @@ public class StationListFragment extends Fragment
         return true;
     }
 
-    public void setSortComparatorAndSort(Comparator<StationItem> _toSet){
+    public void setSortComparatorAndSort(Comparator<BikeStation> _toSet){
 
         if (mRecyclerViewScrollingState == SCROLL_STATE_IDLE) {
 
@@ -301,7 +301,7 @@ public class StationListFragment extends Fragment
         return selectedPos != NO_POSITION;
     }
 
-    public StationItem getHighlightedStation(){
+    public BikeStation getHighlightedStation(){
 
         return getStationRecyclerViewAdapter().getSelected();
     }

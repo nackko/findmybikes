@@ -3,13 +3,13 @@ package com.ludoscity.findmybikes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
-import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.maps.model.LatLng;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.utils.SmartFragmentPagerAdapter;
 
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by F8Full on 2015-10-19.
@@ -47,10 +47,10 @@ public class StationListPagerAdapter extends SmartFragmentPagerAdapter {
         return NUM_ITEMS;
     }
 
-    public void setupUI(int _pageID, ArrayList<StationItem> _stationsList, boolean _showProximity,
+    public void setupUI(int _pageID, List<BikeStation> _stationsList, boolean _showProximity,
                         Integer _headerFromIconResId, Integer _headerToIconResId,
                         String _stringIfEmpty,
-                        Comparator<StationItem> _sortComparator){
+                        Comparator<BikeStation> _sortComparator){
         retrieveListFragment(_pageID).setupUI(_stationsList, _pageID == BIKE_STATIONS,
                 _showProximity, _headerFromIconResId, _headerToIconResId,
                 _stringIfEmpty, _sortComparator);
@@ -73,8 +73,8 @@ public class StationListPagerAdapter extends SmartFragmentPagerAdapter {
         return ((StationListFragment)getRegisteredFragment(position));
     }
 
-    public StationItem getHighlightedStationForPage(int position) {
-        StationItem toReturn = null;
+    public BikeStation getHighlightedStationForPage(int position) {
+        BikeStation toReturn = null;
 
         if (isViewPagerReady())
             toReturn = retrieveListFragment(position).getHighlightedStation();
@@ -150,7 +150,7 @@ public class StationListPagerAdapter extends SmartFragmentPagerAdapter {
         return retrieveListFragment(BIKE_STATIONS).isHighlightedVisibleInRecyclerView();
     }
 
-    public boolean setupBTabStationARecap(StationItem _stationA, boolean _outdated) {
+    public boolean setupBTabStationARecap(BikeStation _stationA, boolean _outdated) {
         return retrieveListFragment(DOCK_STATIONS).setupStationRecap(_stationA, _outdated);
     }
 

@@ -25,8 +25,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.StationItem;
 import com.ludoscity.findmybikes.StationMapGfx;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.utils.Utils;
 
 import java.util.ArrayList;
@@ -417,7 +417,7 @@ public class StationMapFragment extends Fragment
 
     public boolean isMapReady(){ return mGoogleMap != null; }
 
-    public void addMarkerForStationItem(boolean _outdated, StationItem item, boolean lookingForBike) {
+    public void addMarkerForBikeStation(boolean _outdated, BikeStation item, boolean lookingForBike) {
 
         if (getContext() == null)
             return;

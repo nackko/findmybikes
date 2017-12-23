@@ -15,7 +15,6 @@ import com.ludoscity.findmybikes.FavoriteItemBase;
 import com.ludoscity.findmybikes.FavoriteItemPlace;
 import com.ludoscity.findmybikes.FavoriteItemStation;
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.StationItem;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.citybik_es.model.NetworkDesc;
 
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by F8Full on 2015-04-02.
@@ -346,42 +344,19 @@ public class DBHelper {
         mDatabase.bikeStationDao().deleteAllBikeStation();
     }
 
-    public static ArrayList<StationItem> getStationsNetwork() {
-        ArrayList<StationItem> stationsNetwork = new ArrayList<>();
+    public static List<BikeStation> getStationsNetwork() {
+        List<BikeStation> toReturn = mDatabase.bikeStationDao().getAll().getValue();
 
-        List<BikeStation> allStationList;
-
-        allStationList = mDatabase.bikeStationDao().getAll().getValue();
-
-        if (allStationList == null)
+        if (toReturn == null)
         {
-            allStationList = new ArrayList<>();
+            toReturn = new ArrayList<>();
         }
 
-
-        for (BikeStation bs : allStationList)
-        {
-            //Épic !!
-            stationsNetwork.add(new StationItem(
-                    bs.getLocationHash(), bs.getName(),
-                    new LatLng(bs.getLatitude(), bs.getLongitude()),
-                    bs.getFreeBikes(), bs.getEmptySlots(), bs.getTimestamp(),
-                    bs.getExtra().getLocked()));
-        }
-
-        return stationsNetwork;
+        return toReturn;
     }
 
-    public static void saveStationNetwork(List<StationItem> stationListNetwork) {
-
-        ArrayList<BikeStation> toSave = new ArrayList<>(stationListNetwork.size());
-
-        for (StationItem si : stationListNetwork)
-        {
-            toSave.add(new BikeStation(si));
-        }
-
-        mDatabase.bikeStationDao().insertBikeStationList(toSave);
+    public static void saveStationNetwork(List<BikeStation> stationListNetwork) {
+        mDatabase.bikeStationDao().insertBikeStationList(stationListNetwork);
     }
 
     //TODO: Add validation of IDs to handle the case were a favorite station been removed
@@ -459,7 +434,7 @@ public class DBHelper {
 
     //counts valid favorites, an invalid favorite corresponds to the provided StationItem
     //returns true if this count >= provided parameter
-    public static boolean hasAtLeastNValidFavorites(StationItem _closestBikeStation, int _n, Context _ctx) {
+    public static boolean hasAtLeastNValidFavorites(BikeStation _closestBikeStation, int _n, Context _ctx) {
 
         int validCount = 0;
 
@@ -469,7 +444,7 @@ public class DBHelper {
             return favoriteList.size() >= _n;
 
         for (int i=0; i<favoriteList.size(); ++i){
-            if (!favoriteList.get(i).getId().equalsIgnoreCase(_closestBikeStation.getId()))
+            if (!favoriteList.get(i).getId().equalsIgnoreCase(_closestBikeStation.getLocationHash()))
                 ++validCount;
         }
 

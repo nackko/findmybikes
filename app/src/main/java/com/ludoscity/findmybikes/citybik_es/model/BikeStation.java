@@ -4,14 +4,21 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Embedded;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.Spanned;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.annotations.SerializedName;
-import com.ludoscity.findmybikes.StationItem;
+import com.google.maps.android.SphericalUtil;
+import com.ludoscity.findmybikes.FavoriteItemStation;
+import com.ludoscity.findmybikes.R;
+import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.utils.Utils;
 
 @SuppressWarnings("unused")
 @Entity
-public class BikeStation {
+public class BikeStation {//implements Parcelable {
 
     public BikeStation() {}
 
@@ -38,17 +45,6 @@ public class BikeStation {
     private String name;
     @ColumnInfo(name = "timestamp")
     private String timestamp;
-
-    public BikeStation(StationItem toSave) {
-        this.locationHash = toSave.getId();
-        this.emptySlots = toSave.getEmpty_slots();
-        this.extra = new BikeStationExtra(toSave.isLocked(), toSave.getName());
-        this.freeBikes = toSave.getFree_bikes();
-        this.latitude = toSave.getLocation().latitude;
-        this.longitude = toSave.getLocation().longitude;
-        this.name = toSave.getName();
-        this.timestamp = toSave.getTimestamp();
-    }
 
     @NonNull
     public String getLocationHash() {
@@ -100,11 +96,11 @@ public class BikeStation {
     }
 
     public String getName() {
-        return name;
+        return extra.getName();
     }
 
     public void setName(String name) {
-        this.name = name;
+        extra.setName(name);
     }
 
     public String getTimestamp() {
@@ -114,4 +110,114 @@ public class BikeStation {
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
+
+    public double getMeterFromLatLng(LatLng userLocation) {
+        return SphericalUtil.computeDistanceBetween(userLocation, getLocation());}
+
+    public LatLng getLocation() {return new LatLng(latitude,longitude);}
+
+    //TODO: move this closer to the user, or with its own Room storage mechanism
+    //TODO: reference BikeStation entities by locationHash (ie : id)
+    public boolean isFavorite(Context _ctx) {
+        return false;
+    }
+
+    //TODO: that's why isFavorite always returns false for now
+    // you MUST call this on a favorite station. No validation to not got to SharedPref too much
+    //Called multiple times (station binding happens on user location update)
+    public Spanned getFavoriteName(Context _ctx, boolean _favoriteDisplayNameOnly){
+
+        Spanned toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_only_italic),
+                name));
+
+        if (!DBHelper.getFavoriteItemForId(_ctx, locationHash).isDisplayNameDefault()){
+            if(_favoriteDisplayNameOnly){
+                toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_only_bold),
+                        DBHelper.getFavoriteItemForId(_ctx, locationHash).getDisplayName()));
+            } else {
+                toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_complete),
+                        DBHelper.getFavoriteItemForId(_ctx, locationHash).getDisplayName(), name ));
+            }
+        }
+
+        return toReturn;
+    }
+
+    public FavoriteItemStation getFavoriteItemForDisplayName(String _displayName){
+        if (_displayName.equalsIgnoreCase(name))
+            return new FavoriteItemStation(locationHash, name, true);
+        else
+            return new FavoriteItemStation(locationHash, _displayName, false);
+    }
+
+    public boolean isLocked() {
+        return extra.getLocked();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //test data
+    //Laurier / Brebeuf
+        /*if (_bikeStation.id.equalsIgnoreCase("f132843c3c740cce6760167985bc4d17")){
+            this.empty_slots = 35;
+            this.free_bikes = 0;
+
+            //Lanaudiere / Laurier
+        }else if (_bikeStation.id.equalsIgnoreCase("92d97d6adec177649b366c36f3e8e2ff")){
+            this.empty_slots = 17;
+            this.free_bikes = 2;
+
+        }else if (_bikeStation.id.equalsIgnoreCase("d20fea946f06e7e64e6da7d95b3c3a89")){
+            this.empty_slots = 1;
+            this.free_bikes = 19;
+        }else if (_bikeStation.id.equalsIgnoreCase("3500704c9971a0c13924e696f5804bbd")){
+            this.empty_slots = 0;
+            this.free_bikes = 31;
+        } else {*/
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //Following code to make it Parcelable
+    /*@Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(locationHash);
+        dest.writeString(name);
+        dest.writeByte((byte) (extra.getLocked() ? 1 : 0));
+        dest.writeInt(emptySlots);
+        dest.writeInt(freeBikes);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+        //dest.writeParcelable(position, flags);
+        dest.writeString(timestamp);
+
+    }
+
+    private BikeStation(Parcel in){
+        locationHash = in.readString();
+        name = in.readString();
+        extra.setLocked(in.readByte() != 0);
+        emptySlots = in.readInt();
+        freeBikes = in.readInt();
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        //position = in.readParcelable(LatLng.class.getClassLoader());
+        timestamp = in.readString();
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator(){
+
+        @Override
+        public BikeStation createFromParcel(Parcel source) {
+            return new BikeStation(source);
+        }
+
+        @Override
+        public BikeStation[] newArray(int size) {
+            return new BikeStation[size];
+        }
+    };*/
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }

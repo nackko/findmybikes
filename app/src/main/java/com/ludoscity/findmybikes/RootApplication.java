@@ -35,7 +35,7 @@ public class RootApplication extends Application {
     Twitter mTwitterAPI;
     //Station list data is kept here to survive screen orientation change. TODO: use ViewModel
     //It's built from the database on launch (if there's a complete record available) and updated in memory after data download
-    private static ArrayList<StationItem> mBikeshareStationList;
+    private static List<BikeStation> mBikeshareStationList;
     //TODO: refactor with MVC in mind. This is model
 
     @Override
@@ -57,7 +57,7 @@ public class RootApplication extends Application {
             Log.i("RootApplication", mBikeshareStationList.size() + " stations loaded from DB");
         }
         else
-            mBikeshareStationList = new ArrayList<>();
+            mBikeshareStationList = new ArrayList<BikeStation>();
 
 
         mCitybik_esAPI = buildCitybik_esAPI();
@@ -94,13 +94,13 @@ public class RootApplication extends Application {
         return mTwitterAPI;
     }
 
-    public static ArrayList<StationItem> getBikeNetworkStationList(){
+    public static List<BikeStation> getBikeNetworkStationList(){
         return mBikeshareStationList;
     }
 
-    public static ArrayList<StationItem> addAllToBikeNetworkStationList(List<BikeStation> _bikeStationList, Context _ctx){
+    public static List<BikeStation> addAllToBikeNetworkStationList(List<BikeStation> _bikeStationList, Context _ctx){
 
-        ArrayList<StationItem> newList = new ArrayList<>(mBikeshareStationList.size());
+        ArrayList<BikeStation> newList = new ArrayList<>(mBikeshareStationList.size());
 
         for (BikeStation bikeStation : _bikeStationList) {
 
@@ -108,9 +108,7 @@ public class RootApplication extends Application {
                 bikeStation.setEmptySlots(-1);
             //Some systems have empty_slots to null (like nextbike SZ-bike in Dresden, Germany)
             //-1 is used to encode this case
-
-            StationItem stationItem = new StationItem(bikeStation);
-            newList.add(stationItem);
+            newList.add(bikeStation);
         }
 
         mBikeshareStationList = newList;

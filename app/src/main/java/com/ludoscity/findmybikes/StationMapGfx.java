@@ -10,6 +10,7 @@ import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.utils.Utils;
 
@@ -23,7 +24,7 @@ public class StationMapGfx {
     private MarkerOptions markerOptions;
     private GroundOverlayOptions groundOverlayOptions;
 
-    private final StationItem mItem; //corresponding data
+    private final BikeStation mItem; //corresponding data
     private Marker marker;
     private GroundOverlay groundOverlay;
 
@@ -42,14 +43,14 @@ public class StationMapGfx {
     private static float minOverlaySize = 1;
     private static float maxOverlaySize = 50;
 
-    public StationMapGfx(boolean _outdated, StationItem _item, boolean _lookingForBike, Context _ctx){
+    public StationMapGfx(boolean _outdated, BikeStation _item, boolean _lookingForBike, Context _ctx){
 
         mItem = _item;
 
         //Marker setup
         markerOptions = new MarkerOptions()
                 .position(_item.getLocation())
-                .title(_item.getId())
+                .title(_item.getLocationHash())
                 .alpha(0)
                 .zIndex(1.f)//so that invisible clicking marker is in front of Favorite pin
                 .anchor(0.5f,0.5f)
@@ -66,16 +67,16 @@ public class StationMapGfx {
                 groundOverlayOptions.image(greyIcon);
             else {
                 if (_lookingForBike) {
-                    if (_item.getFree_bikes() <= DBHelper.getCriticalAvailabilityMax(_ctx))
+                    if (_item.getFreeBikes() <= DBHelper.getCriticalAvailabilityMax(_ctx))
                         groundOverlayOptions.image(redIcon);
-                    else if (_item.getFree_bikes() <= DBHelper.getBadAvailabilityMax(_ctx))
+                    else if (_item.getFreeBikes() <= DBHelper.getBadAvailabilityMax(_ctx))
                         groundOverlayOptions.image(yellowIcon);
                     else
                         groundOverlayOptions.image(greenIcon);
                 } else {
-                    if (_item.getEmpty_slots() != -1 && _item.getEmpty_slots() <= DBHelper.getCriticalAvailabilityMax(_ctx))
+                    if (_item.getEmptySlots() != -1 && _item.getEmptySlots() <= DBHelper.getCriticalAvailabilityMax(_ctx))
                         groundOverlayOptions.image(redIcon);
-                    else if (_item.getEmpty_slots() != -1 && _item.getEmpty_slots() <= DBHelper.getBadAvailabilityMax(_ctx))
+                    else if (_item.getEmptySlots() != -1 && _item.getEmptySlots() <= DBHelper.getBadAvailabilityMax(_ctx))
                         groundOverlayOptions.image(yellowIcon);
                     else
                         groundOverlayOptions.image(greenIcon);
@@ -105,9 +106,9 @@ public class StationMapGfx {
         if (!_outdated) {
             if (_isLookingForBikes) {
                 if (!mItem.isLocked()) {
-                    if (mItem.getFree_bikes() <= DBHelper.getCriticalAvailabilityMax(_ctx))
+                    if (mItem.getFreeBikes() <= DBHelper.getCriticalAvailabilityMax(_ctx))
                         groundOverlay.setImage(redIcon);
-                    else if (mItem.getFree_bikes() <= DBHelper.getBadAvailabilityMax(_ctx))
+                    else if (mItem.getFreeBikes() <= DBHelper.getBadAvailabilityMax(_ctx))
                         groundOverlay.setImage(yellowIcon);
                     else
                         groundOverlay.setImage(greenIcon);
@@ -115,9 +116,9 @@ public class StationMapGfx {
                     groundOverlay.setImage(greyIcon);
             } else {
                 if (!mItem.isLocked()) {
-                    if (mItem.getEmpty_slots() != -1 && mItem.getEmpty_slots() <= DBHelper.getCriticalAvailabilityMax(_ctx))
+                    if (mItem.getEmptySlots() != -1 && mItem.getEmptySlots() <= DBHelper.getCriticalAvailabilityMax(_ctx))
                         groundOverlay.setImage(redIcon);
-                    else if (mItem.getEmpty_slots() != -1 && mItem.getEmpty_slots() <= DBHelper.getBadAvailabilityMax(_ctx))
+                    else if (mItem.getEmptySlots() != -1 && mItem.getEmptySlots() <= DBHelper.getBadAvailabilityMax(_ctx))
                         groundOverlay.setImage(yellowIcon);
                     else
                         groundOverlay.setImage(greenIcon);

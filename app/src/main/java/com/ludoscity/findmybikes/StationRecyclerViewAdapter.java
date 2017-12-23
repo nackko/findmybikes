@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.maps.model.LatLng;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.utils.Utils;
@@ -26,6 +27,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 import static android.support.v7.widget.RecyclerView.NO_POSITION;
 
@@ -34,7 +36,7 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  *
  * Adapter used to show the datas of every stationItem
  */
-public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecyclerViewAdapter.StationListItemViewHolder> {
+public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecyclerViewAdapter.BikeStationListItemViewHolder> {
 
     public static final String AVAILABILITY_POSTFIX_START_SEQUENCE = "_AVAILABILITY_";
     public static final String AOK_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "AOK";
@@ -45,8 +47,9 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
     private static final String ERROR_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "ERR";
 
     //TODO : hold this in a ModelView ? Or each station in a modelView ? (android architecture components)
-    private ArrayList<StationItem> mStationList = new ArrayList<>();
-    private Comparator<StationItem> mStationSortComparator;
+    //Present self to past self : good boy. YES, DO IT ! store the whole list in your model, it will come directly from Room via LiveData \o/
+    private ArrayList<BikeStation> mStationList = new ArrayList<>();
+    private Comparator<BikeStation> mStationSortComparator;
 
     private Context mCtx;
 
@@ -62,7 +65,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
     private boolean mOutdatedAvailability = false;
 
     //TODO: come up with a design that doesn't require dynamic casting
-    public static class DistanceComparator implements Comparator<StationItem>, Parcelable {
+    public static class DistanceComparator implements Comparator<BikeStation>, Parcelable {
 
         LatLng mRefLatLng;
         public DistanceComparator(LatLng _fromLatLng){mRefLatLng = _fromLatLng;}
@@ -70,7 +73,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         LatLng getDistanceRef() { return mRefLatLng; }
 
         @Override
-        public int compare(StationItem lhs, StationItem rhs) {
+        public int compare(BikeStation lhs, BikeStation rhs) {
             return (int) (lhs.getMeterFromLatLng(mRefLatLng) - rhs.getMeterFromLatLng(mRefLatLng));
         }
 
@@ -106,7 +109,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         };
     }
 
-    public static class TotalTripTimeComparator implements Comparator<StationItem>, Parcelable{
+    public static class TotalTripTimeComparator implements Comparator<BikeStation>, Parcelable{
 
         private final LatLng mStationALatLng;
         private final LatLng mDestinationLatLng;
@@ -148,7 +151,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         }
 
         @Override
-        public int compare(StationItem lhs, StationItem rhs) {
+        public int compare(BikeStation lhs, BikeStation rhs) {
 
             int lhsWalkTime = calculateWalkTimeMinute(lhs);
             int rhsWalkTime = calculateWalkTimeMinute(rhs);
@@ -164,7 +167,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                 return lhsWalkTime - rhsWalkTime;
         }
 
-        int calculateWalkTimeMinute(StationItem _stationB){
+        int calculateWalkTimeMinute(BikeStation _stationB){
 
             int timeBtoDestMinutes = 0;
 
@@ -176,7 +179,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
 
         }
 
-        int calculateBikeTimeMinute(StationItem _stationB){
+        int calculateBikeTimeMinute(BikeStation _stationB){
 
             return Utils.computeTimeBetweenInMinutes(mStationALatLng, _stationB.getLocation(),
                     mBikingSpeedKmh);
@@ -224,25 +227,6 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         notifyItemChanged(getStationItemPositionInList(_stationId));
     }
 
-    public boolean removeItem(StationItem toRemove) {
-        int positionToRemove = getStationItemPositionInList(toRemove.getId());
-
-        if ( positionToRemove == mSelectedPos)
-            mSelectedPos = NO_POSITION;
-
-        mStationList.remove(positionToRemove);
-
-        notifyItemRemoved(positionToRemove);
-
-        return mStationList.isEmpty();
-    }
-
-    public void addItem(StationItem toAdd) {
-        mStationList.add(toAdd);
-
-        notifyItemInserted(mStationList.size()-1);
-    }
-
     public void setAvailabilityOutdated(boolean _toSet) {
 
         //TODO: refactor with MVC in mind. Outdated status is model
@@ -271,16 +255,16 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
     }
 
     @Override
-    public void onBindViewHolder(StationListItemViewHolder holder, int position) {
+    public void onBindViewHolder(BikeStationListItemViewHolder holder, int position) {
 
         holder.bindStation(mStationList.get(position), position == mSelectedPos, mShowProximity);
     }
 
     @Override
-    public StationListItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public BikeStationListItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.stationlist_item, parent, false);
-        return new StationListItemViewHolder(view);
+        return new BikeStationListItemViewHolder(view);
     }
 
     @Override
@@ -288,7 +272,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         return mStationList.size();
     }
 
-    class StationListItemViewHolder extends RecyclerView.ViewHolder
+    class BikeStationListItemViewHolder extends RecyclerView.ViewHolder
                 implements View.OnClickListener{
 
         TextView mProximity;
@@ -308,7 +292,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
 
         private NumberFormat mNumberFormat = NumberFormat.getInstance();
 
-        StationListItemViewHolder(View itemView) {
+        BikeStationListItemViewHolder(View itemView) {
             super(itemView);
 
             mProximity = (TextView) itemView.findViewById(R.id.station_proximity);
@@ -322,9 +306,9 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
             mFavoriteFab.setOnClickListener(this);
         }
 
-        void bindStation(StationItem _station, boolean _selected, boolean _showProximity){
+        void bindStation(BikeStation _station, boolean _selected, boolean _showProximity){
 
-            mStationId = _station.getId();
+            mStationId = _station.getLocationHash();
 
             if (_showProximity && mStationSortComparator != null) {
 
@@ -475,13 +459,13 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
             ////////////////////////////////////////////////////////////////////////////////
 
             if (mIsLookingForBike) {
-                mAvailability.setText(mNumberFormat.format(_station.getFree_bikes()));
-                setColorAndTransparencyFeedback(_selected, _station.getFree_bikes());
+                mAvailability.setText(mNumberFormat.format(_station.getFreeBikes()));
+                setColorAndTransparencyFeedback(_selected, _station.getFreeBikes());
 
             }
             else {
-                mAvailability.setText(_station.getEmpty_slots() == -1 ? "--" : mNumberFormat.format(_station.getEmpty_slots()));
-                setColorAndTransparencyFeedback(_selected, _station.getEmpty_slots());
+                mAvailability.setText(_station.getEmptySlots() == -1 ? "--" : mNumberFormat.format(_station.getEmptySlots()));
+                setColorAndTransparencyFeedback(_selected, _station.getEmptySlots());
             }
 
             if (mOutdatedAvailability) {
@@ -576,7 +560,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
 
                 case R.id.favorite_fab:
                     //must redo binding for favorite name display
-                    notifyItemChanged(getStationItemPositionInList(getSelected().getId()));
+                    notifyItemChanged(getStationItemPositionInList(getSelected().getLocationHash()));
                     mListener.onStationListItemClick(StationListFragment.STATION_LIST_FAVORITE_FAB_CLICK_PATH);
                     //ordering matters
                     if (getSelected().isFavorite(mCtx))
@@ -598,7 +582,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
 
         if (mSelectedPos != NO_POSITION)
         {
-            toReturn = ((StationRecyclerViewAdapter.StationListItemViewHolder)_recyclerView.findViewHolderForAdapterPosition(mSelectedPos)).getFavoriteFabTarget();
+            toReturn = ((BikeStationListItemViewHolder)_recyclerView.findViewHolderForAdapterPosition(mSelectedPos)).getFavoriteFabTarget();
         }
 
         return toReturn;
@@ -606,11 +590,11 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
 
     public void requestFabAnimation(){ mFabAnimationRequested = true; }
 
-    public void setupStationList(ArrayList<StationItem> _toSet, Comparator<StationItem> _sortComparator){
+    public void setupStationList(List<BikeStation> _toSet, Comparator<BikeStation> _sortComparator){
         String selectedIdBefore = null;
 
         if (null != getSelected())
-            selectedIdBefore = getSelected().getId();
+            selectedIdBefore = getSelected().getLocationHash();
 
         //Making a copy as sorting shouldn't interfere with the rest of the code
         mStationList.clear();
@@ -626,7 +610,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         mShowProximity = _showProximity;
     }
 
-    public void setStationSortComparatorAndSort(Comparator<StationItem> _comparator){
+    public void setStationSortComparatorAndSort(Comparator<BikeStation> _comparator){
         mStationSortComparator = _comparator;
         sortStationList();
         notifyDataSetChanged();
@@ -642,7 +626,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
     }
 
     //TODO: remove this accessor (don't share your private parts)
-    public Comparator<StationItem> getSortComparator(){
+    public Comparator<BikeStation> getSortComparator(){
         return mStationSortComparator;
     }
 
@@ -651,8 +635,8 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         return setSelectedPos(getStationItemPositionInList(_stationId), unselectOnTwice);
     }
 
-    public StationItem getSelected(){
-        StationItem toReturn = null;
+    public BikeStation getSelected(){
+        BikeStation toReturn = null;
 
         if (mSelectedPos != NO_POSITION && mSelectedPos < mStationList.size())
             toReturn = mStationList.get(mSelectedPos);
@@ -677,25 +661,25 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         StringBuilder availabilityDataPostfixBuilder = new StringBuilder("");
 
         if (mOutdatedAvailability){
-            availabilityDataPostfixBuilder.append(mStationList.get(0).getId()).append(OUTDATED_AVAILABILITY_POSTFIX);
+            availabilityDataPostfixBuilder.append(mStationList.get(0).getLocationHash()).append(OUTDATED_AVAILABILITY_POSTFIX);
             return availabilityDataPostfixBuilder.toString();
         }
 
         int badOrAOKStationCount = 0;
         final long minimumServiceCount = Math.round(mStationList.size()*0.1);   //10%
 
-        for (StationItem stationItem: mStationList){ //mStationList is SORTED BY DISTANCE
+        for (BikeStation stationItem: mStationList){ //mStationList is SORTED BY DISTANCE
             if (_lookingForBike) {
                 if (!stationItem.isLocked()) {
 
-                    if (stationItem.getFree_bikes() > DBHelper.getCriticalAvailabilityMax(mCtx)) {
+                    if (stationItem.getFreeBikes() > DBHelper.getCriticalAvailabilityMax(mCtx)) {
 
                         if (badOrAOKStationCount == 0) {
-                            if (stationItem.getFree_bikes() <= DBHelper.getBadAvailabilityMax(mCtx)) {
+                            if (stationItem.getFreeBikes() <= DBHelper.getBadAvailabilityMax(mCtx)) {
 
-                                availabilityDataPostfixBuilder.insert(0, stationItem.getId() + BAD_AVAILABILITY_POSTFIX);
+                                availabilityDataPostfixBuilder.insert(0, stationItem.getLocationHash() + BAD_AVAILABILITY_POSTFIX);
                             } else {
-                                availabilityDataPostfixBuilder.insert(0, stationItem.getId() + AOK_AVAILABILITY_POSTFIX);
+                                availabilityDataPostfixBuilder.insert(0, stationItem.getLocationHash() + AOK_AVAILABILITY_POSTFIX);
                             }
                         }
 
@@ -705,27 +689,27 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                             break;
                     }
                     else if (badOrAOKStationCount == 0){
-                        availabilityDataPostfixBuilder.append(stationItem.getId())
+                        availabilityDataPostfixBuilder.append(stationItem.getLocationHash())
                                 .append(CRITICAL_AVAILABILITY_POSTFIX);
                     }
                 }
                 else if(badOrAOKStationCount == 0) {
-                    availabilityDataPostfixBuilder.append(stationItem.getId())
+                    availabilityDataPostfixBuilder.append(stationItem.getLocationHash())
                             .append(LOCKED_AVAILABILITY_POSTFIX);
                 }
             }
             else {  //A locked station accepts bike returns
 
-                if (stationItem.getEmpty_slots() == -1 || stationItem.getEmpty_slots() > DBHelper.getCriticalAvailabilityMax(mCtx)){
+                if (stationItem.getEmptySlots() == -1 || stationItem.getEmptySlots() > DBHelper.getCriticalAvailabilityMax(mCtx)){
 
                     if (badOrAOKStationCount == 0) {
 
-                        if (stationItem.getEmpty_slots() != -1 && stationItem.getEmpty_slots() <= DBHelper.getBadAvailabilityMax(mCtx)) {
+                        if (stationItem.getEmptySlots() != -1 && stationItem.getEmptySlots() <= DBHelper.getBadAvailabilityMax(mCtx)) {
 
-                            availabilityDataPostfixBuilder.insert(0, stationItem.getId() + BAD_AVAILABILITY_POSTFIX);
+                            availabilityDataPostfixBuilder.insert(0, stationItem.getLocationHash() + BAD_AVAILABILITY_POSTFIX);
                         } else {
 
-                            availabilityDataPostfixBuilder.insert(0, stationItem.getId() + AOK_AVAILABILITY_POSTFIX);
+                            availabilityDataPostfixBuilder.insert(0, stationItem.getLocationHash() + AOK_AVAILABILITY_POSTFIX);
                         }
                     }
 
@@ -735,7 +719,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                         break;
                 }
                 else if (badOrAOKStationCount == 0){
-                    availabilityDataPostfixBuilder.append(stationItem.getId())
+                    availabilityDataPostfixBuilder.append(stationItem.getLocationHash())
                             .append(CRITICAL_AVAILABILITY_POSTFIX);
                 }
             }
@@ -743,7 +727,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
 
         //failsafe if no bike could be found
         if (badOrAOKStationCount == 0 && !mStationList.isEmpty())
-            availabilityDataPostfixBuilder.append(mStationList.get(0).getId()).append(LOCKED_AVAILABILITY_POSTFIX);
+            availabilityDataPostfixBuilder.append(mStationList.get(0).getLocationHash()).append(LOCKED_AVAILABILITY_POSTFIX);
         else if(badOrAOKStationCount != 0 && badOrAOKStationCount < minimumServiceCount){
             //if less than 10% of the network could provide service but a bike could still be found, let's prevent tweeting from happening
             int firstBadOrOkIdx = availabilityDataPostfixBuilder.indexOf(BAD_AVAILABILITY_POSTFIX) != -1 ?
@@ -765,12 +749,12 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         //DBHelper can't be trusted !!
         //StationItem closest = DBHelper.getStation(Utils.extractClosestAvailableStationIdFromProcessedString(getClosestStationIdWithAvailability(_lookingForBike)));
 
-        StationItem closest = null;
+        BikeStation closest = null;
 
         String closestId = Utils.extractClosestAvailableStationIdFromProcessedString(getClosestStationIdWithAvailability(_lookingForBike));
 
-        for (StationItem station : mStationList){
-            if (station.getId().equalsIgnoreCase(closestId)){
+        for (BikeStation station : mStationList){
+            if (station.getLocationHash().equalsIgnoreCase(closestId)){
                 closest = station;
                 break;
             }
@@ -787,8 +771,8 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         int toReturn = NO_POSITION;
 
         int i=0;
-        for (StationItem stationItem: mStationList){
-            if (stationItem.getId().equals(_stationId)) {
+        for (BikeStation stationItem: mStationList){
+            if (stationItem.getLocationHash().equals(_stationId)) {
                 toReturn = i;
                 break;
             }
@@ -827,7 +811,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         String selectedIdBefore = null;
 
         if (null != getSelected())
-            selectedIdBefore = getSelected().getId();
+            selectedIdBefore = getSelected().getLocationHash();
 
         if (mStationSortComparator != null)
             Collections.sort(mStationList, mStationSortComparator);
