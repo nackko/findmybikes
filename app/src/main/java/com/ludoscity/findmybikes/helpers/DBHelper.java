@@ -1,6 +1,5 @@
 package com.ludoscity.findmybikes.helpers;
 
-import android.annotation.SuppressLint;
 import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -11,16 +10,11 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.ludoscity.findmybikes.FavoriteItemBase;
-import com.ludoscity.findmybikes.FavoriteItemPlace;
-import com.ludoscity.findmybikes.FavoriteItemStation;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.citybik_es.model.NetworkDesc;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -83,6 +77,8 @@ public class DBHelper {
             editor = settings.edit();
 
             boolean cleared = false;
+
+            //TODO: write migrating code for Favorites From SharedPref to Room
 
             /*if (sharedPrefVersion == 0 && currentVersionCode >= 8){
                 //Because the way favorites are saved changed
@@ -306,39 +302,9 @@ public class DBHelper {
 
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //!!! DANGER ZONE !!!
-    //This method cannot be completely trusted as of yet, because db update algorithm is too violent
-    //TODO: Rework saving algorithm.
-    //current method of dropping / recreating everything leads to some big troubles
-    //NO CLIENT FOR NOW
-    /*public static StationItem getStation(final String _stationId){
-
-        StationItem toReturn = null;
-
-        Document stationDoc = getStationFromId(_stationId);
-
-        if (stationDoc != null && stationDoc.getProperties() != null){
-            toReturn = createStationItem(stationDoc);
-        }
-
-        return toReturn;
+    public static BikeStation getStation(final String _stationId){
+        return mDatabase.bikeStationDao().getStation(_stationId).getValue();
     }
-
-
-    private static Document getStationFromId(String _stationId) {
-
-        Document toReturn = null;
-        // retrieve the document from the database
-        //from : http://developer.couchbase.com/documentation/mobile/current/develop/training/build-first-android-app/do-crud/index.html
-        try {
-            toReturn = mManager.getDatabase(mSTATIONS_DB_NAME).getDocument(_stationId);
-        } catch (CouchbaseLiteException | SQLiteException e) {
-            Log.d(TAG, "Couldn't retrieve a station document from id", e);
-        }
-
-        return toReturn;
-    }*/
 
     public static void deleteAllStations() {
         mDatabase.bikeStationDao().deleteAllBikeStation();
@@ -361,53 +327,37 @@ public class DBHelper {
 
     //TODO: Add validation of IDs to handle the case were a favorite station been removed
     //Replace edit fab with red delete one
-    public static ArrayList<FavoriteItemBase> getFavoriteAll(Context _ctx){
-        ArrayList<FavoriteItemBase> toReturn = new ArrayList<>();
+    public static List<FavoriteEntityBase> getFavoriteAll(){
+        List<FavoriteEntityBase> toReturn = new ArrayList<>();
 
-        SharedPreferences sp = _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
-
-        try {
-            JSONArray favoritesJSONArray = new JSONArray(sp.getString(
-                    buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_JSONARRAY, _ctx), "[]" ));
-
-                //reverse iteration so that newly added favorites appear on top of the list
-                for (int i=favoritesJSONArray.length()-1; i>=0; --i){
-
-                    JSONObject curFav = favoritesJSONArray.optJSONObject(i);
-
-                    if ( curFav != null){
-
-                        if (curFav.getString(FavoriteItemBase.FAVORITE_JSON_KEY_ID).startsWith(FavoriteItemPlace.PLACE_ID_PREFIX)){
-                            toReturn.add(FavoriteItemPlace.fromJSON(curFav));
-                        }
-                        else{
-                            toReturn.add(FavoriteItemStation.fromJSON(curFav));
-                        }
-                    }
-                }
-
-            //check if there was no valid data in the retrieved array
-            if (favoritesJSONArray.length() != 0 && toReturn.isEmpty())
-                dropFavoriteAll(_ctx);
-
-        } catch (JSONException e) {
-            Log.d(TAG, "Error while loading favorites from prefs", e);
+        List<FavoriteEntityStation> favEntStation = mDatabase.favoriteEntityStationDao().getAll().getValue();
+        if ( favEntStation != null)
+            toReturn.addAll(favEntStation);
+        else
+        {
+            int i = 0;
+            ++i;
         }
+
+        /*if (mDatabase.favoriteEntityPlaceDao().getAll().getValue() != null)
+            toReturn.addAll(mDatabase.favoriteEntityPlaceDao().getAll().getValue());
+        else
+        {
+            int i = 0;
+            ++i;
+        }*/
 
         return toReturn;
     }
 
-    public static FavoriteItemBase getFavoriteItemForId(Context _ctx, String _favoriteID){
-        FavoriteItemBase toReturn = null;
-
-        ArrayList<FavoriteItemBase> favoriteList = getFavoriteAll(_ctx);
-
-        for (int i=0; i<favoriteList.size(); ++i){
-            if (favoriteList.get(i).getId().equalsIgnoreCase(_favoriteID)) {
-                toReturn = favoriteList.get(i);
-                break;
-            }
-        }
+    public static FavoriteEntityBase getFavoriteEntityForId(String _favoriteID){
+        FavoriteEntityBase toReturn = mDatabase.favoriteEntityStationDao().getForId(_favoriteID).getValue();
+        /*if (_favoriteID.contains(FavoriteItemPlace.PLACE_ID_PREFIX))
+            toReturn = mDatabase.favoriteEntityPlaceDao().getForId(_favoriteID).getValue();
+        else*/
+            //toReturn = mDatabase.favoriteEntityStationDao().getForId(_favoriteID).getValue();
+        /*if(toReturn == null)
+            toReturn = mDatabase.favoriteEntityDao().getForId(new FavoriteEntityPlace(), _favoriteID).getValue();*/
 
         return toReturn;
     }
@@ -415,30 +365,17 @@ public class DBHelper {
     //TODO: Build a cache of bikeStationList that have already been checked
     //This is called every time the list binds a station
     //it happens a lot (every time user location is updated).
-    //getFavoriteAll loads a JSON from SharedPref
-    public static boolean isFavorite(String id, Context ctx) {
-
-        boolean toReturn = false;
-
-        ArrayList<FavoriteItemBase> favoriteList = getFavoriteAll(ctx);
-
-        for (int i=0; i<favoriteList.size(); ++i){
-            if (favoriteList.get(i).getId().equalsIgnoreCase(id)){
-                toReturn = true;
-                break;
-            }
-        }
-
-        return toReturn;
+    //getFavoriteAll loads data from db
+    public static boolean isFavorite(String id) {
+        return mDatabase.favoriteEntityStationDao().getForId(id).getValue() != null;// || mDatabase.favoriteEntityPlaceDao().getForId(id) != null;
     }
 
     //counts valid favorites, an invalid favorite corresponds to the provided StationItem
     //returns true if this count >= provided parameter
     public static boolean hasAtLeastNValidFavorites(BikeStation _closestBikeStation, int _n, Context _ctx) {
-
         int validCount = 0;
 
-        ArrayList<FavoriteItemBase> favoriteList = getFavoriteAll(_ctx);
+        List<FavoriteEntityBase> favoriteList = getFavoriteAll();
 
         if (_closestBikeStation == null)
             return favoriteList.size() >= _n;
@@ -449,120 +386,47 @@ public class DBHelper {
         }
 
         return validCount >= _n;
-    }
-
-    @SuppressLint("CommitPrefEdits")
-    public static void dropFavoriteAll(Context _ctx){
-
-        SharedPreferences sp = _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
-
-        sp.edit().remove(buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_JSONARRAY, _ctx)).commit(); //I DO want commit and not apply
 
     }
 
-    public static void updateFavorite(final Boolean isFavorite, FavoriteItemBase _favorite, Context ctx) {
+    public static void dropFavoriteAll(){
+        mDatabase.favoriteEntityStationDao().deleteAll();
+        //mDatabase.favoriteEntityPlaceDao().deleteAll();
+    }
 
-        SharedPreferences sp = ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
+    public static void updateFavorite(final Boolean isFavorite, final FavoriteEntityBase _favoriteEntity) {
 
-        //JSONArray favoriteJSONArray;
-        //contains JSONObject elements
-        //BikeStation favorite
-        //{
-        //    favorite_id: string, (a station ID)
-        //    display_name: string,
-        //    is_display_name_default: boolean
-        //}
-        //Place favorite
-        //{
-        //    favorite_id: string, (a place ID, prefixed with FavoriteItemPlace.PLACE_ID_PREFIX)
-        //    display_name: string,
-        //    latitude: double,
-        //    longitude: double,
-        //    attributions: string
-        //}
 
-        try{
-            JSONArray favoriteJSONArray = new JSONArray(sp.getString(
-                    buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_JSONARRAY, ctx), "[]" ));
+            if(_favoriteEntity instanceof FavoriteEntityStation)
+            {
+                if(isFavorite)
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            long truc = mDatabase.favoriteEntityStationDao().insertOne((FavoriteEntityStation)_favoriteEntity);
+                            int i = 0;  //We know that works because truc returns a valid rowid incrementing at each add. Data retrieval is the issue
+                            List<FavoriteEntityStation> bidule = mDatabase.favoriteEntityStationDao().getAll().getValue();
+                            ++i;
+                        }
+                    }).start();
 
-            int existingIdx = -1;
-            int firstNullIdx = -1;
-
-            for (int i=0; i<favoriteJSONArray.length(); ++i){
-                JSONObject curFav = favoriteJSONArray.optJSONObject(i);
-                if (curFav != null && curFav.getString(FavoriteItemBase.FAVORITE_JSON_KEY_ID).equalsIgnoreCase(_favorite.getId())) {
-                    existingIdx = i;
-                }
-                else if(curFav == null && firstNullIdx == -1){
-                    firstNullIdx = i;
-                }
+                else
+                    mDatabase.favoriteEntityStationDao().deleteOne(_favoriteEntity.getId());
             }
+            /*else    //_favoriteEntity instanceof FavoriteEntityPlace
+            {
+                if(isFavorite) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mDatabase.favoriteEntityPlaceDao().insertOne((FavoriteEntityPlace) _favoriteEntity);
 
-            if (isFavorite){
-
-                if (existingIdx == -1){
-
-                    if (firstNullIdx == -1){
-                        favoriteJSONArray.put(_favorite.toJSON());
-                    }
-                    else{
-                        favoriteJSONArray.put(firstNullIdx, _favorite.toJSON());
-                    }
-                }
-                else{
-                    favoriteJSONArray.put(existingIdx, _favorite.toJSON());
-                }
-            }
-            else{
-
-                int i = existingIdx+1;
-
-                //packing all null at the end of the array
-                for (; i < favoriteJSONArray.length(); ++i){
-                    JSONObject curFav = favoriteJSONArray.optJSONObject(i);
-
-                    if (curFav == null)
-                        break;
-
-                    favoriteJSONArray.put(i-1, curFav);
+                        }
+                    }).start();
 
                 }
-
-                favoriteJSONArray.put(i-1, JSONObject.NULL);
-            }
-
-            sp.edit().putString(buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_JSONARRAY, ctx), favoriteJSONArray.toString()).apply();
-
-        } catch (JSONException e) {
-            Log.d(TAG, "Error while retrieving favorites from Preferences", e);
-        }
-
-        //Set<String> oldFavorites = sp.getStringSet(buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_SET, ctx), new HashSet<String>());
-
-        /*http://developer.android.com/reference/android/content/SharedPreferences.html#getStringSet(java.lang.String, java.util.Set)
-
-        Note that you must not modify the set instance returned by this call.
-        The consistency of the stored data is not guaranteed if you do, nor is your ability to modify the instance at all.*/
-
-        //Set<String> newFavorites = new HashSet<>(oldFavorites);
-
-        //if (isFavorite)
-        //    newFavorites.add(id);
-        //else
-        //    newFavorites.remove(id);
-
-        //sp.edit().putStringSet(buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_SET, ctx), newFavorites).apply();
-
-        /*Document doc = mManager.getDatabase(mSTATIONS_DB_NAME).getExistingDocument(id);
-
-
-        doc.update(new Document.DocumentUpdater() {
-            @Override
-            public boolean update(UnsavedRevision newRevision) {
-                newRevision.getProperties().put("isFavorite", isFavorite);
-                return true;
-            }
-        });*/
-
+                else
+                    mDatabase.favoriteEntityPlaceDao().deleteOne(_favoriteEntity.getId());
+            }*/
     }
 }

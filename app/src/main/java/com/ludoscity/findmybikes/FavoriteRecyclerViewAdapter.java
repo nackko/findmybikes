@@ -19,10 +19,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by F8Full on 2016-03-31.
@@ -40,8 +42,9 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
     private boolean mSheetEditing = false;
 
-    //TODO: Use ViewModel (Android architecture componente)
-    private ArrayList<FavoriteItemBase> mFavoriteList = new ArrayList<>();
+    //TODO: Use ViewModel (Android architecture component)
+    //Present self to past self : bingo !
+    private List<FavoriteEntityBase> mFavoriteList = new ArrayList<>();
 
     @Override
     public boolean onItemMove(int fromPosition, int toPosition) {
@@ -64,7 +67,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
     }
 
-    public ArrayList<FavoriteItemBase> getCurrentFavoriteList(){ return mFavoriteList; }
+    public List<FavoriteEntityBase> getCurrentFavoriteList(){ return mFavoriteList; }
     public void clearFavoriteList(){ mFavoriteList.clear(); notifyDataSetChanged(); }
 
     public void setSheetEditing(boolean sheetEditing) {
@@ -120,20 +123,20 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         mCtx = _ctx;
     }
 
-    public void setupFavoriteList(ArrayList<FavoriteItemBase> _toSet){
+    public void setupFavoriteList(List<FavoriteEntityBase> _toSet){
         mFavoriteList.clear();
         mFavoriteList.addAll(_toSet);
 
         notifyDataSetChanged();
     }
 
-    public void addFavorite(FavoriteItemBase _toAdd){
+    public void addFavorite(FavoriteEntityBase _toAdd){
 
         mFavoriteList.add(0, _toAdd);
         notifyItemInserted(0);
     }
 
-    public void removeFavorite(FavoriteItemBase _toRemove){
+    public void removeFavorite(FavoriteEntityBase _toRemove){
 
         for (int i=0; i<mFavoriteList.size(); ++i){
             if (mFavoriteList.get(i).getId().equalsIgnoreCase(_toRemove.getId())){
@@ -195,7 +198,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
             mDeleteFab.setOnClickListener(this);
         }
 
-        void bindFavorite(FavoriteItemBase _favorite){
+        void bindFavorite(FavoriteEntityBase _favorite){
 
             if (_favorite.isDisplayNameDefault())
                 mName.setTypeface(null, Typeface.ITALIC);

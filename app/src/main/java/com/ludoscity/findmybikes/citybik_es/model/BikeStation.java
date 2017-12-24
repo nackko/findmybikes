@@ -11,8 +11,8 @@ import android.text.Spanned;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.annotations.SerializedName;
 import com.google.maps.android.SphericalUtil;
-import com.ludoscity.findmybikes.FavoriteItemStation;
 import com.ludoscity.findmybikes.R;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.utils.Utils;
 
@@ -130,24 +130,24 @@ public class BikeStation {//implements Parcelable {
         Spanned toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_only_italic),
                 name));
 
-        if (!DBHelper.getFavoriteItemForId(_ctx, locationHash).isDisplayNameDefault()){
+        if (!DBHelper.getFavoriteEntityForId(locationHash).isDisplayNameDefault()){
             if(_favoriteDisplayNameOnly){
                 toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_only_bold),
-                        DBHelper.getFavoriteItemForId(_ctx, locationHash).getDisplayName()));
+                        DBHelper.getFavoriteEntityForId(locationHash).getDisplayName()));
             } else {
                 toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_complete),
-                        DBHelper.getFavoriteItemForId(_ctx, locationHash).getDisplayName(), name ));
+                        DBHelper.getFavoriteEntityForId(locationHash).getDisplayName(), name ));
             }
         }
 
         return toReturn;
     }
 
-    public FavoriteItemStation getFavoriteItemForDisplayName(String _displayName){
+    public FavoriteEntityStation getFavoriteEntityForDisplayName(String _displayName){
         if (_displayName.equalsIgnoreCase(name))
-            return new FavoriteItemStation(locationHash, name, true);
+            return new FavoriteEntityStation(locationHash, name, true);
         else
-            return new FavoriteItemStation(locationHash, _displayName, false);
+            return new FavoriteEntityStation(locationHash, _displayName, false);
     }
 
     public boolean isLocked() {
