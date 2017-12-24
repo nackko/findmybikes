@@ -1,0 +1,113 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "6d80959e66c0855708e7ae0f29692490",
+    "entities": [
+      {
+        "tableName": "BikeStation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`location_hash` TEXT NOT NULL, `empty_slots` INTEGER, `free_bikes` INTEGER, `latitude` REAL, `longitude` REAL, `name` TEXT, `timestamp` TEXT, `extra_locked` INTEGER, `extra_name` TEXT, PRIMARY KEY(`location_hash`))",
+        "fields": [
+          {
+            "fieldPath": "locationHash",
+            "columnName": "location_hash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "emptySlots",
+            "columnName": "empty_slots",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "freeBikes",
+            "columnName": "free_bikes",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "extra.locked",
+            "columnName": "extra_locked",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "extra.name",
+            "columnName": "extra_name",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "location_hash"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "FavoriteEntityStation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`displayNameIsDefault` INTEGER NOT NULL, `id` TEXT NOT NULL, `display_name` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "displayNameIsDefault",
+            "columnName": "displayNameIsDefault",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "display_name",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"6d80959e66c0855708e7ae0f29692490\")"
+    ]
+  }
+}

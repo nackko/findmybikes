@@ -20,6 +20,21 @@ android {
 
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
+
+        // used by Room, to test migrations
+        //https://medium.com/google-developers/7-steps-to-room-27a5fe5f99b2
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation":
+                                     "$projectDir/schemas".toString()]
+            }
+        }
+    }
+
+    // used by Room, to test migrations
+    sourceSets {
+        androidTest.assets.srcDirs +=
+                files("$projectDir/schemas".toString())
     }
 
     applicationVariants.all { variant ->
