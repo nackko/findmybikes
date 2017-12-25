@@ -97,7 +97,7 @@
                 android:visibility="invisible"
 
                 style="@style/map_floating_action_button_start_aligned"
-                />
+                android:focusable="true" />
 
             <!-- TRIP DETAILS WIDGET -->
             <FrameLayout
@@ -134,7 +134,7 @@
                         app:backgroundTint="@color/theme_primary_dark"
 
                         style="@style/map_floating_action_button_top"
-                        />
+                        android:focusable="true" />
 
                     <android.support.design.widget.FloatingActionButton
                         android:layout_height="wrap_content"
@@ -147,7 +147,7 @@
                         app:backgroundTint="@color/theme_primary_dark"
 
                         style="@style/map_floating_action_button_top"
-                        />
+                        android:focusable="true" />
                     <!-- Place autocomplete widget loading -->
                     <ProgressBar
                         android:layout_width="@dimen/dummy_fab_width"
@@ -168,6 +168,7 @@
 
             </LinearLayout>
 
+            <!-- put a container for a fragment ??-->
             <com.ludoscity.findmybikes.Fab
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
@@ -181,7 +182,7 @@
                 android:layout_gravity="bottom|end"
 
                 style="@style/map_floating_action_button_end_aligned"
-                />
+                android:focusable="true" />
 
             <android.support.design.widget.FloatingActionButton
                 android:layout_height="wrap_content"
@@ -194,7 +195,7 @@
                 android:layout_gravity="bottom|end"
 
                 style="@style/map_floating_action_button_end_aligned"
-                />
+                android:focusable="true" />
 
             <android.support.design.widget.FloatingActionButton
                 android:layout_height="wrap_content"
@@ -206,7 +207,7 @@
                 android:layout_gravity="bottom|end"
 
                 style="@style/map_floating_action_button_end_aligned"
-                />
+                android:focusable="true" />
 
             <!-- Overlay that dims the map -->
             <com.gordonwong.materialsheetfab.DimOverlayFrameLayout

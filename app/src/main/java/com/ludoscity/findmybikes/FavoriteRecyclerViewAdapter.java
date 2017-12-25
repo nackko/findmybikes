@@ -70,13 +70,11 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
     public List<FavoriteEntityBase> getCurrentFavoriteList(){ return mFavoriteList; }
     public void clearFavoriteList(){ mFavoriteList.clear(); notifyDataSetChanged(); }
 
+    //Should listen to nearbyModelView
     public void setSheetEditing(boolean sheetEditing) {
         mSheetEditing = sheetEditing;
     }
 
-    public boolean getSheetEditing(){
-        return mSheetEditing;
-    }
 
     //TODO: investigate making the sheet (and not NearbyActivity) listening and forwarding relevant
     //event to NearbyActivity
@@ -123,29 +121,12 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         mCtx = _ctx;
     }
 
-    public void setupFavoriteList(List<FavoriteEntityBase> _toSet){
+    /*public void setupFavoriteList(List<FavoriteEntityBase> _toSet){
         mFavoriteList.clear();
         mFavoriteList.addAll(_toSet);
 
         notifyDataSetChanged();
-    }
-
-    public void addFavorite(FavoriteEntityBase _toAdd){
-
-        mFavoriteList.add(0, _toAdd);
-        notifyItemInserted(0);
-    }
-
-    public void removeFavorite(FavoriteEntityBase _toRemove){
-
-        for (int i=0; i<mFavoriteList.size(); ++i){
-            if (mFavoriteList.get(i).getId().equalsIgnoreCase(_toRemove.getId())){
-                mFavoriteList.remove(i);
-                notifyItemRemoved(i);
-                break;
-            }
-        }
-    }
+    }*/
 
     @Override
     public FavoriteListItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -172,7 +153,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         String mFavoriteId;
         FloatingActionButton mEditFab;
         FloatingActionButton mDoneFab;
-        FloatingActionButton mDeleteFab;
+        FloatingActionButton mDeleteFab = (FloatingActionButton) itemView.findViewById(R.id.favorite_delete_fab);
         ImageView mOrderingAffordanceHandle;
 
         boolean mEditing = false;
@@ -183,12 +164,11 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         FavoriteListItemViewHolder(View itemView) {
             super(itemView);
 
-            mName = (TextView) itemView.findViewById(R.id.favorite_name);
-            mEditFab = (FloatingActionButton) itemView.findViewById(R.id.favorite_name_edit_fab);
-            mDoneFab = (FloatingActionButton) itemView.findViewById(R.id.favorite_name_done_fab);
-            mDeleteFab = (FloatingActionButton) itemView.findViewById(R.id.favorite_delete_fab);
+            mName = itemView.findViewById(R.id.favorite_name);
+            mEditFab = itemView.findViewById(R.id.favorite_name_edit_fab);
+            mDoneFab = itemView.findViewById(R.id.favorite_name_done_fab);
 
-            mOrderingAffordanceHandle = (ImageView)itemView.findViewById(R.id.reorder_affordance_handle);
+            mOrderingAffordanceHandle = itemView.findViewById(R.id.reorder_affordance_handle);
             mOrderingAffordanceHandle.setOnTouchListener(this);
 
 
@@ -371,7 +351,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (MotionEventCompat.getActionMasked(motionEvent) == MotionEvent.ACTION_DOWN){
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN){
 
                 mItemStartDragListener.onFavoriteListItemStartDrag(this);
             }

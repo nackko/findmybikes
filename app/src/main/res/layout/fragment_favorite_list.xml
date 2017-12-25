@@ -1,0 +1,28 @@
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:visibility="visible"
+    android:id="@+id/favorite_list_content"
+    style="@style/Widget.MaterialSheetFab.Sheet"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="5.5dp"
+            android:layout_gravity="center"
+            app:srcCompat="@drawable/ic_favorite_24dp_white_circled_theme_primary_dark"/>
+
+    <!--suppress AndroidDomInspection -->
+    <android.support.v7.widget.RecyclerView
+        android:layout_height="wrap_content"
+        android:layout_width="@dimen/sheet_width"
+        android:id="@+id/favorite_list_recyclerview"/>
+    </RelativeLayout>
+</LinearLayout>
