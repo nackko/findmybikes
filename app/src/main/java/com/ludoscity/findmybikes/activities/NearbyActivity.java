@@ -91,6 +91,7 @@ import com.ludoscity.findmybikes.fragments.FavoriteListFragment;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.fragments.StationMapFragment;
 import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.Utils;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 import com.ludoscity.findmybikes.viewmodels.NearbyActivityViewModel;
@@ -603,9 +604,10 @@ public class NearbyActivity extends AppCompatActivity
 
         mAddFavoriteFAB.setTag(_toAdd);
 
-        boolean alreadyFavorite = DBHelper.getFavoriteEntityForId(_toAdd.getId()) != null;
+        //boolean alreadyFavorite = DBHelper.getFavoriteEntityForId(_toAdd.getId()) != null;
+        //boolean alreadyFavorite =
 
-        if (!alreadyFavorite)
+        if (!FavoriteRepository.getInstance().isFavorite(_toAdd.getId()))
             mAddFavoriteFAB.setImageResource(R.drawable.ic_action_favorite_outline_24dp);
         else{
             mAddFavoriteFAB.setImageResource(R.drawable.ic_action_favorite_24dp);
@@ -737,7 +739,7 @@ public class NearbyActivity extends AppCompatActivity
                         place.getLatLng(),
                         attrString);
 
-                final FavoriteEntityBase existingFavForPlace = DBHelper.getFavoriteEntityForId(newFavForPlace.getId());
+                final FavoriteEntityBase existingFavForPlace = FavoriteRepository.getInstance().getFavoriteEntityForId(newFavForPlace.getId());
 
                 if ( existingFavForPlace == null) {
 
@@ -1102,7 +1104,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //Caused by: java.lang.NullPointerException (sheetView)
         // Create material sheet FAB
-        mFavoritesSheetFab = new EditableMaterialSheetFab(mNearbyActivityViewModel, mFavoritePickerFAB, sheetView, overlay, sheetColor, fabColor, this);
+        mFavoritesSheetFab = new EditableMaterialSheetFab(this, mNearbyActivityViewModel, mFavoritePickerFAB, sheetView, overlay, sheetColor, fabColor, this);
 
 
 
@@ -1181,10 +1183,10 @@ public class NearbyActivity extends AppCompatActivity
             minValidFavorites = getApplicationContext().getResources().getInteger(R.integer.onboarding_none_min_valid_favorites_count);
 
         //count valid favorites
-        if ( !DBHelper.hasAtLeastNValidFavorites(
-                getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS),
-                minValidFavorites,
-                NearbyActivity.this) ){
+        //TODO: count method in dao seems broken, or the use of a LiveData is incorrect
+        if ( !FavoriteRepository.getInstance().hasAtleastNValidFavorites(
+                getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS).getLocationHash(),
+                minValidFavorites) ){
 
             if (_step == eONBOARDING_STEP.ONBOARDING_STEP_SEARCH_SHOWCASE)
                 setupShowcaseSearch();
@@ -1934,7 +1936,7 @@ public class NearbyActivity extends AppCompatActivity
             hideSetupShowTripDetailsWidget();
         }
 
-        final FavoriteEntityBase favorite = DBHelper.getFavoriteEntityForId(_favoriteId);
+        final FavoriteEntityBase favorite = FavoriteRepository.getInstance().getFavoriteEntityForId(_favoriteId);
 
         getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
                 true,
@@ -2081,7 +2083,7 @@ public class NearbyActivity extends AppCompatActivity
                             mCurrentUserLatLng, mStationMapFragment.getMarkerALatLng(), selectedStation.getLocation()));
 
             if (!mFavoritePicked){
-                FavoriteEntityBase fav = DBHelper.getFavoriteEntityForId(_selectedStationId);
+                FavoriteEntityBase fav = FavoriteRepository.getInstance().getFavoriteEntityForId(_selectedStationId);
                 if (fav != null)
                     mStationMapFragment.setPinForPickedFavorite(fav.getDisplayName(), getLatLngForStation(_selectedStationId), null );
             }
@@ -2503,7 +2505,7 @@ public class NearbyActivity extends AppCompatActivity
                     //should be provided by favorite list fragment ?
 
                 } else {
-                    removeFavorite(DBHelper.getFavoriteEntityForId(clickedStation.getLocationHash()));
+                    removeFavorite(FavoriteRepository.getInstance().getFavoriteEntityForId(clickedStation.getLocationHash()));
                 }
             }
         }
@@ -2731,7 +2733,7 @@ public class NearbyActivity extends AppCompatActivity
                             mStationMapFragment.getMarkerBVisibleLatLng().longitude != mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng().longitude)
                             )
                         locationToShow = mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng();
-                    else if(!mStationMapFragment.isPickedFavoriteMarkerVisible() && DBHelper.getFavoriteEntityForId(highlightedStation.getLocationHash()) == null)
+                    else if(!mStationMapFragment.isPickedFavoriteMarkerVisible() && FavoriteRepository.getInstance().getFavoriteEntityForId(highlightedStation.getLocationHash()) == null)
                         mAddFavoriteFAB.show();
 
                     if (locationToShow != null) {
@@ -3619,23 +3621,23 @@ public class NearbyActivity extends AppCompatActivity
 
                 List<BikeStation> networkStationList = RootApplication.getBikeNetworkStationList();
                 for(BikeStation station : networkStationList) {
-                    if (!DBHelper.isFavorite(station.getLocationHash())) {
+                    if (!FavoriteRepository.getInstance().isFavorite(station.getLocationHash())) {
 
                         if (addedCount > 3)
                             break;
 
                         else if (addedCount % 2 == 0) { //non default favorite name
                             //station.setFavorite(true, NearbyActivity.this); //We want to manipulate everything, hence go directly to DBHelper
-                            DBHelper.updateFavorite(true, new FavoriteEntityStation(station.getLocationHash(), station.getName() + "-test", false));
-                            List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
+                            //DBHelper.updateFavorite(true, new FavoriteEntityStation(station.getLocationHash(), station.getName() + "-test", false));
+                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName() + "-test", false));
+                            //List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
                             //setupFavoriteListFeedback(favoriteList.isEmpty());
-                            //mFavoriteRecyclerViewAdapter.setupFavoriteList(favoriteList);
                         }
                         else{   //default favorite name
-                            DBHelper.updateFavorite(true, new FavoriteEntityStation(station.getLocationHash(), station.getName(), true));
-                            List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
+                            //DBHelper.updateFavorite(true, new FavoriteEntityStation(station.getLocationHash(), station.getName(), true));
+                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName(), true));
+                            //List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
                             //setupFavoriteListFeedback(favoriteList.isEmpty());
-                            //mFavoriteRecyclerViewAdapter.setupFavoriteList(favoriteList);
                         }
 
                         ++addedCount;

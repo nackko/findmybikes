@@ -12,7 +12,7 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
  */
 @Database(entities = {BikeStation.class, FavoriteEntityStation.class}, version = 1)
 //@TypeConverters({LatLngTypeConverter.class})
-abstract class AppDatabase extends RoomDatabase {
+public abstract class AppDatabase extends RoomDatabase {
     public abstract BikeStationDao bikeStationDao();
     public abstract FavoriteEntityStationDao favoriteEntityStationDao();
     //public abstract FavoriteEntityPlaceDao favoriteEntityPlaceDao();

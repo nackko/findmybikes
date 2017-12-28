@@ -2,14 +2,16 @@ package com.ludoscity.findmybikes;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.percent.PercentLayoutHelper;
 import android.support.percent.PercentRelativeLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -20,7 +22,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.utils.Utils;
+import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +42,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
     private final OnFavoriteListItemClickListener mItemClickListener;
     private final OnFavoriteListItemStartDragListener mItemStartDragListener;
+    private final FavoriteListViewModel mfavListViewModel;
     private final Context mCtx;
 
     private boolean mSheetEditing = false;
@@ -112,21 +117,26 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         void onItemClear();
     }
 
-    public FavoriteRecyclerViewAdapter(OnFavoriteListItemClickListener _onItemClicklistener,
+    public FavoriteRecyclerViewAdapter(Fragment lifecycleOwner, FavoriteListViewModel favListViewModel, OnFavoriteListItemClickListener _onItemClicklistener,
                                        OnFavoriteListItemStartDragListener _onItemDragListener, Context _ctx){
         super();
         mItemClickListener = _onItemClicklistener;
         mItemStartDragListener = _onItemDragListener;
+        mfavListViewModel = favListViewModel;
+
+        mfavListViewModel.getFavoriteEntityStationList().observe(lifecycleOwner, new Observer<List<FavoriteEntityStation>>() {
+            @Override
+            public void onChanged(@Nullable List<FavoriteEntityStation> favoriteEntityStations) {
+                mFavoriteList.clear();
+                mFavoriteList.addAll(favoriteEntityStations);
+
+                notifyDataSetChanged();
+
+            }
+        });
 
         mCtx = _ctx;
     }
-
-    /*public void setupFavoriteList(List<FavoriteEntityBase> _toSet){
-        mFavoriteList.clear();
-        mFavoriteList.addAll(_toSet);
-
-        notifyDataSetChanged();
-    }*/
 
     @Override
     public FavoriteListItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

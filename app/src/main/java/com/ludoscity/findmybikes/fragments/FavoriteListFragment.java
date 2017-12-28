@@ -18,13 +18,11 @@ import com.ludoscity.findmybikes.ItemTouchHelperAdapter;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.DividerItemDecoration;
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 import com.ludoscity.findmybikes.viewmodels.NearbyActivityViewModel;
-
-import java.util.List;
 
 public class FavoriteListFragment extends Fragment implements
         FavoriteRecyclerViewAdapter.OnFavoriteListItemStartDragListener,//TODO: investigate making the sheet listening and forwarding
@@ -36,7 +34,6 @@ public class FavoriteListFragment extends Fragment implements
     //private EditableMaterialSheetFab mFavoritesSheetFab;
     private NearbyActivityViewModel mNearbyActivityViewModel;
     private FavoriteListViewModel mFavoriteListViewModel;
-    private FavoriteRecyclerViewAdapter mFavoriteRecyclerViewAdapter;
     private ItemTouchHelper mFavoriteItemTouchHelper;
 
     private OnFavoriteListFragmentInteractionListener mListener;
@@ -63,9 +60,7 @@ public class FavoriteListFragment extends Fragment implements
 
                 FavoriteRecyclerViewAdapter.FavoriteListItemViewHolder favViewHolder = (FavoriteRecyclerViewAdapter.FavoriteListItemViewHolder)viewHolder;
 
-                //Go to db helper ?
-                mFavoriteListViewModel.removeFavorite(DBHelper.getFavoriteEntityForId(favViewHolder.getFavoriteId()));
-                //removeFavorite(DBHelper.getFavoriteEntityForId(favViewHolder.getFavoriteId()), true);
+                mFavoriteListViewModel.removeFavorite(favViewHolder.getFavoriteId());
             }
 
             @Override
@@ -78,7 +73,13 @@ public class FavoriteListFragment extends Fragment implements
             @Override
             public boolean isItemViewSwipeEnabled() {
 
-                return !mNearbyActivityViewModel.isFavoriteSheetEditInProgress().getValue() && !mNearbyActivityViewModel.isFavoriteSheetItemNameEditInProgress().getValue();//!mFavoriteRecyclerViewAdapter.getSheetEditing() && !mFavoriteItemEditInProgress;
+                Boolean isFavoriteSheetEditInProgress = mNearbyActivityViewModel.isFavoriteSheetEditInProgress().getValue();
+                Boolean isFavoriteSheetItemNameEditInProgress = mNearbyActivityViewModel.isFavoriteSheetItemNameEditInProgress().getValue();
+
+                return  !(isFavoriteSheetEditInProgress == null) &&
+                        !(isFavoriteSheetItemNameEditInProgress == null) &&
+                        !mNearbyActivityViewModel.isFavoriteSheetEditInProgress().getValue() &&
+                        !mNearbyActivityViewModel.isFavoriteSheetItemNameEditInProgress().getValue();//!mFavoriteRecyclerViewAdapter.getSheetEditing() && !mFavoriteItemEditInProgress;
             }
 
             @Override
@@ -111,10 +112,11 @@ public class FavoriteListFragment extends Fragment implements
         favoriteRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         favoriteRecyclerView.setLayoutManager(new ScrollingLinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false, 300));
 
-        mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter(this, this, getActivity().getApplicationContext());
+        mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel.class);
 
-        List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
-        //setupFavoriteListFeedback(favoriteList.isEmpty());
+        FavoriteRecyclerViewAdapter mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter(this, mFavoriteListViewModel, this, this, getActivity().getApplicationContext());
+
+        //setupFavoriteListFeedback(favoriteList.isEmpty());    //MUST BE DONE IN NEARBYACTIVITY FOR NOW
         //mFavoriteListViewModel.setFavoriteEntityBaseList(favoriteList);
         //mFavoriteRecyclerViewAdapter.setupFavoriteList(favoriteList);
         favoriteRecyclerView.setAdapter(mFavoriteRecyclerViewAdapter);
@@ -148,17 +150,21 @@ public class FavoriteListFragment extends Fragment implements
         super.onActivityCreated(savedInstanceState);
 
         mNearbyActivityViewModel = ViewModelProviders.of(getActivity()).get(NearbyActivityViewModel.class);
-        mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel.class);
 
-        mFavoriteListViewModel.getFavoriteEntityBaseList().observe(this, new Observer<List<FavoriteEntityBase>>() {
+        mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(this, new Observer<Boolean>() {
             @Override
-            public void onChanged(@Nullable List<FavoriteEntityBase> favoriteEntityBases) {
-
-                //TODO: maybe detec swap, add and remove to map it to nice adapter methods
-                //mFavoriteRecyclerViewAdapter.clearFavoriteList();
+            public void onChanged(@Nullable Boolean aBoolean) {
 
             }
         });
+
+        /*mFavoriteListViewModel.getFavoriteEntityBaseList().observe(this, new Observer<List<? extends FavoriteEntityBase>>() {
+            @Override
+            public void onChanged(@Nullable List<? extends FavoriteEntityBase> favoriteEntityBases) {
+                //TODO: maybe detec swap, add and remove to map it to nice adapter methods
+                //mFavoriteRecyclerViewAdapter.clearFavoriteList();
+            }
+        });*/
     }
 
     /*@Override
@@ -255,19 +261,18 @@ public class FavoriteListFragment extends Fragment implements
             getListPagerAdapter().notifyStationChangedAll(_favoriteId);*/
         }
         else{
-            FavoriteEntityBase favEntity = DBHelper.getFavoriteEntityForId(_favoriteId);
+            FavoriteEntityBase favEntity = FavoriteRepository.getInstance().getFavoriteEntityForId(_favoriteId);
             CharSequence attr = favEntity.getAttributions();
             String attrString = "";
             if (attr != null)
                 attrString = attr.toString();
 
-            DBHelper.updateFavorite(true, new FavoriteEntityPlace(favEntity.getId(), _newName, favEntity.getLocation(), attrString));
+            mFavoriteListViewModel.addFavorite(new FavoriteEntityPlace(favEntity.getId(), _newName, favEntity.getLocation(), attrString));
         }
 
         //mFavoritesSheetFab.showEditFab();
         mNearbyActivityViewModel.showFavoriteSheetEditFab();
         mNearbyActivityViewModel.favoriteItemNameEditStop();
-        //mFavoriteListViewModel.setFavoriteEntityBaseList(DBHelper.getFavoriteAll());    //should be unescessary
         //mFavoriteRecyclerViewAdapter.setupFavoriteList(DBHelper.getFavoriteAll());
 
         //mFavoriteItemEditInProgress = false;
@@ -290,7 +295,7 @@ public class FavoriteListFragment extends Fragment implements
 
     @Override
     public void onFavoriteListItemDelete(String favoriteId) {
-        mFavoriteListViewModel.removeFavorite(DBHelper.getFavoriteEntityForId(favoriteId));
+        mFavoriteListViewModel.removeFavorite(favoriteId);
     }
 
     @Override

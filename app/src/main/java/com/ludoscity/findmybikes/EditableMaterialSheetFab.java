@@ -1,9 +1,12 @@
 package com.ludoscity.findmybikes;
 
+import android.arch.lifecycle.Observer;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
+import com.ludoscity.findmybikes.activities.NearbyActivity;
 import com.ludoscity.findmybikes.viewmodels.NearbyActivityViewModel;
 
 /**
@@ -33,15 +36,34 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
      * @param sheetColor The background color of the material sheet.
      * @param fabColor   The background color of the FAB.
      */
-    public EditableMaterialSheetFab(NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
+    public EditableMaterialSheetFab(NearbyActivity isFavoriteSheetItemNameEditInProgress, NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
         super(view, sheet, overlay, sheetColor, fabColor);
         mEditFAB = sheet.findViewById(R.id.favorite_sheet_edit_fab);
-        mEditFAB.setOnClickListener(this);
+        mEditFAB.setOnClickListener(this);  //TODO: Consider making the fragment the listener ?
 
         mEditDoneFAB = sheet.findViewById(R.id.favorite_sheet_edit_done_fab);
         mEditDoneFAB.setOnClickListener(this);
 
         mNearbyActivityViewModel = nearbyActivityViewModel;
+
+        mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(isFavoriteSheetItemNameEditInProgress, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isSheetEditing) {
+
+                if(isSheetEditing != null && isSheetEditing)
+                {
+                    mEditFAB.hide();
+                    mEditDoneFAB.show();
+                }
+                else
+                {
+                    mEditDoneFAB.hide();
+                    mEditFAB.show();
+                }
+            }
+        });
+
+
 
         mListener = _listener;
     }

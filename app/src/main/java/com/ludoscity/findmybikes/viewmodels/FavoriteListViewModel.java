@@ -1,11 +1,11 @@
 package com.ludoscity.findmybikes.viewmodels;
 
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
+import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 
 import java.util.List;
 
@@ -15,23 +15,38 @@ import java.util.List;
  */
 
 public class FavoriteListViewModel extends ViewModel {
-    private MutableLiveData<List<FavoriteEntityBase>> mFavoriteEntityBaseList = new MutableLiveData<>();
 
-    public LiveData<List<FavoriteEntityBase>> getFavoriteEntityBaseList(){
-        return mFavoriteEntityBaseList;
+    //private LiveData<List<FavoriteEntityStation>> mFavoriteEntityStationList;
+    //private FavoriteRepository mFavRepo;
+
+    /*@Inject
+    public FavoriteListViewModel(FavoriteRepository favRepo)
+    {
+        this.mFavRepo = favRepo;
+        this.mFavoriteEntityStationList = favRepo.getFavoriteStationList();
+    }*/
+
+    public LiveData<List<FavoriteEntityStation>> getFavoriteEntityStationList(){
+        return FavoriteRepository.getInstance().getFavoriteStationList();
     }
 
-    public void setFavoriteEntityBaseList(List<FavoriteEntityBase> toSet){
+    /*public void setFavoriteEntityBaseList(List<FavoriteEntityBase> toSet){
         mFavoriteEntityBaseList.setValue(toSet);
+    }*/
+
+    //Those are are and forwarding to repo because they imply a modification of the list
+    //TODO: When adding FavoriteEntityPlace, have a single LiveData<List<FavoriteEntityBase>>
+    //maintained in the model and observing the two lists that will exist in the repo
+    public void removeFavorite(FavoriteEntityBase toRemove){
+        FavoriteRepository.getInstance().updateFavorite(false, toRemove);
     }
 
-    public void removeFavorite(FavoriteEntityBase toRemove){
-        DBHelper.updateFavorite(false, toRemove);
+    public void removeFavorite(String favIdToRemove){
+        FavoriteRepository.getInstance().updateFavorite(false, FavoriteRepository.getInstance().getFavoriteEntityForId(favIdToRemove));
     }
+
 
     public void addFavorite(final FavoriteEntityBase toAdd){
-        DBHelper.updateFavorite(true, toAdd);
+        FavoriteRepository.getInstance().updateFavorite(true, toAdd);
     }
-
-
 }

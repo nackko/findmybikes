@@ -128,9 +128,9 @@ public class BikeStation {//implements Parcelable {
     public Spanned getFavoriteName(Context _ctx, boolean _favoriteDisplayNameOnly){
 
         Spanned toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_only_italic),
-                name));
+                name+"TODO: Fix this"));
 
-        if (!DBHelper.getFavoriteEntityForId(locationHash).isDisplayNameDefault()){
+        /*if (!DBHelper.getFavoriteEntityForId(locationHash).isDisplayNameDefault()){
             if(_favoriteDisplayNameOnly){
                 toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_only_bold),
                         DBHelper.getFavoriteEntityForId(locationHash).getDisplayName()));
@@ -138,7 +138,7 @@ public class BikeStation {//implements Parcelable {
                 toReturn = Utils.fromHtml(String.format(_ctx.getString(R.string.favorite_display_name_complete),
                         DBHelper.getFavoriteEntityForId(locationHash).getDisplayName(), name ));
             }
-        }
+        }*/
 
         return toReturn;
     }

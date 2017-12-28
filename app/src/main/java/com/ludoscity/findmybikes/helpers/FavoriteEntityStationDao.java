@@ -18,6 +18,9 @@ public interface FavoriteEntityStationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertOne(FavoriteEntityStation favoriteEntityStation);
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertAll(List<FavoriteEntityStation> favoriteEntityStationList);
+
     @Query("DELETE FROM favoriteentitystation WHERE id = :favoriteId")
     void deleteOne(String favoriteId);
 
@@ -26,6 +29,10 @@ public interface FavoriteEntityStationDao {
 
     @Query("SELECT * FROM favoriteentitystation WHERE id = :favoriteId")
     LiveData<FavoriteEntityStation> getForId(String favoriteId);
+
+    //TODO: this seems broken
+    @Query("SELECT COUNT(*) FROM favoriteentitystation WHERE id <> :favoriteId")
+    LiveData<Long> validFavoriteCount(String favoriteId);
 
     @Query("DELETE FROM favoriteentitystation")
     void deleteAll();
