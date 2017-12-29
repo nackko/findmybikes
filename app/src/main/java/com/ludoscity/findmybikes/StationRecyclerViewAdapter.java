@@ -485,7 +485,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
 
             if (!mOutdatedAvailability) {
 
-                if (availabilityValue != -1 && availabilityValue <= DBHelper.getCriticalAvailabilityMax(mCtx)) {
+                if (availabilityValue != -1 && availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(mCtx)) {
                     if (selected) {
                         itemView.setBackgroundResource(R.color.stationlist_item_selected_background_red);
                         mProximity.setAlpha(1.f);
@@ -499,7 +499,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                         mName.setAlpha(alpha);
                         mAvailability.setAlpha(alpha);
                     }
-                } else if (availabilityValue != -1 && availabilityValue <= DBHelper.getBadAvailabilityMax(mCtx)) {
+                } else if (availabilityValue != -1 && availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(mCtx)) {
                     if (selected) {
                         itemView.setBackgroundResource(R.color.stationlist_item_selected_background_yellow);
                         mProximity.setAlpha(1.f);
@@ -672,10 +672,10 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
             if (_lookingForBike) {
                 if (!stationItem.isLocked()) {
 
-                    if (stationItem.getFreeBikes() > DBHelper.getCriticalAvailabilityMax(mCtx)) {
+                    if (stationItem.getFreeBikes() > DBHelper.getInstance().getCriticalAvailabilityMax(mCtx)) {
 
                         if (badOrAOKStationCount == 0) {
-                            if (stationItem.getFreeBikes() <= DBHelper.getBadAvailabilityMax(mCtx)) {
+                            if (stationItem.getFreeBikes() <= DBHelper.getInstance().getBadAvailabilityMax(mCtx)) {
 
                                 availabilityDataPostfixBuilder.insert(0, stationItem.getLocationHash() + BAD_AVAILABILITY_POSTFIX);
                             } else {
@@ -700,11 +700,11 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
             }
             else {  //A locked station accepts bike returns
 
-                if (stationItem.getEmptySlots() == -1 || stationItem.getEmptySlots() > DBHelper.getCriticalAvailabilityMax(mCtx)){
+                if (stationItem.getEmptySlots() == -1 || stationItem.getEmptySlots() > DBHelper.getInstance().getCriticalAvailabilityMax(mCtx)){
 
                     if (badOrAOKStationCount == 0) {
 
-                        if (stationItem.getEmptySlots() != -1 && stationItem.getEmptySlots() <= DBHelper.getBadAvailabilityMax(mCtx)) {
+                        if (stationItem.getEmptySlots() != -1 && stationItem.getEmptySlots() <= DBHelper.getInstance().getBadAvailabilityMax(mCtx)) {
 
                             availabilityDataPostfixBuilder.insert(0, stationItem.getLocationHash() + BAD_AVAILABILITY_POSTFIX);
                         } else {

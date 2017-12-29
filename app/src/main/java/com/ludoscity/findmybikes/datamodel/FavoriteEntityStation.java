@@ -35,7 +35,7 @@ public class FavoriteEntityStation extends FavoriteEntityBase {
 
     @Override
     public LatLng getLocation() {
-        return DBHelper.getStation(getId()).getLocation();
+        return DBHelper.getInstance().getStation(getId()).getLocation();
     }
 
     public boolean isDisplayNameIsDefault() {

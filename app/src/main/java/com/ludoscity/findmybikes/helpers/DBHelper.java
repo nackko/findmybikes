@@ -13,8 +13,6 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.citybik_es.model.NetworkDesc;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +27,18 @@ import java.util.List;
  */
 @SuppressWarnings("unchecked") //(List<QueryRow>) allDocs.get("rows");
 public class DBHelper {
+
+    private static DBHelper mInstance = null;
+
+    public static DBHelper getInstance()
+    {
+        if(mInstance == null)
+        {
+            mInstance = new DBHelper();
+        }
+
+        return mInstance;
+    }
 
     private  static final String TAG = "DBHelper";
     private static AppDatabase mDatabase = null;
@@ -61,7 +71,7 @@ public class DBHelper {
 
     private DBHelper() {}
 
-    public static void init(Context context) throws IOException, PackageManager.NameNotFoundException {
+    public void init(Context context) throws IOException, PackageManager.NameNotFoundException {
         mDatabase = Room.databaseBuilder(context, AppDatabase.class, "findmybikes-database").build();
 
         //Check for SharedPreferences versioning
@@ -111,23 +121,27 @@ public class DBHelper {
         }
     }
 
-    public static boolean getAutoUpdate(Context _ctx){
+    AppDatabase getDatabase(){
+        return mDatabase;
+    }
+
+    public boolean getAutoUpdate(Context _ctx){
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(_ctx);
 
         return !mAutoUpdatePaused && sp.getBoolean(_ctx.getString(R.string.pref_refresh_options_key), false);
     }
 
-    public static void pauseAutoUpdate() { mAutoUpdatePaused = true; }
+    public void pauseAutoUpdate() { mAutoUpdatePaused = true; }
 
-    public static void resumeAutoUpdate() { mAutoUpdatePaused = false; }
+    public void resumeAutoUpdate() { mAutoUpdatePaused = false; }
 
-    public static int getCriticalAvailabilityMax(Context _ctx) {
+    public int getCriticalAvailabilityMax(Context _ctx) {
         SharedPreferences sp = _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
 
         return sp.getInt(_ctx.getString(R.string.pref_critical_availability_max_key), PREF_CRITICAL_AVAILABILITY_MAX_DEFAULT);
     }
 
-    public static int getBadAvailabilityMax(Context _ctx) {
+    public int getBadAvailabilityMax(Context _ctx) {
 
         SharedPreferences sp = _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
 
@@ -135,43 +149,43 @@ public class DBHelper {
 
     }
 
-    public static void saveCriticalAvailabilityMax(Context _ctx, int _toSave) {
+    public void saveCriticalAvailabilityMax(Context _ctx, int _toSave) {
         _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE).edit()
                 .putInt(_ctx.getString(R.string.pref_critical_availability_max_key), _toSave)
                 .apply();
     }
 
-    public static void saveBadAvailabilityMax(Context _ctx, int _toSave) {
+    public void saveBadAvailabilityMax(Context _ctx, int _toSave) {
         _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE).edit()
                 .putInt(_ctx.getString(R.string.pref_bad_availability_max_key), _toSave)
                 .apply();
     }
 
-    public static long getLastUpdateTimestamp(Context ctx){
+    public long getLastUpdateTimestamp(Context ctx){
 
         return ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE)
                 .getLong(buildNetworkSpecificKey(PREF_SUFFIX_WEBTASK_LAST_TIMESTAMP_MS, ctx), 0);
     }
 
-    public static void saveLastUpdateTimestampAsNow(Context ctx){
+    public void saveLastUpdateTimestampAsNow(Context ctx){
 
         ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE).edit()
                 .putLong(buildNetworkSpecificKey(PREF_SUFFIX_WEBTASK_LAST_TIMESTAMP_MS, ctx),
                         Calendar.getInstance().getTimeInMillis()).apply();
     }
 
-    public static boolean isBikeNetworkIdAvailable(Context ctx){
+    public boolean isBikeNetworkIdAvailable(Context ctx){
 
         return !getBikeNetworkId(ctx).equalsIgnoreCase("");
     }
 
-    public static String getBikeNetworkName(Context ctx){
+    public String getBikeNetworkName(Context ctx){
 
         return ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE)
                 .getString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_NAME, ctx), "");
     }
 
-    public static String getHashtaggableNetworkName(Context _ctx){
+    public String getHashtaggableNetworkName(Context _ctx){
 
         String hashtagable_bikeNetworkName = getBikeNetworkName(_ctx);
         hashtagable_bikeNetworkName = hashtagable_bikeNetworkName.replaceAll("\\s","");
@@ -182,19 +196,19 @@ public class DBHelper {
 
     }
 
-    public static String getBikeNetworkHRef(Context ctx){
+    public String getBikeNetworkHRef(Context ctx){
 
         return ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE)
                 .getString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_HREF, ctx), "/v2/networks/bixi-montreal");
     }
 
-    public static String getBikeNetworkCity(Context _ctx) {
+    public String getBikeNetworkCity(Context _ctx) {
 
         return _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE)
                 .getString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_CITY, _ctx), "");
     }
 
-    public static void saveBikeNetworkDesc(NetworkDesc networkDesc, Context ctx){
+    public void saveBikeNetworkDesc(NetworkDesc networkDesc, Context ctx){
 
         SharedPreferences sp = ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor IdEditor = sp.edit();
@@ -211,7 +225,7 @@ public class DBHelper {
         editor.apply();
     }
 
-    public static void saveBikeNetworkBounds(LatLngBounds bounds, Context ctx){
+    public void saveBikeNetworkBounds(LatLngBounds bounds, Context ctx){
 
         if (!bounds.equals(getBikeNetworkBounds(ctx, 0))){
 
@@ -230,7 +244,7 @@ public class DBHelper {
         }
     }
 
-    public static LatLngBounds getBikeNetworkBounds(Context _ctx, double _paddingKm){
+    public LatLngBounds getBikeNetworkBounds(Context _ctx, double _paddingKm){
 
         SharedPreferences sp = _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
 
@@ -256,11 +270,11 @@ public class DBHelper {
         return new LatLngBounds(southwestPadded, northeastPadded);
     }
 
-    private static String buildNetworkSpecificKey(String suffix, Context ctx){
+    private String buildNetworkSpecificKey(String suffix, Context ctx){
         return getBikeNetworkId(ctx) + suffix;
     }
 
-    public static String getBikeNetworkId(Context ctx){
+    public String getBikeNetworkId(Context ctx){
 
         SharedPreferences sp = ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
 
@@ -276,7 +290,7 @@ public class DBHelper {
         return mGotTracks;
     }*/
 
-    public static void notifyBeginSavingStations(Context _ctx){
+    public void notifyBeginSavingStations(Context _ctx){
 
         mSaving = true;
 
@@ -286,7 +300,7 @@ public class DBHelper {
         Log.d(TAG, "Begin saving bikeStationList");
     }
 
-    public static void notifyEndSavingStations(Context _ctx){
+    public void notifyEndSavingStations(Context _ctx){
 
         _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE).edit()
                 .putBoolean(PREF_LAST_SAVE_CORRUPTED, false).apply();
@@ -295,22 +309,22 @@ public class DBHelper {
         Log.d(TAG, "End saving bikeStationList");
     }
 
-    public static boolean wasLastSavePartial(Context _ctx) {
+    public boolean wasLastSavePartial(Context _ctx) {
 
         return !mSaving && _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE)
                 .getBoolean(PREF_LAST_SAVE_CORRUPTED, true);
 
     }
 
-    public static BikeStation getStation(final String _stationId){
+    public BikeStation getStation(final String _stationId){
         return mDatabase.bikeStationDao().getStation(_stationId).getValue();
     }
 
-    public static void deleteAllStations() {
+    public void deleteAllStations() {
         mDatabase.bikeStationDao().deleteAllBikeStation();
     }
 
-    public static List<BikeStation> getStationsNetwork() {
+    public List<BikeStation> getStationsNetwork() {
         List<BikeStation> toReturn = mDatabase.bikeStationDao().getAll().getValue();
 
         if (toReturn == null)
@@ -321,112 +335,12 @@ public class DBHelper {
         return toReturn;
     }
 
-    public static void saveStationNetwork(List<BikeStation> stationListNetwork) {
+    public void saveStationNetwork(List<BikeStation> stationListNetwork) {
         mDatabase.bikeStationDao().insertBikeStationList(stationListNetwork);
     }
 
-    //TODO: Add validation of IDs to handle the case were a favorite station been removed
-    //Replace edit fab with red delete one
-    public static List<FavoriteEntityBase> getFavoriteAll(){
-        List<FavoriteEntityBase> toReturn = new ArrayList<>();
-
-        List<FavoriteEntityStation> favEntStation = mDatabase.favoriteEntityStationDao().getAll().getValue();
-        if ( favEntStation != null)
-            toReturn.addAll(favEntStation);
-        else
-        {
-            int i = 0;
-            ++i;
-        }
-
-        /*if (mDatabase.favoriteEntityPlaceDao().getAll().getValue() != null)
-            toReturn.addAll(mDatabase.favoriteEntityPlaceDao().getAll().getValue());
-        else
-        {
-            int i = 0;
-            ++i;
-        }*/
-
-        return toReturn;
-    }
-
-    public static FavoriteEntityBase getFavoriteEntityForId(String _favoriteID){
-        FavoriteEntityBase toReturn = mDatabase.favoriteEntityStationDao().getForId(_favoriteID).getValue();
-        /*if (_favoriteID.contains(FavoriteItemPlace.PLACE_ID_PREFIX))
-            toReturn = mDatabase.favoriteEntityPlaceDao().getForId(_favoriteID).getValue();
-        else*/
-            //toReturn = mDatabase.favoriteEntityStationDao().getForId(_favoriteID).getValue();
-        /*if(toReturn == null)
-            toReturn = mDatabase.favoriteEntityDao().getForId(new FavoriteEntityPlace(), _favoriteID).getValue();*/
-
-        return toReturn;
-    }
-
-    //TODO: Build a cache of bikeStationList that have already been checked
-    //This is called every time the list binds a station
-    //it happens a lot (every time user location is updated).
-    //getFavoriteAll loads data from db
-    public static boolean isFavorite(String id) {
-        return mDatabase.favoriteEntityStationDao().getForId(id).getValue() != null;// || mDatabase.favoriteEntityPlaceDao().getForId(id) != null;
-    }
-
-    //counts valid favorites, an invalid favorite corresponds to the provided StationItem
-    //returns true if this count >= provided parameter
-    public static boolean hasAtLeastNValidFavorites(BikeStation _closestBikeStation, int _n, Context _ctx) {
-        int validCount = 0;
-
-        List<FavoriteEntityBase> favoriteList = getFavoriteAll();
-
-        if (_closestBikeStation == null)
-            return favoriteList.size() >= _n;
-
-        for (int i=0; i<favoriteList.size(); ++i){
-            if (!favoriteList.get(i).getId().equalsIgnoreCase(_closestBikeStation.getLocationHash()))
-                ++validCount;
-        }
-
-        return validCount >= _n;
-
-    }
-
-    public static void dropFavoriteAll(){
+    public void dropFavoriteAll(){
         mDatabase.favoriteEntityStationDao().deleteAll();
         //mDatabase.favoriteEntityPlaceDao().deleteAll();
-    }
-
-    public static void updateFavorite(final Boolean isFavorite, final FavoriteEntityBase _favoriteEntity) {
-
-
-            if(_favoriteEntity instanceof FavoriteEntityStation)
-            {
-                if(isFavorite)
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            long truc = mDatabase.favoriteEntityStationDao().insertOne((FavoriteEntityStation)_favoriteEntity);
-                            int i = 0;  //We know that works because truc returns a valid rowid incrementing at each add. Data retrieval is the issue
-                            List<FavoriteEntityStation> bidule = mDatabase.favoriteEntityStationDao().getAll().getValue();
-                            ++i;
-                        }
-                    }).start();
-
-                else
-                    mDatabase.favoriteEntityStationDao().deleteOne(_favoriteEntity.getId());
-            }
-            /*else    //_favoriteEntity instanceof FavoriteEntityPlace
-            {
-                if(isFavorite) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mDatabase.favoriteEntityPlaceDao().insertOne((FavoriteEntityPlace) _favoriteEntity);
-
-                        }
-                    }).start();
-
-                }
-                else
-                    mDatabase.favoriteEntityPlaceDao().deleteOne(_favoriteEntity.getId());
-            }*/
     }
 }

@@ -42,11 +42,11 @@ public class FavoriteRepository {
     }
 
     public @Nullable FavoriteEntityBase getFavoriteEntityForId(String favoriteId) {
-        return DBHelper.getDatabase().favoriteEntityStationDao().getForId(favoriteId).getValue();
+        return DBHelper.getInstance().getDatabase().favoriteEntityStationDao().getForId(favoriteId).getValue();
     }
 
     public boolean hasAtleastNValidFavorites(String nearestBikeStationId, int n){
-        Long count = DBHelper.getDatabase().favoriteEntityStationDao().validFavoriteCount(nearestBikeStationId).getValue();
+        Long count = DBHelper.getInstance().getDatabase().favoriteEntityStationDao().validFavoriteCount(nearestBikeStationId).getValue();
 
         return true;
         //return count != null && count  >= n;
@@ -61,7 +61,7 @@ public class FavoriteRepository {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        long truc = DBHelper.getDatabase().favoriteEntityStationDao().insertOne((FavoriteEntityStation)_favoriteEntity);
+                        long truc = DBHelper.getInstance().getDatabase().favoriteEntityStationDao().insertOne((FavoriteEntityStation)_favoriteEntity);
                         int i = 0;  //We know that works because truc returns a valid rowid incrementing at each add. Data retrieval is the issue
                         //List<FavoriteEntityStation> bidule = mDatabase.favoriteEntityStationDao().getFavoriteStationList().getValue();
                         ++i;
@@ -69,7 +69,7 @@ public class FavoriteRepository {
                 }).start();
 
             else
-                DBHelper.getDatabase().favoriteEntityStationDao().deleteOne(_favoriteEntity.getId());
+                DBHelper.getInstance().getDatabase().favoriteEntityStationDao().deleteOne(_favoriteEntity.getId());
         }
             /*else    //_favoriteEntity instanceof FavoriteEntityPlace
             {
@@ -105,11 +105,11 @@ public class FavoriteRepository {
                 stationToSet.add((FavoriteEntityStation)fav);
             }
         }
-        DBHelper.getDatabase().favoriteEntityStationDao().insertAll(stationToSet);
+        DBHelper.getInstance().getDatabase().favoriteEntityStationDao().insertAll(stationToSet);
     }
 
     public LiveData<List<FavoriteEntityStation>> getFavoriteStationList()
     {
-        return DBHelper.getDatabase().favoriteEntityStationDao().getAll();
+        return DBHelper.getInstance().getDatabase().favoriteEntityStationDao().getAll();
     }
 }

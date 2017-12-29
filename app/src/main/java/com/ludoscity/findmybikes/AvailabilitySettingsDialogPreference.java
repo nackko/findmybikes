@@ -41,8 +41,8 @@ public class AvailabilitySettingsDialogPreference extends DialogPreference {
         mGreatMinText = (TextView) view.findViewById(R.id.pref_availability_great_min_text);
         mCriticalHint = (TextView) view.findViewById(R.id.pref_availability_critical_hint);
 
-        int redUpperValue = DBHelper.getCriticalAvailabilityMax(getContext());
-        int yellowUpperValue = DBHelper.getBadAvailabilityMax(getContext());
+        int redUpperValue = DBHelper.getInstance().getCriticalAvailabilityMax(getContext());
+        int yellowUpperValue = DBHelper.getInstance().getBadAvailabilityMax(getContext());
 
 
         mCriticalMaxPicker.setMinValue(0);
@@ -108,8 +108,8 @@ public class AvailabilitySettingsDialogPreference extends DialogPreference {
     protected void onDialogClosed(boolean positiveResult) {
 
         if (positiveResult) {
-            DBHelper.saveCriticalAvailabilityMax(getContext(), mCriticalMaxPicker.getValue());
-            DBHelper.saveBadAvailabilityMax(getContext(), mBadMaxPicker.getValue());
+            DBHelper.getInstance().saveCriticalAvailabilityMax(getContext(), mCriticalMaxPicker.getValue());
+            DBHelper.getInstance().saveBadAvailabilityMax(getContext(), mBadMaxPicker.getValue());
         }
         super.onDialogClosed(positiveResult);
     }

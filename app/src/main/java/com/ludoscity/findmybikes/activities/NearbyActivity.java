@@ -383,7 +383,7 @@ public class NearbyActivity extends AppCompatActivity
         if (showcaseTripTotalPlaceName != null){
             setupShowcaseTripTotal();
             mOnboardingShowcaseView.setContentText(String.format(getString(R.string.onboarding_showcase_total_time_text),
-                    DBHelper.getBikeNetworkName(this), showcaseTripTotalPlaceName));
+                    DBHelper.getInstance().getBikeNetworkName(this), showcaseTripTotalPlaceName));
             mOnboardingShowcaseView.setTag(showcaseTripTotalPlaceName);
         }
 
@@ -450,7 +450,7 @@ public class NearbyActivity extends AppCompatActivity
                 //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
                 //I will be at the Bixi station Hutchison/beaubien in ~15min ! Shared via #findmybikes
                 String message = String.format(getResources().getString(R.string.trip_details_share_message_content),
-                        DBHelper.getBikeNetworkName(getApplicationContext()), getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.DOCK_STATIONS).getName(),
+                        DBHelper.getInstance().getBikeNetworkName(getApplicationContext()), getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.DOCK_STATIONS).getName(),
                         mTripDetailsProximityTotal.getText().toString());
 
                 Intent sendIntent = new Intent();
@@ -486,7 +486,7 @@ public class NearbyActivity extends AppCompatActivity
         if (Utils.Connectivity.isConnected(this)) {
             mSplashScreenTextTop.setText(getString(R.string.auto_bike_select_finding));
 
-            if (DBHelper.isBikeNetworkIdAvailable(this)) {
+            if (DBHelper.getInstance().isBikeNetworkIdAvailable(this)) {
 
                 mDownloadWebTask = new DownloadWebTask();
                 mDownloadWebTask.execute();
@@ -495,7 +495,7 @@ public class NearbyActivity extends AppCompatActivity
             }
             else{
 
-                mFindNetworkTask = new FindNetworkTask(DBHelper.getBikeNetworkName(this));
+                mFindNetworkTask = new FindNetworkTask(DBHelper.getInstance().getBikeNetworkName(this));
                 mFindNetworkTask.execute();
             }
         }
@@ -514,11 +514,11 @@ public class NearbyActivity extends AppCompatActivity
         //noinspection ConstantConditions
         getSupportActionBar().setTitle(Utils.fromHtml(String.format(getResources().getString(R.string.appbar_title_formatting),
                 getResources().getString(R.string.appbar_title_prefix),
-                DBHelper.getHashtaggableNetworkName(this),
+                DBHelper.getInstance().getHashtaggableNetworkName(this),
                 getResources().getString(R.string.appbar_title_postfix))));
         //doesn't scale well, but just a little touch for my fellow Montréalers
         String city_hashtag = "";
-        String bikeNetworkCity = DBHelper.getBikeNetworkCity(this);
+        String bikeNetworkCity = DBHelper.getInstance().getBikeNetworkCity(this);
         if (bikeNetworkCity.contains("Montreal")){
             city_hashtag = " @mtlvi";
         }
@@ -679,7 +679,7 @@ public class NearbyActivity extends AppCompatActivity
                 try {
 
                     Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
-                            .setBoundsBias(DBHelper.getBikeNetworkBounds(NearbyActivity.this,
+                            .setBoundsBias(DBHelper.getInstance().getBikeNetworkBounds(NearbyActivity.this,
                                     Utils.getAverageBikingSpeedKmh(NearbyActivity.this)))
                             .build(NearbyActivity.this);
 
@@ -751,7 +751,7 @@ public class NearbyActivity extends AppCompatActivity
                     //Because destination name is available here and can't be passed down checkOnboarding
                     {
                         mOnboardingShowcaseView.setContentText(String.format(getString(R.string.onboarding_showcase_total_time_text),
-                                DBHelper.getBikeNetworkName(this), place.getName()));
+                                DBHelper.getInstance().getBikeNetworkName(this), place.getName()));
 
                         mOnboardingShowcaseView.setTag(place.getName());
                     }
@@ -800,7 +800,7 @@ public class NearbyActivity extends AppCompatActivity
             }
         } else if (requestCode == SETTINGS_ACTIVITY_REQUEST_CODE){
 
-            DBHelper.resumeAutoUpdate();    //Does NOT start it if user didn't activated it in Setting activity
+            DBHelper.getInstance().resumeAutoUpdate();    //Does NOT start it if user didn't activated it in Setting activity
             mClosestBikeAutoSelected = false;
             mRefreshMarkers = true;
             refreshMap();
@@ -1261,7 +1261,7 @@ public class NearbyActivity extends AppCompatActivity
         /*Log.d("nearbyActivity", "refreshMap", new Exception());
         Log.d("nearbyActivity", "refreshMap outdateddata status :" + mDataOutdated );*/
 
-        if (DBHelper.isBikeNetworkIdAvailable(this)){
+        if (DBHelper.getInstance().isBikeNetworkIdAvailable(this)){
 
             if(mStationMapFragment.isMapReady()) {
                 if (mRefreshMarkers && mRedrawMarkersTask == null) {
@@ -1360,14 +1360,14 @@ public class NearbyActivity extends AppCompatActivity
                 //Update not already in progress
                 if (mPagerReady && mDownloadWebTask == null && mRedrawMarkersTask == null && mFindNetworkTask == null) {
 
-                    long runnableLastRefreshTimestamp = DBHelper.getLastUpdateTimestamp(getApplicationContext());
+                    long runnableLastRefreshTimestamp = DBHelper.getInstance().getLastUpdateTimestamp(getApplicationContext());
 
                     long difference = now - runnableLastRefreshTimestamp;
 
                     StringBuilder pastStringBuilder = new StringBuilder();
                     StringBuilder futureStringBuilder = new StringBuilder();
 
-                    if (DBHelper.isBikeNetworkIdAvailable(getApplicationContext())) {
+                    if (DBHelper.getInstance().isBikeNetworkIdAvailable(getApplicationContext())) {
                         //First taking care of past time...
                         if (difference < DateUtils.MINUTE_IN_MILLIS)
                             pastStringBuilder.append(getString(R.string.moments));
@@ -1398,9 +1398,9 @@ public class NearbyActivity extends AppCompatActivity
                             mStatusBar.setBackgroundColor(ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark));
                         }
 
-                        if (DBHelper.isBikeNetworkIdAvailable(getApplicationContext())) {
+                        if (DBHelper.getInstance().isBikeNetworkIdAvailable(getApplicationContext())) {
 
-                            if (!DBHelper.getAutoUpdate(getApplicationContext())) {
+                            if (!DBHelper.getInstance().getAutoUpdate(getApplicationContext())) {
                                 futureStringBuilder.append(getString(R.string.pull_to_refresh));
 
                             } else {
@@ -1539,7 +1539,7 @@ public class NearbyActivity extends AppCompatActivity
                                             Snackbar.LENGTH_LONG, ContextCompat.getColor(NearbyActivity.this, R.color.theme_accent));
 
                                 }
-                                else if(!closestBikeStation.isLocked() && closestBikeStation.getFreeBikes() > DBHelper.getCriticalAvailabilityMax(NearbyActivity.this)) {
+                                else if(!closestBikeStation.isLocked() && closestBikeStation.getFreeBikes() > DBHelper.getInstance().getCriticalAvailabilityMax(NearbyActivity.this)) {
 
                                     mFindBikesSnackbar = Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.auto_bike_select_found,
                                             Snackbar.LENGTH_LONG, ContextCompat.getColor(NearbyActivity.this, R.color.snackbar_green));
@@ -1751,10 +1751,10 @@ public class NearbyActivity extends AppCompatActivity
         //Map ready
         if (uri.getPath().equalsIgnoreCase("/" + StationMapFragment.MAP_READY_PATH))
         {
-            long wishedUpdateTime = DBHelper.getLastUpdateTimestamp(getApplicationContext()) + NearbyActivity.this.getApplicationContext().getResources().getInteger(R.integer.update_auto_interval_minute) * 1000 * 60;  //comes from Prefs
+            long wishedUpdateTime = DBHelper.getInstance().getLastUpdateTimestamp(getApplicationContext()) + NearbyActivity.this.getApplicationContext().getResources().getInteger(R.integer.update_auto_interval_minute) * 1000 * 60;  //comes from Prefs
 
             if ( mDownloadWebTask == null && !( //if no download task been launched but conditions are met that one will be launched imminently, don't refresh map
-                    DBHelper.getAutoUpdate(this) && System.currentTimeMillis() >= wishedUpdateTime && Utils.Connectivity.isConnected(this)
+                    DBHelper.getInstance().getAutoUpdate(this) && System.currentTimeMillis() >= wishedUpdateTime && Utils.Connectivity.isConnected(this)
                     ) )
                 refreshMap();
         }
@@ -2665,7 +2665,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     //if mDataOutdated is true, a Download task will be launched if auto update is also true and a connection is available
                     //That's because autoupdate max interval is SMALLER than outdating one
-                    if (!(mDataOutdated && DBHelper.getAutoUpdate(this) && Utils.Connectivity.isConnected(this)))
+                    if (!(mDataOutdated && DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.isConnected(this)))
                         mStationMapFragment.lookingForBikes(mDataOutdated, true);
                 }
             } else { //B TAB
@@ -2740,7 +2740,7 @@ public class NearbyActivity extends AppCompatActivity
                 //Log.d("NearbyActivity", "onPageSelected - about to update markers with mDataOutdated : " + mDataOutdated, new Exception());
                 //if mDataOutdated is true, a Download task will be launched if auto update is also true and a connection is available
                 //That's because autoupdate max interval is SMALLER than outdating one
-                if (!(mDataOutdated && DBHelper.getAutoUpdate(this) && Utils.Connectivity.isConnected(this)))
+                if (!(mDataOutdated && DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.isConnected(this)))
                     mStationMapFragment.lookingForBikes(mDataOutdated, false);
             }
         }
@@ -2754,11 +2754,11 @@ public class NearbyActivity extends AppCompatActivity
 
             //If update mode is set to manual and user are out of the bound of the bike network
             //let's check if there's a better bike network avaialble.
-            if (!DBHelper.getAutoUpdate(this) && Utils.Connectivity.isConnected(NearbyActivity.this))
+            if (!DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.isConnected(NearbyActivity.this))
             {
-                if (mCurrentUserLatLng != null && !DBHelper.getBikeNetworkBounds(NearbyActivity.this, 5).contains(mCurrentUserLatLng)) {
+                if (mCurrentUserLatLng != null && !DBHelper.getInstance().getBikeNetworkBounds(NearbyActivity.this, 5).contains(mCurrentUserLatLng)) {
                     //This task will possibly auto cancel if it can't find a better bike network
-                    mFindNetworkTask = new FindNetworkTask(DBHelper.getBikeNetworkName(NearbyActivity.this));
+                    mFindNetworkTask = new FindNetworkTask(DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this));
                     mFindNetworkTask.execute();
                 }
             }
@@ -3001,7 +3001,7 @@ public class NearbyActivity extends AppCompatActivity
             getListPagerAdapter().setRefreshingAll(false);
 
             //This was initial setup
-            if (!DBHelper.isBikeNetworkIdAvailable(NearbyActivity.this)){
+            if (!DBHelper.getInstance().isBikeNetworkIdAvailable(NearbyActivity.this)){
                 mSplashScreenTextTop.setText(getString(R.string.sad_emoji));
                 mSplashScreenTextBottom.setText("");
                 Utils.Snackbar.makeStyled(mSplashScreen, R.string.connectivity_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
@@ -3018,7 +3018,7 @@ public class NearbyActivity extends AppCompatActivity
                         .setAction(R.string.resume, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                DBHelper.resumeAutoUpdate();
+                                DBHelper.getInstance().resumeAutoUpdate();
                             }
                         }).show();
             }
@@ -3108,25 +3108,25 @@ public class NearbyActivity extends AppCompatActivity
                 }
 
                 //It seems we don't have a better candidate than the one we're presently using
-                if (closestNetwork.id.equalsIgnoreCase(DBHelper.getBikeNetworkId(NearbyActivity.this))){
+                if (closestNetwork.id.equalsIgnoreCase(DBHelper.getInstance().getBikeNetworkId(NearbyActivity.this))){
                     toReturn.put(ERROR_KEY_NO_BETTER, "dummy");
                     cancel(false);
                 }
                 else{
 
-                    if (DBHelper.isBikeNetworkIdAvailable(NearbyActivity.this)){
-                        toReturn.put("old_network_name", DBHelper.getBikeNetworkName(NearbyActivity.this));
+                    if (DBHelper.getInstance().isBikeNetworkIdAvailable(NearbyActivity.this)){
+                        toReturn.put("old_network_name", DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this));
                     }
 
                     toReturn.put("new_network_city", closestNetwork.location.city);
 
-                    DBHelper.deleteAllStations();
-                    DBHelper.saveBikeNetworkDesc(closestNetwork, NearbyActivity.this);
+                    DBHelper.getInstance().deleteAllStations();
+                    DBHelper.getInstance().saveBikeNetworkDesc(closestNetwork, NearbyActivity.this);
                 }
 
             } catch (IOException e) {
 
-                DBHelper.pauseAutoUpdate();
+                DBHelper.getInstance().pauseAutoUpdate();
                 toReturn.put(ERROR_KEY_IOEXCEPTION, "dummy");
 
                 cancel(false); //No need to try to interrupt the thread
@@ -3173,7 +3173,7 @@ public class NearbyActivity extends AppCompatActivity
             if (!backgroundResults.keySet().contains("old_network_name")) {
                 alertDialog.setTitle(Utils.fromHtml(String.format(getResources().getString(R.string.hello_city), "", backgroundResults.get("new_network_city") )));
                 alertDialog.setMessage(Utils.fromHtml(String.format(getString(R.string.bike_network_found_message),
-                        DBHelper.getBikeNetworkName(NearbyActivity.this) )));
+                        DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this) )));
                 Message toPass = null; //To resolve ambiguous call
                 //noinspection ConstantConditions
                 alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(R.string.ok), toPass);
@@ -3181,7 +3181,7 @@ public class NearbyActivity extends AppCompatActivity
             else{
                 alertDialog.setTitle(Utils.fromHtml(String.format(getResources().getString(R.string.hello_city), getResources().getString(R.string.hello_travel), backgroundResults.get("new_network_city"))));
                 alertDialog.setMessage(Utils.fromHtml(String.format(getString(R.string.bike_network_change_message),
-                        DBHelper.getBikeNetworkName(NearbyActivity.this), mOldBikeNetworkName)));
+                        DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this), mOldBikeNetworkName)));
                 Message toPass = null; //To resolve ambiguous call
                 //noinspection ConstantConditions
                 alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(R.string.ok), toPass);
@@ -3208,14 +3208,14 @@ public class NearbyActivity extends AppCompatActivity
         protected void onPreExecute() {
             super.onPreExecute();
 
-            DBHelper.notifyBeginSavingStations(NearbyActivity.this);
+            DBHelper.getInstance().notifyBeginSavingStations(NearbyActivity.this);
         }
 
 
         @Override
         protected Void doInBackground(Void... params) {
 
-            DBHelper.saveStationNetwork(RootApplication.getBikeNetworkStationList());
+            DBHelper.getInstance().saveStationNetwork(RootApplication.getBikeNetworkStationList());
 
             return null;
         }
@@ -3224,7 +3224,7 @@ public class NearbyActivity extends AppCompatActivity
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            DBHelper.notifyEndSavingStations(NearbyActivity.this);
+            DBHelper.getInstance().notifyEndSavingStations(NearbyActivity.this);
 
             //must be done last
             mSaveNetworkToDatabaseTask = null;
@@ -3264,7 +3264,7 @@ public class NearbyActivity extends AppCompatActivity
 
               */
             String systemHashtag = getResources().getString(R.string.appbar_title_prefix) +
-                    DBHelper.getHashtaggableNetworkName(NearbyActivity.this) + //must be hastagable
+                    DBHelper.getInstance().getHashtaggableNetworkName(NearbyActivity.this) + //must be hastagable
                     getResources().getString(R.string.appbar_title_postfix);
             int selectedNbBikes = -1;
             String selectedBadorAok = "BAD";    //hashtagged
@@ -3441,7 +3441,7 @@ public class NearbyActivity extends AppCompatActivity
 
             Citybik_esAPI api = ((RootApplication) getApplication()).getCitybik_esApi();
 
-            final Call<NetworkStatusAnswerRoot> call = api.getNetworkStatus(DBHelper.getBikeNetworkHRef(NearbyActivity.this), UrlParams);
+            final Call<NetworkStatusAnswerRoot> call = api.getNetworkStatus(DBHelper.getInstance().getBikeNetworkHRef(NearbyActivity.this), UrlParams);
 
             Response<NetworkStatusAnswerRoot> statusAnswer;
 
@@ -3495,7 +3495,7 @@ public class NearbyActivity extends AppCompatActivity
             mStatusTextView.setText(getString(R.string.downloading));
             mSplashScreenTextBottom.setText(getString(R.string.downloading));
 
-            DBHelper.resumeAutoUpdate();
+            DBHelper.getInstance().resumeAutoUpdate();
 
             if (getListPagerAdapter().isViewPagerReady())
                 getListPagerAdapter().setRefreshingAll(true);
@@ -3519,15 +3519,15 @@ public class NearbyActivity extends AppCompatActivity
                     getListPagerAdapter().setOutdatedDataAll(true);
                 }
 
-                DBHelper.pauseAutoUpdate(); //Must be done in all cases : getAutoUpdate factorizes in the suspend flag
+                DBHelper.getInstance().pauseAutoUpdate(); //Must be done in all cases : getAutoUpdate factorizes in the suspend flag
 
-                if (DBHelper.getAutoUpdate(NearbyActivity.this)) {
+                if (DBHelper.getInstance().getAutoUpdate(NearbyActivity.this)) {
                     Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.auto_download_failed,
                             Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                             .setAction(R.string.resume, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    DBHelper.resumeAutoUpdate();
+                                    DBHelper.getInstance().resumeAutoUpdate();
                                 }
                             }).show();
                 } else {
@@ -3567,13 +3567,13 @@ public class NearbyActivity extends AppCompatActivity
 
             getListPagerAdapter().setRefreshingAll(false);
 
-            DBHelper.saveLastUpdateTimestampAsNow(getApplicationContext());
-            DBHelper.saveBikeNetworkBounds(mDownloadedBikeNetworkBounds, NearbyActivity.this);
+            DBHelper.getInstance().saveLastUpdateTimestampAsNow(getApplicationContext());
+            DBHelper.getInstance().saveBikeNetworkBounds(mDownloadedBikeNetworkBounds, NearbyActivity.this);
 
             Log.d("nearbyActivity", RootApplication.getBikeNetworkStationList().size() + " bikeStationList downloaded from citibik.es");
 
             //users are inside bounds
-            if (mCurrentUserLatLng == null || DBHelper.getBikeNetworkBounds(NearbyActivity.this, 5).contains(mCurrentUserLatLng) ){
+            if (mCurrentUserLatLng == null || DBHelper.getInstance().getBikeNetworkBounds(NearbyActivity.this, 5).contains(mCurrentUserLatLng) ){
 
                 mClosestBikeAutoSelected = false;
 
@@ -3596,7 +3596,7 @@ public class NearbyActivity extends AppCompatActivity
             else if(mCurrentUserLatLng != null){    //users are outside bounds
 
                 //This task will possibly auto cancel if it can't find a better bike network
-                mFindNetworkTask = new FindNetworkTask(DBHelper.getBikeNetworkName(NearbyActivity.this));
+                mFindNetworkTask = new FindNetworkTask(DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this));
                 mFindNetworkTask.execute();
             }
 

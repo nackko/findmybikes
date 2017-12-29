@@ -43,21 +43,21 @@ public class RootApplication extends Application {
         super.onCreate();
 
         try {
-            DBHelper.init(this);
+            DBHelper.getInstance().init(this);
         } catch (IOException | PackageManager.NameNotFoundException e) {
             Log.d(TAG, "Error initializing database", e);
         }
 
-        if(!DBHelper.wasLastSavePartial(this)){
+        if(!DBHelper.getInstance().wasLastSavePartial(this)){
 
 
-            mBikeshareStationList = DBHelper.getStationsNetwork();
+            mBikeshareStationList = DBHelper.getInstance().getStationsNetwork();
 
 
             Log.i("RootApplication", mBikeshareStationList.size() + " stations loaded from DB");
         }
         else
-            mBikeshareStationList = new ArrayList<BikeStation>();
+            mBikeshareStationList = new ArrayList<>();
 
 
         mCitybik_esAPI = buildCitybik_esAPI();

@@ -67,16 +67,16 @@ public class StationMapGfx {
                 groundOverlayOptions.image(greyIcon);
             else {
                 if (_lookingForBike) {
-                    if (_item.getFreeBikes() <= DBHelper.getCriticalAvailabilityMax(_ctx))
+                    if (_item.getFreeBikes() <= DBHelper.getInstance().getCriticalAvailabilityMax(_ctx))
                         groundOverlayOptions.image(redIcon);
-                    else if (_item.getFreeBikes() <= DBHelper.getBadAvailabilityMax(_ctx))
+                    else if (_item.getFreeBikes() <= DBHelper.getInstance().getBadAvailabilityMax(_ctx))
                         groundOverlayOptions.image(yellowIcon);
                     else
                         groundOverlayOptions.image(greenIcon);
                 } else {
-                    if (_item.getEmptySlots() != -1 && _item.getEmptySlots() <= DBHelper.getCriticalAvailabilityMax(_ctx))
+                    if (_item.getEmptySlots() != -1 && _item.getEmptySlots() <= DBHelper.getInstance().getCriticalAvailabilityMax(_ctx))
                         groundOverlayOptions.image(redIcon);
-                    else if (_item.getEmptySlots() != -1 && _item.getEmptySlots() <= DBHelper.getBadAvailabilityMax(_ctx))
+                    else if (_item.getEmptySlots() != -1 && _item.getEmptySlots() <= DBHelper.getInstance().getBadAvailabilityMax(_ctx))
                         groundOverlayOptions.image(yellowIcon);
                     else
                         groundOverlayOptions.image(greenIcon);
@@ -106,9 +106,9 @@ public class StationMapGfx {
         if (!_outdated) {
             if (_isLookingForBikes) {
                 if (!mItem.isLocked()) {
-                    if (mItem.getFreeBikes() <= DBHelper.getCriticalAvailabilityMax(_ctx))
+                    if (mItem.getFreeBikes() <= DBHelper.getInstance().getCriticalAvailabilityMax(_ctx))
                         groundOverlay.setImage(redIcon);
-                    else if (mItem.getFreeBikes() <= DBHelper.getBadAvailabilityMax(_ctx))
+                    else if (mItem.getFreeBikes() <= DBHelper.getInstance().getBadAvailabilityMax(_ctx))
                         groundOverlay.setImage(yellowIcon);
                     else
                         groundOverlay.setImage(greenIcon);
@@ -116,9 +116,9 @@ public class StationMapGfx {
                     groundOverlay.setImage(greyIcon);
             } else {
                 if (!mItem.isLocked()) {
-                    if (mItem.getEmptySlots() != -1 && mItem.getEmptySlots() <= DBHelper.getCriticalAvailabilityMax(_ctx))
+                    if (mItem.getEmptySlots() != -1 && mItem.getEmptySlots() <= DBHelper.getInstance().getCriticalAvailabilityMax(_ctx))
                         groundOverlay.setImage(redIcon);
-                    else if (mItem.getEmptySlots() != -1 && mItem.getEmptySlots() <= DBHelper.getBadAvailabilityMax(_ctx))
+                    else if (mItem.getEmptySlots() != -1 && mItem.getEmptySlots() <= DBHelper.getInstance().getBadAvailabilityMax(_ctx))
                         groundOverlay.setImage(yellowIcon);
                     else
                         groundOverlay.setImage(greenIcon);
