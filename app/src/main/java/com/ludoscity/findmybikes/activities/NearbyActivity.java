@@ -685,10 +685,8 @@ public class NearbyActivity extends AppCompatActivity
 
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
 
+                    mNearbyActivityViewModel.hideFavoriteFab();
 
-                    //////////////////////////////////////////////
-                    mFavoritesSheetFab.hideSheetThenFab();
-                    ///////////////////////////////////////////
                     mSearchFAB.setBackgroundTintList(ContextCompat.getColorStateList(NearbyActivity.this, R.color.light_gray));
 
                     mPlaceAutocompleteLoadingProgressBar.setVisibility(View.VISIBLE);
@@ -1860,9 +1858,7 @@ public class NearbyActivity extends AppCompatActivity
 
         mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
         mClearFAB.show();
-        /////////////////////////
-        mFavoritesSheetFab.hideSheetThenFab();
-        ///////////////////////////////////
+        mNearbyActivityViewModel.hideFavoriteFab();
         mSearchFAB.hide();
 
         final Handler handler = new Handler();
@@ -1951,9 +1947,7 @@ public class NearbyActivity extends AppCompatActivity
 
         mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
         mClearFAB.show();
-        ////////////////////////////////////
-        mFavoritesSheetFab.hideSheetThenFab();
-        ///////////////////////////////////
+        mNearbyActivityViewModel.hideFavoriteFab();
         mSearchFAB.hide();
 
         final Handler handler = new Handler();
@@ -2091,9 +2085,7 @@ public class NearbyActivity extends AppCompatActivity
             if (!_silent) {
                 mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
                 mClearFAB.show();
-                ///////////////////////////////
-                mFavoritesSheetFab.hideSheetThenFab();
-                ////////////////////////////////
+                mNearbyActivityViewModel.hideFavoriteFab();
                 mSearchFAB.hide();
             }
 
@@ -2654,9 +2646,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 mSearchFAB.hide();
                 mAddFavoriteFAB.hide();
-                ///////////////////////////////////////////////////////////
-                mFavoritesSheetFab.hideSheetThenFab();
-                ///////////////////////////////////////////////////////////
+                mNearbyActivityViewModel.hideFavoriteFab();
                 mClearFAB.hide();
                 mStationMapFragment.setMapPaddingRight(0);
 

@@ -18,11 +18,14 @@ import com.ludoscity.findmybikes.ItemTouchHelperAdapter;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.DividerItemDecoration;
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 import com.ludoscity.findmybikes.viewmodels.NearbyActivityViewModel;
+
+import java.util.List;
 
 public class FavoriteListFragment extends Fragment implements
         FavoriteRecyclerViewAdapter.OnFavoriteListItemStartDragListener,//TODO: investigate making the sheet listening and forwarding
@@ -35,6 +38,7 @@ public class FavoriteListFragment extends Fragment implements
     private NearbyActivityViewModel mNearbyActivityViewModel;
     private FavoriteListViewModel mFavoriteListViewModel;
     private ItemTouchHelper mFavoriteItemTouchHelper;
+    FavoriteRecyclerViewAdapter mFavoriteRecyclerViewAdapter;
 
     private OnFavoriteListFragmentInteractionListener mListener;
 
@@ -113,12 +117,16 @@ public class FavoriteListFragment extends Fragment implements
         favoriteRecyclerView.setLayoutManager(new ScrollingLinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false, 300));
 
         mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel.class);
+        mFavoriteListViewModel.getFavoriteEntityStationList().observe(this, new Observer<List<FavoriteEntityStation>>() {
+            @Override
+            public void onChanged(@Nullable List<FavoriteEntityStation> favoriteEntityStations) {
+                mFavoriteRecyclerViewAdapter.resetFavoriteList(favoriteEntityStations);
+            }
+        });
 
-        FavoriteRecyclerViewAdapter mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter(this, mFavoriteListViewModel, this, this, getActivity().getApplicationContext());
+        mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter( this, this, getActivity().getApplicationContext());
 
         //setupFavoriteListFeedback(favoriteList.isEmpty());    //MUST BE DONE IN NEARBYACTIVITY FOR NOW
-        //mFavoriteListViewModel.setFavoriteEntityBaseList(favoriteList);
-        //mFavoriteRecyclerViewAdapter.setupFavoriteList(favoriteList);
         favoriteRecyclerView.setAdapter(mFavoriteRecyclerViewAdapter);
 
         mFavoriteItemTouchHelper.attachToRecyclerView(favoriteRecyclerView);
@@ -153,18 +161,10 @@ public class FavoriteListFragment extends Fragment implements
 
         mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(this, new Observer<Boolean>() {
             @Override
-            public void onChanged(@Nullable Boolean aBoolean) {
-
+            public void onChanged(@Nullable Boolean favSheetEditInProgress) {
+                mFavoriteRecyclerViewAdapter.setSheetEditing(favSheetEditInProgress);
             }
         });
-
-        /*mFavoriteListViewModel.getFavoriteEntityBaseList().observe(this, new Observer<List<? extends FavoriteEntityBase>>() {
-            @Override
-            public void onChanged(@Nullable List<? extends FavoriteEntityBase> favoriteEntityBases) {
-                //TODO: maybe detec swap, add and remove to map it to nice adapter methods
-                //mFavoriteRecyclerViewAdapter.clearFavoriteList();
-            }
-        });*/
     }
 
     /*@Override
@@ -183,54 +183,6 @@ public class FavoriteListFragment extends Fragment implements
         super.onDetach();
         mListener = null;
     }
-
-    /*private void setupFavoritePickerFab(View inflatedView) {
-
-        mFavoritePickerFAB = findViewById(R.id.favorite_picker_fab);
-
-        View sheetView = findViewById(R.id.fab_sheet);
-        //Have a framelayout in the sheetview and do a fragment transaction on it
-        //to display a favoritelist fragment
-        View overlay = findViewById(R.id.overlay);
-        int sheetColor = ContextCompat.getColor(this, R.color.cardview_light_background);
-        int fabColor = ContextCompat.getColor(this, R.color.theme_primary_dark);
-
-        //Caused by: java.lang.NullPointerException (sheetView)
-        // Create material sheet FAB
-        mFavoritesSheetFab = new EditableMaterialSheetFab(mFavoritePickerFAB, sheetView, overlay, sheetColor, fabColor, this);
-        mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel.class);
-
-        mFavoritesSheetFab.setEventListener(new MaterialSheetFabEventListener() {
-            @Override
-            public void onShowSheet() {
-
-                mSearchFAB.hide();
-                mFavoriteSheetVisible = true;
-
-                if (!checkOnboarding(NearbyActivity.eONBOARDING_LEVEL.ONBOARDING_LEVEL_ULTRA_LIGHT, NearbyActivity.eONBOARDING_STEP.ONBOARDING_STEP_TAP_FAV_NAME_HINT))
-                    dismissOnboardingHint();
-            }
-
-            @Override
-            public void onSheetHidden() {
-                if (!isLookingForBike() && mStationMapFragment.getMarkerBVisibleLatLng() == null) {
-                    //B tab with no selection
-                    if (Utils.Connectivity.isConnected(NearbyActivity.this))
-                        mSearchFAB.show();
-
-                    if (!checkOnboarding(NearbyActivity.eONBOARDING_LEVEL.ONBOARDING_LEVEL_FULL, NearbyActivity.eONBOARDING_STEP.ONBOARDING_STEP_SEARCH_SHOWCASE) &&
-                            !checkOnboarding(NearbyActivity.eONBOARDING_LEVEL.ONBOARDING_LEVEL_LIGHT, NearbyActivity.eONBOARDING_STEP.ONBOARDING_STEP_MAIN_CHOICE_HINT))
-                    {
-                        dismissOnboardingHint();
-                    }
-                }
-
-                mFavoriteSheetVisible = false;
-            }
-        });
-    }*/
-
-
 
     @Override
     public void onFavoriteListItemClick(String _stationId) {

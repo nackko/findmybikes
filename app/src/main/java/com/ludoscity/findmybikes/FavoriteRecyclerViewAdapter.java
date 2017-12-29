@@ -22,9 +22,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.utils.Utils;
-import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,8 +40,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
     private final OnFavoriteListItemClickListener mItemClickListener;
     private final OnFavoriteListItemStartDragListener mItemStartDragListener;
-    private final FavoriteListViewModel mfavListViewModel;
-    private final Context mCtx;
+    private final Context mCtx; //Must store the AppContext (not an ActivityContext)
 
     private boolean mSheetEditing = false;
 
@@ -72,14 +69,18 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
     }
 
-    public List<FavoriteEntityBase> getCurrentFavoriteList(){ return mFavoriteList; }
-    public void clearFavoriteList(){ mFavoriteList.clear(); notifyDataSetChanged(); }
+    //Model Observer is fragment. It uses this API to update the interface
+    public void resetFavoriteList(List<? extends FavoriteEntityBase> newList){
+        mFavoriteList.clear();
+        mFavoriteList.addAll(newList);
 
-    //Should listen to nearbyModelView
-    public void setSheetEditing(boolean sheetEditing) {
-        mSheetEditing = sheetEditing;
+        notifyDataSetChanged();
     }
 
+    public void setSheetEditing(boolean sheetEditing) {
+        mSheetEditing = sheetEditing;
+        notifyDataSetChanged();
+    }
 
     //TODO: investigate making the sheet (and not NearbyActivity) listening and forwarding relevant
     //event to NearbyActivity
@@ -117,24 +118,11 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         void onItemClear();
     }
 
-    public FavoriteRecyclerViewAdapter(Fragment lifecycleOwner, FavoriteListViewModel favListViewModel, OnFavoriteListItemClickListener _onItemClicklistener,
+    public FavoriteRecyclerViewAdapter(OnFavoriteListItemClickListener _onItemClicklistener,
                                        OnFavoriteListItemStartDragListener _onItemDragListener, Context _ctx){
         super();
         mItemClickListener = _onItemClicklistener;
         mItemStartDragListener = _onItemDragListener;
-        mfavListViewModel = favListViewModel;
-
-        mfavListViewModel.getFavoriteEntityStationList().observe(lifecycleOwner, new Observer<List<FavoriteEntityStation>>() {
-            @Override
-            public void onChanged(@Nullable List<FavoriteEntityStation> favoriteEntityStations) {
-                mFavoriteList.clear();
-                mFavoriteList.addAll(favoriteEntityStations);
-
-                notifyDataSetChanged();
-
-            }
-        });
-
         mCtx = _ctx;
     }
 
