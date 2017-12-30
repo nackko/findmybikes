@@ -36,3 +36,6 @@ android:
     # design library and Play Services
     - extra-google-m2repository
     - extra-android-m2repository
+
+    #tests will be run on this image. More could be added if required
+    - sys-img-armeabi-v7a-android-26
