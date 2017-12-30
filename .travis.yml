@@ -19,18 +19,9 @@ before_install:
     - echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
     - chmod +x gradlew
 
-install:
-  - echo no | avdmanager create avd -n acib -k \"system-images;android-24;google_apis;armeabi-v7a\" -f --abi \"armeabi-v7a\" --tag \"google_apis\"
-  - emulator -avd acib -engine classic -no-window -verbose &
-  - adb wait-for-device get-serialno
+install: ./gradlew clean build
 
-
-# Emulator Management: Create, Start and Wait
-before_script:
-  - android-wait-for-emulator
-  - sleep 30
-  - adb shell input keyevent 82 &
-  - sleep 15
+script: ./gradlew check
 
 
 android:
@@ -39,18 +30,14 @@ android:
     # use the latest revision of Android SDK Tools
     - platform-tools
     - sdkmanager
-    - tools
 
     # The BuildTools version used by your project
     - build-tools-26.0.2
 
     # The SDK version used to compile your project
     - android-26
-    - android-24
 
     # Additional components
     # design library and Play Services
     - extra-google-m2repository
     - extra-android-m2repository
-
-    - sys-img-armeabi-v7a-android-24
