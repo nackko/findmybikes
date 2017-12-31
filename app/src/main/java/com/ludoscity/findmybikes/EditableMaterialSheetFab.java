@@ -50,6 +50,9 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
             @Override
             public void onChanged(@Nullable Boolean isSheetEditing) {
 
+                if (mEditFAB.getVisibility() == View.INVISIBLE && mEditDoneFAB.getVisibility() == View.INVISIBLE)
+                    return;
+
                 if(isSheetEditing != null && isSheetEditing)
                 {
                     mEditFAB.hide();

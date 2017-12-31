@@ -125,36 +125,19 @@ public class FavoriteListFragment extends Fragment implements
                 if (mFavoriteRecyclerViewAdapter.getItemCount() != favoriteEntityStations.size()) {
                     mFavoriteRecyclerViewAdapter.resetFavoriteList(favoriteEntityStations);
                 }
+
+                //TODO: investigate communicating the required state change through NearbyActivityViewModel
+                mListener.onFavoriteListChanged(favoriteEntityStations.size() == 0);
             }
         });
 
         mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter( this, this, getActivity().getApplicationContext(), this);
 
-        //setupFavoriteListFeedback(favoriteList.isEmpty());    //MUST BE DONE IN NEARBYACTIVITY FOR NOW
         favoriteRecyclerView.setAdapter(mFavoriteRecyclerViewAdapter);
 
         mFavoriteItemTouchHelper.attachToRecyclerView(favoriteRecyclerView);
 
         return inflatedView;
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    private void setupFavoriteListFeedback(boolean _noFavorite) {
-        /*if (_noFavorite){
-            ((TextView)getView().findViewById(R.id.favorites_sheet_header_textview)).setText(
-                    Utils.fromHtml(String.format(getResources().getString(R.string.no_favorite), DBHelper.getBikeNetworkName(this))));
-            getView().findViewById(R.id.favorite_list_edit_fab).setVisibility(View.INVISIBLE);
-            getView().findViewById(R.id.favorite_list_edit_done_fab).setVisibility(View.INVISIBLE);
-
-            mNearbyActivityViewModel.favoriteSheetEditStop();
-            //mFavoriteRecyclerViewAdapter.setSheetEditing(false);
-        }
-        else{
-            ((TextView)getView().findViewById(R.id.favorites_sheet_header_textview)).setText(
-                    Utils.fromHtml(String.format(getResources().getString(R.string.favorites_sheet_header), DBHelper.getBikeNetworkName(this))));
-
-            ((FloatingActionButton)getView().findViewById(R.id.favorite_list_edit_fab)).show();
-        }*/
     }
 
     @Override
@@ -232,7 +215,6 @@ public class FavoriteListFragment extends Fragment implements
 
         mNearbyActivityViewModel.showFavoriteSheetEditFab();
         mNearbyActivityViewModel.favoriteItemNameEditStop();
-        //mFavoriteRecyclerViewAdapter.setupFavoriteList(DBHelper.getFavoriteAll());
     }
 
     @Override
@@ -262,6 +244,7 @@ public class FavoriteListFragment extends Fragment implements
     public interface OnFavoriteListFragmentInteractionListener {
 
         void onFavoriteItemEditDone(String fsvoriteId);
+        void onFavoriteListChanged(boolean noFavorite);
     }
 
 }

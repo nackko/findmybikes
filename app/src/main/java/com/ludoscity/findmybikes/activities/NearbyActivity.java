@@ -1037,14 +1037,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private void removeFavorite(final FavoriteEntityBase _toRemove) {
 
-        //DBHelper.updateFavorite(false, _toRemove);
-
-        //List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
-        //setupFavoriteListFeedback(favoriteList.isEmpty());
-
-
         mFavoriteListViewModel.removeFavorite(_toRemove);
-        //mFavoriteRecyclerViewAdapter.removeFavorite(_toRemove);
 
         //To setup correct name
         final BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
@@ -1061,12 +1054,6 @@ public class NearbyActivity extends AppCompatActivity
     private void addFavorite(final FavoriteEntityBase _toAdd) {
 
         mFavoriteListViewModel.addFavorite(_toAdd);
-        //DBHelper.updateFavorite(true, _toAdd);
-
-        //List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
-        //setupFavoriteListFeedback(favoriteList.isEmpty());
-
-        //mFavoriteRecyclerViewAdapter.addFavorite(_toAdd);
 
         //To setup correct name
         final BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
@@ -1170,6 +1157,24 @@ public class NearbyActivity extends AppCompatActivity
         BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
         getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
         getListPagerAdapter().notifyStationChangedAll(favoriteId);
+    }
+
+    @Override
+    public void onFavoriteListChanged(boolean noFavorite) {
+         if (noFavorite){
+            ((TextView)findViewById(R.id.favorites_sheet_header_textview)).setText(
+                    Utils.fromHtml(String.format(getResources().getString(R.string.no_favorite), DBHelper.getInstance().getBikeNetworkName(this))));
+            findViewById(R.id.favorite_sheet_edit_fab).setVisibility(View.INVISIBLE);
+            findViewById(R.id.favorite_sheet_edit_done_fab).setVisibility(View.INVISIBLE);
+
+            mNearbyActivityViewModel.favoriteSheetEditStop();
+        }
+        else{
+            ((TextView)findViewById(R.id.favorites_sheet_header_textview)).setText(
+                    Utils.fromHtml(String.format(getResources().getString(R.string.favorites_sheet_header), DBHelper.getInstance().getBikeNetworkName(this))));
+
+            ((FloatingActionButton)findViewById(R.id.favorite_sheet_edit_fab)).show();
+        }
     }
 
     private enum eONBOARDING_STEP { ONBOARDING_STEP_CHECKONLY, ONBOARDING_STEP_SEARCH_SHOWCASE, ONBOARDING_STEP_TRIP_TOTAL_SHOWCASE,
@@ -3633,12 +3638,9 @@ public class NearbyActivity extends AppCompatActivity
                             FavoriteEntityStation testFavToAdd = new FavoriteEntityStation(station.getLocationHash(), station.getName());
                             testFavToAdd.setCustomName(station.getName() + "-test");
                             mFavoriteListViewModel.addFavorite(testFavToAdd);
-                            //setupFavoriteListFeedback(favoriteList.isEmpty());
                         }
                         else{   //default favorite name
                             mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName()));
-                            //List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
-                            //setupFavoriteListFeedback(favoriteList.isEmpty());
                         }
 
                         ++addedCount;
