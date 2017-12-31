@@ -38,11 +38,11 @@ public class FavoriteRepository {
     //it happens a lot (every time user location is updated).
     //getFavoriteAll loads data from db
     public boolean isFavorite(String id) {
-        return getFavoriteEntityForId(id) != null;
+        return getFavoriteEntityStationForId(id).getValue() != null;
     }
 
-    public @Nullable FavoriteEntityBase getFavoriteEntityForId(String favoriteId) {
-        return DBHelper.getInstance().getDatabase().favoriteEntityStationDao().getForId(favoriteId).getValue();
+    public @Nullable LiveData<FavoriteEntityStation> getFavoriteEntityStationForId(String favoriteId) {
+        return DBHelper.getInstance().getDatabase().favoriteEntityStationDao().getForId(favoriteId);
     }
 
     public boolean hasAtleastNValidFavorites(String nearestBikeStationId, int n){

@@ -1,8 +1,8 @@
 package com.ludoscity.findmybikes.fragments;
 
+import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -120,11 +120,15 @@ public class FavoriteListFragment extends Fragment implements
         mFavoriteListViewModel.getFavoriteEntityStationList().observe(this, new Observer<List<FavoriteEntityStation>>() {
             @Override
             public void onChanged(@Nullable List<FavoriteEntityStation> favoriteEntityStations) {
-                mFavoriteRecyclerViewAdapter.resetFavoriteList(favoriteEntityStations);
+                //TODO: have more elaborate code, right now when a single item is changed, both this and the individual holders get notified
+                //TODO: maybe add UI index comparison, or that will be taken care of by individual items observer pattern ?
+                if (mFavoriteRecyclerViewAdapter.getItemCount() != favoriteEntityStations.size()) {
+                    mFavoriteRecyclerViewAdapter.resetFavoriteList(favoriteEntityStations);
+                }
             }
         });
 
-        mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter( this, this, getActivity().getApplicationContext());
+        mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter( this, this, getActivity().getApplicationContext(), this);
 
         //setupFavoriteListFeedback(favoriteList.isEmpty());    //MUST BE DONE IN NEARBYACTIVITY FOR NOW
         favoriteRecyclerView.setAdapter(mFavoriteRecyclerViewAdapter);
@@ -167,7 +171,7 @@ public class FavoriteListFragment extends Fragment implements
         });
     }
 
-    /*@Override
+    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
@@ -176,7 +180,7 @@ public class FavoriteListFragment extends Fragment implements
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
-    }*/
+    }
 
     @Override
     public void onDetach() {
@@ -204,16 +208,20 @@ public class FavoriteListFragment extends Fragment implements
     }
 
     @Override
-    public void onFavoristeListItemNameEditDone(String _favoriteId, String _newName) {
+    public void onFavoriteListItemNameEditDone(String _favoriteId, String _newName) {
 
         if (!_favoriteId.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
-            /*DBHelper.updateFavorite(true, getStation(_favoriteId).getFavoriteEntityForDisplayName(_newName));
-            BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
-            getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
-            getListPagerAdapter().notifyStationChangedAll(_favoriteId);*/
+
+            //TODO: the real original name is 'lost' here, it only ever exists in the BikeStation anymore
+            FavoriteEntityBase updatedFav = new FavoriteEntityStation(_favoriteId, _newName);
+
+            updatedFav.setCustomName(_newName);
+            mFavoriteListViewModel.updateFavorite(updatedFav);
+
+            mListener.onFavoriteItemEditDone(_favoriteId);
         }
         else{
-            FavoriteEntityBase favEntity = FavoriteRepository.getInstance().getFavoriteEntityForId(_favoriteId);
+            FavoriteEntityBase favEntity = FavoriteRepository.getInstance().getFavoriteEntityStationForId(_favoriteId).getValue();
             CharSequence attr = favEntity.getAttributions();
             String attrString = "";
             if (attr != null)
@@ -222,17 +230,13 @@ public class FavoriteListFragment extends Fragment implements
             mFavoriteListViewModel.addFavorite(new FavoriteEntityPlace(favEntity.getId(), _newName, favEntity.getLocation(), attrString));
         }
 
-        //mFavoritesSheetFab.showEditFab();
         mNearbyActivityViewModel.showFavoriteSheetEditFab();
         mNearbyActivityViewModel.favoriteItemNameEditStop();
         //mFavoriteRecyclerViewAdapter.setupFavoriteList(DBHelper.getFavoriteAll());
-
-        //mFavoriteItemEditInProgress = false;
-
     }
 
     @Override
-    public void onFavoristeListItemNameEditBegin() {
+    public void onFavoriteListItemNameEditBegin() {
         mNearbyActivityViewModel.favoriteItemNameEditStart();
 
     }
@@ -257,7 +261,7 @@ public class FavoriteListFragment extends Fragment implements
 
     public interface OnFavoriteListFragmentInteractionListener {
 
-        void onStationListFragmentInteraction(Uri uri);
+        void onFavoriteItemEditDone(String fsvoriteId);
     }
 
 }

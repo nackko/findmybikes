@@ -22,6 +22,7 @@ import com.ludoscity.findmybikes.RootApplication;
 import com.ludoscity.findmybikes.StationRecyclerViewAdapter;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.DividerItemDecoration;
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager;
 
@@ -63,11 +64,11 @@ public class StationListFragment extends Fragment
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View inflatedView =  inflater.inflate(R.layout.fragment_station_list, container, false);
-        mEmptyListTextView = (TextView) inflatedView.findViewById(R.id.empty_list_text);
+        mEmptyListTextView = inflatedView.findViewById(R.id.empty_list_text);
         mStationRecap = inflatedView.findViewById(R.id.station_recap);
-        mStationRecapName = (TextView) inflatedView.findViewById(R.id.station_recap_name);
-        mStationRecapAvailability = (TextView) inflatedView.findViewById(R.id.station_recap_availability);
-        mStationRecyclerView = (RecyclerView) inflatedView.findViewById(R.id.station_list_recyclerview);
+        mStationRecapName = inflatedView.findViewById(R.id.station_recap_name);
+        mStationRecapAvailability = inflatedView.findViewById(R.id.station_recap_availability);
+        mStationRecyclerView = inflatedView.findViewById(R.id.station_list_recyclerview);
         mStationRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         //mStationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mStationRecyclerView.setLayoutManager(new ScrollingLinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false, 300));
@@ -80,17 +81,17 @@ public class StationListFragment extends Fragment
             }
         });
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) inflatedView.findViewById(R.id.station_list_swipe_refresh_layout);
+        mSwipeRefreshLayout = inflatedView.findViewById(R.id.station_list_swipe_refresh_layout);
         mSwipeRefreshLayout.setOnRefreshListener((SwipeRefreshLayout.OnRefreshListener) getActivity());
         mSwipeRefreshLayout.setColorSchemeResources(R.color.stationlist_refresh_spinner_red,
                 R.color.stationlist_refresh_spinner_yellow,
                 R.color.stationlist_refresh_spinner_grey,
                 R.color.stationlist_refresh_spinner_green);
 
-        mAvailabilityTextView = (TextView) inflatedView.findViewById(R.id.availability_header);
+        mAvailabilityTextView = inflatedView.findViewById(R.id.availability_header);
         mProximityHeader = inflatedView.findViewById(R.id.proximity_header);
-        mProximityHeaderFromImageView = (ImageView) inflatedView.findViewById(R.id.proximity_header_from);
-        mProximityHeaderToImageView = (ImageView) inflatedView.findViewById(R.id.proximity_header_to);
+        mProximityHeaderFromImageView = inflatedView.findViewById(R.id.proximity_header_from);
+        mProximityHeaderToImageView = inflatedView.findViewById(R.id.proximity_header_to);
 
         Bundle args = getArguments();
         if (args != null){
@@ -227,8 +228,9 @@ public class StationListFragment extends Fragment
         if (getContext() == null)
             return false;
 
-        if (_station.isFavorite(getContext())) {
-            mStationRecapName.setText(_station.getFavoriteName(getContext(), true));
+        //TODO: this is broken, fix it
+        if (FavoriteRepository.getInstance().getFavoriteEntityStationForId(_station.getLocationHash()).getValue() != null) {
+            mStationRecapName.setText(FavoriteRepository.getInstance().getFavoriteEntityStationForId(_station.getLocationHash()).getValue().getSpannedDisplayName(getContext(), true ));
         }
         else {
             mStationRecapName.setText(_station.getName());

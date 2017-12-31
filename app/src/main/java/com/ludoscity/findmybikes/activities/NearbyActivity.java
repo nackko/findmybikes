@@ -120,6 +120,7 @@ import twitter4j.TwitterException;
 public class NearbyActivity extends AppCompatActivity
         implements StationMapFragment.OnStationMapFragmentInteractionListener,
         StationListFragment.OnStationListFragmentInteractionListener,
+        FavoriteListFragment.OnFavoriteListFragmentInteractionListener,
         EditableMaterialSheetFab.OnFavoriteSheetEventListener,
         SwipeRefreshLayout.OnRefreshListener,
         ViewPager.OnPageChangeListener,
@@ -737,7 +738,8 @@ public class NearbyActivity extends AppCompatActivity
                         place.getLatLng(),
                         attrString);
 
-                final FavoriteEntityBase existingFavForPlace = FavoriteRepository.getInstance().getFavoriteEntityForId(newFavForPlace.getId());
+                //TODO: fix this
+                final FavoriteEntityBase existingFavForPlace = null;//FavoriteRepository.getInstance().getFavoriteEntityForId(newFavForPlace.getId());
 
                 if ( existingFavForPlace == null) {
 
@@ -1161,6 +1163,15 @@ public class NearbyActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onFavoriteItemEditDone(String favoriteId) {
+
+        //TODO: handle this through activity ViewModel
+        BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
+        getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
+        getListPagerAdapter().notifyStationChangedAll(favoriteId);
+    }
+
     private enum eONBOARDING_STEP { ONBOARDING_STEP_CHECKONLY, ONBOARDING_STEP_SEARCH_SHOWCASE, ONBOARDING_STEP_TRIP_TOTAL_SHOWCASE,
         ONBOARDING_STEP_MAIN_CHOICE_HINT, ONBOARDING_STEP_TAP_FAV_NAME_HINT, ONBOARDING_STEP_SEARCH_HINT }
 
@@ -1306,7 +1317,7 @@ public class NearbyActivity extends AppCompatActivity
                 setupBTabSelection(highlighthedDockStation.getLocationHash(), isLookingForBike());
 
                 FavoriteEntityBase newFavForStation = new FavoriteEntityStation(highlighthedDockStation.getLocationHash(),
-                        highlighthedDockStation.getName(), true);
+                        highlighthedDockStation.getName());
 
                 boolean showFavoriteAddFab = false;
 
@@ -1804,8 +1815,7 @@ public class NearbyActivity extends AppCompatActivity
                         if (mStationMapFragment.isPickedPlaceMarkerVisible())
                             showFavoriteAddFab = true;  //Don't setup the fab as it's been done in OnActivityResult
                         else if (setupAddFavoriteFab(new FavoriteEntityStation(clickedStationId,
-                                getStation(clickedStationId).getName(),
-                                true)))
+                                getStation(clickedStationId).getName())))
                             showFavoriteAddFab = true;
                     }
 
@@ -1932,7 +1942,7 @@ public class NearbyActivity extends AppCompatActivity
             hideSetupShowTripDetailsWidget();
         }
 
-        final FavoriteEntityBase favorite = FavoriteRepository.getInstance().getFavoriteEntityForId(_favoriteId);
+        final FavoriteEntityBase favorite = FavoriteRepository.getInstance().getFavoriteEntityStationForId(_favoriteId).getValue();
 
         getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
                 true,
@@ -2077,7 +2087,7 @@ public class NearbyActivity extends AppCompatActivity
                             mCurrentUserLatLng, mStationMapFragment.getMarkerALatLng(), selectedStation.getLocation()));
 
             if (!mFavoritePicked){
-                FavoriteEntityBase fav = FavoriteRepository.getInstance().getFavoriteEntityForId(_selectedStationId);
+                FavoriteEntityBase fav = FavoriteRepository.getInstance().getFavoriteEntityStationForId(_selectedStationId).getValue();
                 if (fav != null)
                     mStationMapFragment.setPinForPickedFavorite(fav.getDisplayName(), getLatLngForStation(_selectedStationId), null );
             }
@@ -2449,7 +2459,7 @@ public class NearbyActivity extends AppCompatActivity
                     setupBTabSelection(clickedStation.getLocationHash(), false);
 
                     FavoriteEntityStation newFavForStation = new FavoriteEntityStation(clickedStation.getLocationHash(),
-                            clickedStation.getName(), true);
+                            clickedStation.getName());
 
                     boolean showFavoriteAddFab = false;
 
@@ -2478,7 +2488,7 @@ public class NearbyActivity extends AppCompatActivity
 
             if (null != clickedStation) {
 
-                boolean newState = !clickedStation.isFavorite(this);
+                boolean newState = FavoriteRepository.getInstance().getFavoriteEntityStationForId(clickedStation.getLocationHash()) == null;
 
                 if (newState) {
 
@@ -2487,17 +2497,20 @@ public class NearbyActivity extends AppCompatActivity
                         mOnboardingShowcaseView = null;
                     }
 
-                    if (mStationMapFragment.getMarkerPickedPlaceVisibleName().isEmpty())
-                        addFavorite(clickedStation.getFavoriteEntityForDisplayName(clickedStation.getName()));
+                    if (mStationMapFragment.getMarkerPickedPlaceVisibleName().isEmpty()) {
+                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName()));
+                    }
                     else {   //there's a third destination
-                        addFavorite(clickedStation.getFavoriteEntityForDisplayName(mStationMapFragment.getMarkerPickedPlaceVisibleName()));
+                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName());
+                        toAdd.setCustomName(mStationMapFragment.getMarkerPickedPlaceVisibleName());
+                        addFavorite(toAdd);
                     }
                     //TODO: how should that happen ?
                     //mFavoritesSheetFab.scrollToTop();
                     //should be provided by favorite list fragment ?
 
                 } else {
-                    removeFavorite(FavoriteRepository.getInstance().getFavoriteEntityForId(clickedStation.getLocationHash()));
+                    removeFavorite((FavoriteRepository.getInstance().getFavoriteEntityStationForId(clickedStation.getLocationHash()).getValue()));
                 }
             }
         }
@@ -2723,7 +2736,7 @@ public class NearbyActivity extends AppCompatActivity
                             mStationMapFragment.getMarkerBVisibleLatLng().longitude != mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng().longitude)
                             )
                         locationToShow = mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng();
-                    else if(!mStationMapFragment.isPickedFavoriteMarkerVisible() && FavoriteRepository.getInstance().getFavoriteEntityForId(highlightedStation.getLocationHash()) == null)
+                    else if(!mStationMapFragment.isPickedFavoriteMarkerVisible() && FavoriteRepository.getInstance().getFavoriteEntityStationForId(highlightedStation.getLocationHash()) == null)
                         mAddFavoriteFAB.show();
 
                     if (locationToShow != null) {
@@ -2838,7 +2851,7 @@ public class NearbyActivity extends AppCompatActivity
     }*/
 
     /*@Override
-    public void onFavoristeListItemNameEditBegin() {
+    public void onFavoriteListItemNameEditBegin() {
         mFavoritesSheetFab.hideEditFab();
         mFavoriteItemEditInProgress = true;
     }*/
@@ -2855,7 +2868,7 @@ public class NearbyActivity extends AppCompatActivity
     }*/
 
     /*@Override
-    public void onFavoristeListItemNameEditDone(String _favoriteId, String _newName) {
+    public void onFavoriteListItemNameEditDone(String _favoriteId, String _newName) {
 
         if (!_favoriteId.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
             DBHelper.updateFavorite(true, getStation(_favoriteId).getFavoriteEntityForDisplayName(_newName));
@@ -3617,15 +3630,13 @@ public class NearbyActivity extends AppCompatActivity
                             break;
 
                         else if (addedCount % 2 == 0) { //non default favorite name
-                            //station.setFavorite(true, NearbyActivity.this); //We want to manipulate everything, hence go directly to DBHelper
-                            //DBHelper.updateFavorite(true, new FavoriteEntityStation(station.getLocationHash(), station.getName() + "-test", false));
-                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName() + "-test", false));
-                            //List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
+                            FavoriteEntityStation testFavToAdd = new FavoriteEntityStation(station.getLocationHash(), station.getName());
+                            testFavToAdd.setCustomName(station.getName() + "-test");
+                            mFavoriteListViewModel.addFavorite(testFavToAdd);
                             //setupFavoriteListFeedback(favoriteList.isEmpty());
                         }
                         else{   //default favorite name
-                            //DBHelper.updateFavorite(true, new FavoriteEntityStation(station.getLocationHash(), station.getName(), true));
-                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName(), true));
+                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName()));
                             //List<FavoriteEntityBase> favoriteList = DBHelper.getFavoriteAll();
                             //setupFavoriteListFeedback(favoriteList.isEmpty());
                         }

@@ -21,6 +21,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.Utils;
 
 import java.text.NumberFormat;
@@ -295,12 +296,12 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         BikeStationListItemViewHolder(View itemView) {
             super(itemView);
 
-            mProximity = (TextView) itemView.findViewById(R.id.station_proximity);
-            mName = (TextView) itemView.findViewById(R.id.station_name);
-            mAvailability = (TextView) itemView.findViewById(R.id.station_availability);
+            mProximity = itemView.findViewById(R.id.station_proximity);
+            mName = itemView.findViewById(R.id.station_name);
+            mAvailability = itemView.findViewById(R.id.station_availability);
 
-            mFavoriteFab = (FloatingActionButton) itemView.findViewById(R.id.favorite_fab);
-            mFabsAnchor = (FrameLayout) itemView.findViewById(R.id.fabs_anchor);
+            mFavoriteFab = itemView.findViewById(R.id.favorite_fab);
+            mFabsAnchor = itemView.findViewById(R.id.fabs_anchor);
             itemView.setOnClickListener(this);
 
             mFavoriteFab.setOnClickListener(this);
@@ -338,8 +339,9 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                 mProximity.setVisibility(View.GONE);
             }
 
-            if (_station.isFavorite(mCtx))
-                mName.setText(_station.getFavoriteName(mCtx, false));
+            //TODO: this is broken. Fix it
+            if (FavoriteRepository.getInstance().getFavoriteEntityStationForId(_station.getLocationHash()).getValue() != null)
+                mName.setText(FavoriteRepository.getInstance().getFavoriteEntityStationForId(_station.getLocationHash()).getValue().getSpannedDisplayName(mCtx, false));
             else
                 mName.setText(_station.getName());
 
@@ -563,7 +565,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                     notifyItemChanged(getStationItemPositionInList(getSelected().getLocationHash()));
                     mListener.onStationListItemClick(StationListFragment.STATION_LIST_FAVORITE_FAB_CLICK_PATH);
                     //ordering matters
-                    if (getSelected().isFavorite(mCtx))
+                    if (FavoriteRepository.getInstance().getFavoriteEntityStationForId(getSelected().getLocationHash()) != null)
                         mFavoriteFab.setImageResource(R.drawable.ic_action_favorite_24dp);
                     else
                         mFavoriteFab.setImageResource(R.drawable.ic_action_favorite_outline_24dp);

@@ -2,15 +2,14 @@ package com.ludoscity.findmybikes;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.graphics.Typeface;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.percent.PercentLayoutHelper;
 import android.support.percent.PercentRelativeLayout;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,6 +21,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
+import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.Utils;
 
 import java.util.ArrayList;
@@ -38,11 +39,21 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
                                         implements ItemTouchHelperAdapter {
 
 
-    private final OnFavoriteListItemClickListener mItemClickListener;
-    private final OnFavoriteListItemStartDragListener mItemStartDragListener;
-    private final Context mCtx; //Must store the AppContext (not an ActivityContext)
+    //following should be final
+    private static OnFavoriteListItemClickListener mItemClickListener;
+    //following should be final
+    private static OnFavoriteListItemStartDragListener mItemStartDragListener;
+    private static InputMethodManager mInputMethodManager;
 
-    private boolean mSheetEditing = false;
+    //Those variable to extract Context data at construction so that ViewHolders can statically reference them
+    private static float mFavoriteNameWidthSheetEditing;
+    private static float mFavoriteNameWidthNoSheetEditing;
+    private static int mResolvedThemeAccentColor;
+    private static int mResolvedThemeAccentTransparentColor;
+
+    private static boolean mSheetEditing = false;
+
+    private static LifecycleOwner mOwner;
 
     //TODO: Use ViewModel (Android architecture component)
     //Present self to past self : bingo !
@@ -86,9 +97,9 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
     //event to NearbyActivity
     public interface OnFavoriteListItemClickListener {
         void onFavoriteListItemClick(String _stationId);
-        void onFavoristeListItemNameEditDone(String _stationId, String _newName );
+        void onFavoriteListItemNameEditDone(String _stationId, String _newName );
 
-        void onFavoristeListItemNameEditBegin();
+        void onFavoriteListItemNameEditBegin();
 
         void onFavoristeListItemNameEditAbort();
 
@@ -119,11 +130,17 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
     }
 
     public FavoriteRecyclerViewAdapter(OnFavoriteListItemClickListener _onItemClicklistener,
-                                       OnFavoriteListItemStartDragListener _onItemDragListener, Context _ctx){
+                                       OnFavoriteListItemStartDragListener _onItemDragListener, Context _ctx,
+                                       LifecycleOwner _owner){
         super();
         mItemClickListener = _onItemClicklistener;
         mItemStartDragListener = _onItemDragListener;
-        mCtx = _ctx;
+        mFavoriteNameWidthSheetEditing = Utils.getPercentResource(_ctx, R.dimen.favorite_name_width_sheet_editing, true);
+        mFavoriteNameWidthNoSheetEditing = Utils.getPercentResource(_ctx, R.dimen.favorite_name_width_no_sheet_editing, true);
+        mResolvedThemeAccentColor = ContextCompat.getColor(_ctx, R.color.theme_accent);
+        mResolvedThemeAccentTransparentColor = ContextCompat.getColor(_ctx, R.color.theme_accent_transparent);
+        mInputMethodManager = (InputMethodManager) _ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+        mOwner = _owner;
     }
 
     @Override
@@ -144,7 +161,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         return mFavoriteList.size();
     }
 
-    public class FavoriteListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
+    public static class FavoriteListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
             View.OnFocusChangeListener, View.OnTouchListener, FavoriteItemTouchHelperViewHolder {
 
         TextView mName;
@@ -169,7 +186,6 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
             mOrderingAffordanceHandle = itemView.findViewById(R.id.reorder_affordance_handle);
             mOrderingAffordanceHandle.setOnTouchListener(this);
 
-
             mName.setOnClickListener(this);
             mEditFab.setOnClickListener(this);
             mDoneFab.setOnClickListener(this);
@@ -178,22 +194,73 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
         void bindFavorite(FavoriteEntityBase _favorite){
 
-            if (_favorite.isDisplayNameDefault())
-                mName.setTypeface(null, Typeface.ITALIC);
-            else
-                mName.setTypeface(null, Typeface.BOLD);
+            FavoriteRepository.getInstance().getFavoriteEntityStationForId(_favorite.getId()).observe(mOwner, new Observer<FavoriteEntityStation>() {
+                @Override
+                public void onChanged(@Nullable FavoriteEntityStation favoriteEntityStation) {
 
-            mName.setText(_favorite.getDisplayName());
-            mFavoriteId = _favorite.getId();
+                    if (favoriteEntityStation.isDisplayNameDefault())
+                        mName.setTypeface(null, Typeface.ITALIC);
+                    else
+                        mName.setTypeface(null, Typeface.BOLD);
 
-            itemView.setBackgroundResource(R.color.theme_accent_transparent);
+                    mName.setText(favoriteEntityStation.getDisplayName());
+                    mFavoriteId = favoriteEntityStation.getId();
+
+                    itemView.setBackgroundResource(R.color.theme_accent_transparent);
+
+
+                    if (mSheetEditing){
+                        mEditFab.hide(new FloatingActionButton.OnVisibilityChangedListener(){
+                            @Override
+                            public void onHidden(FloatingActionButton fab) {
+                                super.onHidden(fab);
+                                mEditFab.setVisibility(View.INVISIBLE);
+                            }
+                        });
+
+                        mDeleteFab.show();
+
+                        mOrderingAffordanceHandle.setVisibility(View.VISIBLE);
+
+                        //The width percentage is updated so that the name TextView gives room to the fabs
+                        //RecyclerView gives us free opacity/bounds resizing animations
+                        PercentRelativeLayout.LayoutParams params =(PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
+                        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+
+                        info.widthPercent = mFavoriteNameWidthSheetEditing;
+                        mName.requestLayout();
+
+                    }
+                    else {
+                        mDeleteFab.hide(new FloatingActionButton.OnVisibilityChangedListener(){
+                            @Override
+                            public void onHidden(FloatingActionButton fab) {
+                                super.onHidden(fab);
+                                mDeleteFab.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                        mEditFab.show();
+
+                        mOrderingAffordanceHandle.setVisibility(View.GONE);
+
+                        PercentRelativeLayout.LayoutParams params =(PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
+                        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+
+                        info.widthPercent = mFavoriteNameWidthNoSheetEditing;
+                        mName.requestLayout();
+                    }
+
+                }
+            });
+
+
 
             //Beware FloatingActionButton bugs !!
             //so, to get nicely animated buttons I need
             // - 1ms delay (using Handler)
             // - set button visibility manualy to invisible at the end of the hiding animation
             //(using fab provided animation interface)
-            Handler handler = new Handler();
+            /*Handler handler = new Handler();
 
             handler.postDelayed(new Runnable() {
                 @Override
@@ -241,7 +308,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
                     }
 
                 }
-            }, 1);
+            }, 1);*/
 
         }
 
@@ -262,13 +329,13 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
                 case R.id.favorite_name_edit_fab:
                     mEditing = true;
                     setupItemEditMode(true);
-                    mItemClickListener.onFavoristeListItemNameEditBegin();
+                    mItemClickListener.onFavoriteListItemNameEditBegin();
                     break;
 
                 case R.id.favorite_name_done_fab:
                     mEditing = false;
                     setupItemEditMode(false);
-                    mItemClickListener.onFavoristeListItemNameEditDone(mFavoriteId, mName.getText().toString());
+                    mItemClickListener.onFavoriteListItemNameEditDone(mFavoriteId, mName.getText().toString());
                     break;
 
                 case R.id.favorite_delete_fab:
@@ -316,13 +383,11 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         }
 
         private void showSoftInput() {
-            InputMethodManager imm = (InputMethodManager) mCtx.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(mName, InputMethodManager.SHOW_FORCED);
+            mInputMethodManager.showSoftInput(mName, InputMethodManager.SHOW_FORCED);
         }
 
         private void hideSoftInput() {
-            InputMethodManager imm = (InputMethodManager) mCtx.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(mName.getWindowToken(), 0);
+            mInputMethodManager.hideSoftInputFromWindow(mName.getWindowToken(), 0);
         }
 
         @Override
@@ -360,19 +425,18 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         public void onItemSelected() {
 
             if (mSheetEditing)
-                animateBackgroundColor(R.color.theme_accent_transparent, R.color.theme_accent, 250);
+                animateBackgroundColor(mResolvedThemeAccentTransparentColor, mResolvedThemeAccentColor, 250);
         }
 
         @Override
         public void onItemClear() {
             if (mSheetEditing)
-                animateBackgroundColor(R.color.theme_accent, R.color.theme_accent_transparent, 250);
+                animateBackgroundColor(mResolvedThemeAccentColor, mResolvedThemeAccentTransparentColor, 250);
         }
 
         //http://stackoverflow.com/questions/2614545/animate-change-of-view-background-color-on-android/14467625#14467625
-        private void animateBackgroundColor(int _colorFromResId, int _colorToResId, int _durationMillisecond){
-            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), ContextCompat.getColor(mCtx, _colorFromResId),
-                    ContextCompat.getColor(mCtx, _colorToResId));
+        private void animateBackgroundColor(int _colorFrom, int _colorTo, int _durationMillisecond){
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), _colorFrom, _colorTo);
             colorAnimation.setDuration(_durationMillisecond);
             colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override

@@ -42,11 +42,15 @@ public class FavoriteListViewModel extends ViewModel {
     }
 
     public void removeFavorite(String favIdToRemove){
-        FavoriteRepository.getInstance().updateFavorite(false, FavoriteRepository.getInstance().getFavoriteEntityForId(favIdToRemove));
+        FavoriteRepository.getInstance().updateFavorite(false, FavoriteRepository.getInstance().getFavoriteEntityStationForId(favIdToRemove).getValue());
     }
 
 
     public void addFavorite(final FavoriteEntityBase toAdd){
         FavoriteRepository.getInstance().updateFavorite(true, toAdd);
+    }
+
+    public void updateFavorite(final FavoriteEntityBase updatedFavorite){
+        addFavorite(updatedFavorite);
     }
 }
