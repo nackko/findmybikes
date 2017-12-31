@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_1_2;
+
 /**
  * Created by F8Full on 2015-04-02.
  * This file is part of BixiTrackExplorer
@@ -72,7 +74,9 @@ public class DBHelper {
     private DBHelper() {}
 
     public void init(Context context) throws IOException, PackageManager.NameNotFoundException {
-        mDatabase = Room.databaseBuilder(context, AppDatabase.class, "findmybikes-database").build();
+        mDatabase = Room.databaseBuilder(context, AppDatabase.class, "findmybikes-database")
+                .addMigrations(MIGRATION_1_2)
+                .build();
 
         //Check for SharedPreferences versioning
         int sharedPrefVersion = context.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE).getInt(SHARED_PREF_VERSION_CODE, 0);

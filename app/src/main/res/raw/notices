@@ -23,7 +23,7 @@
             <url>https://github.com/yusuke/twitter4j</url>
             <copyright>Copyright © 2007 Yusuke Yamamoto</copyright>
             <license>Apache Software License 2.0</license>
-        </notice>
+    </notice>
     <notice>
         <name>LicensesDialog</name>
         <url>https://github.com/PSDev/LicensesDialog</url>
@@ -37,9 +37,9 @@
         <license>Apache Software License 2.0</license>
     </notice>
     <notice>
-        <name>Couchbase mobile lite</name>
-        <url>https://github.com/couchbase/couchbase-lite-android</url>
-        <copyright>Copyright © 2015 Couchbase, Inc.</copyright>
+        <name>Android Debug Database</name>
+        <url>https://github.com/amitshekhariitbhu/Android-Debug-Database</url>
+        <copyright>Copyright © 2016 Amit Shekhar</copyright>
         <license>Apache Software License 2.0</license>
     </notice>
 

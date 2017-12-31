@@ -12,15 +12,8 @@ import com.ludoscity.findmybikes.helpers.DBHelper;
 @Entity
 public class FavoriteEntityStation extends FavoriteEntityBase {
 
-    private boolean displayNameIsDefault;
-
-    public FavoriteEntityStation(){
-        super();
-    }
-
-    public FavoriteEntityStation(String id, String name, boolean displayNameIsDefault){
-        super(id,name);
-        this.setDisplayNameIsDefault(displayNameIsDefault);
+    public FavoriteEntityStation(String id, String defaultName){
+        super(id,defaultName);
     }
 
     @Override
@@ -29,20 +22,7 @@ public class FavoriteEntityStation extends FavoriteEntityBase {
     }
 
     @Override
-    public boolean isDisplayNameDefault() {
-        return isDisplayNameIsDefault();
-    }
-
-    @Override
     public LatLng getLocation() {
         return DBHelper.getInstance().getStation(getId()).getLocation();
-    }
-
-    public boolean isDisplayNameIsDefault() {
-        return displayNameIsDefault;
-    }
-
-    public void setDisplayNameIsDefault(boolean displayNameIsDefault) {
-        this.displayNameIsDefault = displayNameIsDefault;
     }
 }

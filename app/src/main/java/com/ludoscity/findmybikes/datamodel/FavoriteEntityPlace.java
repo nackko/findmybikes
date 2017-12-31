@@ -18,13 +18,8 @@ public class FavoriteEntityPlace extends FavoriteEntityBase {
     private LatLng location;
     private String attributions;
 
-    public FavoriteEntityPlace(){
-        super();
-    }
-
-
-    public FavoriteEntityPlace(String id, String name, LatLng location, String attributions){
-        super(PLACE_ID_PREFIX + id,name);
+    public FavoriteEntityPlace(String id, String placeName, LatLng location, String attributions){
+        super(PLACE_ID_PREFIX + id, placeName);
         this.location = location;
         this.attributions = attributions;
     }
@@ -33,11 +28,6 @@ public class FavoriteEntityPlace extends FavoriteEntityBase {
     @Override
     public String getAttributions() {
         return attributions;
-    }
-
-    @Override
-    public boolean isDisplayNameDefault() {
-        return false;
     }
 
     @Override
