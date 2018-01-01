@@ -28,8 +28,10 @@ android:
   components:
     # Uncomment the lines below if you want to
     # use the latest revision of Android SDK Tools
+    - tools
     - platform-tools
     - sdkmanager
+    - tools #tools twice on purpose, see https://docs.travis-ci.com/user/languages/android/
 
     # The BuildTools version used by your project
     - build-tools-26.0.2
