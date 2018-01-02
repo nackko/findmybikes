@@ -88,6 +88,17 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         notifyDataSetChanged();
     }
 
+    public void removeFavorite(String favoriteId, int adapterPosition){
+        for (FavoriteEntityBase fav : mFavoriteList){
+            if (fav.getId().equalsIgnoreCase(favoriteId)){
+                mFavoriteList.remove(fav);
+                break;
+            }
+        }
+
+        notifyItemRemoved(adapterPosition);
+    }
+
     public void setSheetEditing(boolean sheetEditing) {
         mSheetEditing = sheetEditing;
         notifyDataSetChanged();
@@ -103,7 +114,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
         void onFavoristeListItemNameEditAbort();
 
-        void onFavoriteListItemDelete(String mStationId);
+        void onFavoriteListItemDelete(String favoriteId, int adapterPosition);
     }
 
     public interface OnFavoriteListItemStartDragListener{
@@ -197,6 +208,9 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
             FavoriteRepository.getInstance().getFavoriteEntityStationForId(_favorite.getId()).observe(mOwner, new Observer<FavoriteEntityStation>() {
                 @Override
                 public void onChanged(@Nullable FavoriteEntityStation favoriteEntityStation) {
+
+                    if (favoriteEntityStation == null)  //Our favorite been deleted, fragment observer code will take care of that
+                        return;
 
                     if (favoriteEntityStation.isDisplayNameDefault())
                         mName.setTypeface(null, Typeface.ITALIC);
@@ -339,7 +353,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
                     break;
 
                 case R.id.favorite_delete_fab:
-                    mItemClickListener.onFavoriteListItemDelete(mFavoriteId);
+                    mItemClickListener.onFavoriteListItemDelete(mFavoriteId, getAdapterPosition());
                     break;
             }
         }

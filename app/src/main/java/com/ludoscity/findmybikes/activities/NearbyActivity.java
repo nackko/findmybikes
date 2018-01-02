@@ -1037,7 +1037,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private void removeFavorite(final FavoriteEntityBase _toRemove) {
 
-        mFavoriteListViewModel.removeFavorite(_toRemove);
+        mFavoriteListViewModel.removeFavorite(_toRemove.getId());
 
         //To setup correct name
         final BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
@@ -2876,7 +2876,7 @@ public class NearbyActivity extends AppCompatActivity
     public void onFavoriteListItemNameEditDone(String _favoriteId, String _newName) {
 
         if (!_favoriteId.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
-            DBHelper.updateFavorite(true, getStation(_favoriteId).getFavoriteEntityForDisplayName(_newName));
+            DBHelper.addOrUpdateFavorite(true, getStation(_favoriteId).getFavoriteEntityForDisplayName(_newName));
             BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
             getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
             getListPagerAdapter().notifyStationChangedAll(_favoriteId);
@@ -2888,7 +2888,7 @@ public class NearbyActivity extends AppCompatActivity
             if (attr != null)
                 attrString = attr.toString();
 
-            DBHelper.updateFavorite(true, new FavoriteEntityPlace(favEntity.getId(), _newName, favEntity.getLocation(), attrString));
+            DBHelper.addOrUpdateFavorite(true, new FavoriteEntityPlace(favEntity.getId(), _newName, favEntity.getLocation(), attrString));
         }
 
         mFavoritesSheetFab.showEditFab();

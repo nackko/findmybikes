@@ -37,17 +37,12 @@ public class FavoriteListViewModel extends ViewModel {
     //Those are are and forwarding to repo because they imply a modification of the list
     //TODO: When adding FavoriteEntityPlace, have a single LiveData<List<FavoriteEntityBase>>
     //maintained in the model and observing the two lists that will exist in the repo
-    public void removeFavorite(FavoriteEntityBase toRemove){
-        FavoriteRepository.getInstance().updateFavorite(false, toRemove);
-    }
-
     public void removeFavorite(String favIdToRemove){
-        FavoriteRepository.getInstance().updateFavorite(false, FavoriteRepository.getInstance().getFavoriteEntityStationForId(favIdToRemove).getValue());
+        FavoriteRepository.getInstance().removeFavorite(favIdToRemove);
     }
-
 
     public void addFavorite(final FavoriteEntityBase toAdd){
-        FavoriteRepository.getInstance().updateFavorite(true, toAdd);
+        FavoriteRepository.getInstance().addOrUpdateFavorite(toAdd);
     }
 
     public void updateFavorite(final FavoriteEntityBase updatedFavorite){

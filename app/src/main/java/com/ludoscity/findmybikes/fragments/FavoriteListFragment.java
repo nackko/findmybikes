@@ -122,11 +122,12 @@ public class FavoriteListFragment extends Fragment implements
             public void onChanged(@Nullable List<FavoriteEntityStation> favoriteEntityStations) {
                 //TODO: have more elaborate code, right now when a single item is changed, both this and the individual holders get notified
                 //TODO: maybe add UI index comparison, or that will be taken care of by individual items observer pattern ?
-                if (mFavoriteRecyclerViewAdapter.getItemCount() != favoriteEntityStations.size()) {
+                if (favoriteEntityStations.size() > mFavoriteRecyclerViewAdapter.getItemCount()) {
                     mFavoriteRecyclerViewAdapter.resetFavoriteList(favoriteEntityStations);
                 }
 
                 //TODO: investigate communicating the required state change through NearbyActivityViewModel
+                //actually that should be done now by also observing the same model
                 mListener.onFavoriteListChanged(favoriteEntityStations.size() == 0);
             }
         });
@@ -232,7 +233,8 @@ public class FavoriteListFragment extends Fragment implements
     }
 
     @Override
-    public void onFavoriteListItemDelete(String favoriteId) {
+    public void onFavoriteListItemDelete(String favoriteId, int adapterPosition) {
+        mFavoriteRecyclerViewAdapter.removeFavorite(favoriteId, adapterPosition);
         mFavoriteListViewModel.removeFavorite(favoriteId);
     }
 

@@ -52,24 +52,27 @@ public class FavoriteRepository {
         //return count != null && count  >= n;
     }
 
-    public void updateFavorite(final Boolean isFavorite, final FavoriteEntityBase _favoriteEntity) {
+    public void removeFavorite(final String favIdToRemove)
+    {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DBHelper.getInstance().getDatabase().favoriteEntityStationDao().deleteOne(favIdToRemove);
+            }
+        }).start();
+    }
+
+    public void addOrUpdateFavorite(final FavoriteEntityBase _favoriteEntity) {
 
 
         if(_favoriteEntity instanceof FavoriteEntityStation)
         {
-            if(isFavorite)
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        long truc = DBHelper.getInstance().getDatabase().favoriteEntityStationDao().insertOne((FavoriteEntityStation)_favoriteEntity);
-                        int i = 0;  //We know that works because truc returns a valid rowid incrementing at each add. Data retrieval is the issue
-                        //List<FavoriteEntityStation> bidule = mDatabase.favoriteEntityStationDao().getFavoriteStationList().getValue();
-                        ++i;
-                    }
-                }).start();
-
-            else
-                DBHelper.getInstance().getDatabase().favoriteEntityStationDao().deleteOne(_favoriteEntity.getId());
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                        DBHelper.getInstance().getDatabase().favoriteEntityStationDao().insertOne((FavoriteEntityStation)_favoriteEntity);
+                }
+            }).start();
         }
             /*else    //_favoriteEntity instanceof FavoriteEntityPlace
             {
