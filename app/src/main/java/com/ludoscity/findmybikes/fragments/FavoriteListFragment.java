@@ -41,6 +41,8 @@ public class FavoriteListFragment extends Fragment implements
     FavoriteRecyclerViewAdapter mFavoriteRecyclerViewAdapter;
 
     private OnFavoriteListFragmentInteractionListener mListener;
+    private boolean mIsFavoriteSheetEditInProgress = false;
+    private boolean mIsFavoriteSheetItemNameEditInProgress = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -61,10 +63,7 @@ public class FavoriteListFragment extends Fragment implements
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-
-                FavoriteRecyclerViewAdapter.FavoriteListItemViewHolder favViewHolder = (FavoriteRecyclerViewAdapter.FavoriteListItemViewHolder)viewHolder;
-
-                mFavoriteListViewModel.removeFavorite(favViewHolder.getFavoriteId());
+                onFavoriteListItemDelete(((FavoriteRecyclerViewAdapter.FavoriteListItemViewHolder)viewHolder).getFavoriteId(), viewHolder.getAdapterPosition());
             }
 
             @Override
@@ -77,13 +76,7 @@ public class FavoriteListFragment extends Fragment implements
             @Override
             public boolean isItemViewSwipeEnabled() {
 
-                Boolean isFavoriteSheetEditInProgress = mNearbyActivityViewModel.isFavoriteSheetEditInProgress().getValue();
-                Boolean isFavoriteSheetItemNameEditInProgress = mNearbyActivityViewModel.isFavoriteSheetItemNameEditInProgress().getValue();
-
-                return  !(isFavoriteSheetEditInProgress == null) &&
-                        !(isFavoriteSheetItemNameEditInProgress == null) &&
-                        !mNearbyActivityViewModel.isFavoriteSheetEditInProgress().getValue() &&
-                        !mNearbyActivityViewModel.isFavoriteSheetItemNameEditInProgress().getValue();//!mFavoriteRecyclerViewAdapter.getSheetEditing() && !mFavoriteItemEditInProgress;
+                return !mIsFavoriteSheetEditInProgress && !mIsFavoriteSheetItemNameEditInProgress;
             }
 
             @Override
@@ -150,7 +143,17 @@ public class FavoriteListFragment extends Fragment implements
         mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean favSheetEditInProgress) {
-                mFavoriteRecyclerViewAdapter.setSheetEditing(favSheetEditInProgress);
+
+                mIsFavoriteSheetEditInProgress = favSheetEditInProgress;
+                mFavoriteRecyclerViewAdapter.setSheetEditing(mIsFavoriteSheetEditInProgress);
+            }
+        });
+
+        mNearbyActivityViewModel.isFavoriteSheetItemNameEditInProgress().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean favItemNameEditInProgress) {
+
+                mIsFavoriteSheetItemNameEditInProgress = favItemNameEditInProgress;
             }
         });
     }
