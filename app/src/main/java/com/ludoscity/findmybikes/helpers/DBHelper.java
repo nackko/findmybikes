@@ -125,7 +125,7 @@ public class DBHelper {
         }
     }
 
-    AppDatabase getDatabase(){
+    public AppDatabase getDatabase(){
         return mDatabase;
     }
 

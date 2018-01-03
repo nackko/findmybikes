@@ -21,8 +21,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.helpers.DBHelper;
-import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.Utils;
+import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -64,6 +64,8 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
     private OnStationListItemClickListener mListener;
     private boolean mRespondToClick = true;
     private boolean mOutdatedAvailability = false;
+
+    private static FavoriteListViewModel mFavoriteListViewModel;
 
     //TODO: come up with a design that doesn't require dynamic casting
     public static class DistanceComparator implements Comparator<BikeStation>, Parcelable {
@@ -249,10 +251,11 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
     }
 
     public StationRecyclerViewAdapter(OnStationListItemClickListener listener,
-                                      Context _ctx){
+                                      Context _ctx, FavoriteListViewModel favListViewModel){
         super();
         mListener = listener;
         mCtx = _ctx;
+        mFavoriteListViewModel = favListViewModel;
     }
 
     @Override
@@ -339,9 +342,8 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                 mProximity.setVisibility(View.GONE);
             }
 
-            //TODO: this is broken. Fix it
-            if (FavoriteRepository.getInstance().getFavoriteEntityStationForId(_station.getLocationHash()).getValue() != null)
-                mName.setText(FavoriteRepository.getInstance().getFavoriteEntityStationForId(_station.getLocationHash()).getValue().getSpannedDisplayName(mCtx, false));
+            if (mFavoriteListViewModel.isFavorite(_station.getLocationHash()))
+                mName.setText(mFavoriteListViewModel.getFavoriteEntityForId(_station.getLocationHash()).getSpannedDisplayName(mCtx, false));
             else
                 mName.setText(_station.getName());
 
@@ -565,7 +567,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                     notifyItemChanged(getStationItemPositionInList(getSelected().getLocationHash()));
                     mListener.onStationListItemClick(StationListFragment.STATION_LIST_FAVORITE_FAB_CLICK_PATH);
                     //ordering matters
-                    if (FavoriteRepository.getInstance().getFavoriteEntityStationForId(getSelected().getLocationHash()) != null)
+                    if (mFavoriteListViewModel.isFavorite(getSelected().getLocationHash()))
                         mFavoriteFab.setImageResource(R.drawable.ic_action_favorite_24dp);
                     else
                         mFavoriteFab.setImageResource(R.drawable.ic_action_favorite_outline_24dp);

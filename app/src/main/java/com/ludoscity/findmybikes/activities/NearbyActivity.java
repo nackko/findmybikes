@@ -608,7 +608,7 @@ public class NearbyActivity extends AppCompatActivity
         //boolean alreadyFavorite = DBHelper.getFavoriteEntityForId(_toAdd.getId()) != null;
         //boolean alreadyFavorite =
 
-        if (!FavoriteRepository.getInstance().isFavorite(_toAdd.getId()))
+        if (!mFavoriteListViewModel.isFavorite(_toAdd.getId()))
             mAddFavoriteFAB.setImageResource(R.drawable.ic_action_favorite_outline_24dp);
         else{
             mAddFavoriteFAB.setImageResource(R.drawable.ic_action_favorite_24dp);
@@ -649,7 +649,7 @@ public class NearbyActivity extends AppCompatActivity
                 if (!mIsFavorite)
                 {
                     mAddFavoriteFAB.setImageResource(R.drawable.ic_action_favorite_24dp);
-                    addFavorite(_toAdd);
+                    addFavorite(_toAdd, false);
                     //TODO: Investigation how that should happen
                     //mFavoritesSheetFab.scrollToTop();
                     //should be provided by favorite list fragment ?
@@ -658,7 +658,7 @@ public class NearbyActivity extends AppCompatActivity
                 }
                 else{
                     mAddFavoriteFAB.setImageResource(R.drawable.ic_action_favorite_outline_24dp);
-                    removeFavorite(_toAdd);
+                    removeFavorite(_toAdd.getId(), false);
                 }
 
                 mIsFavorite = !mIsFavorite;
@@ -1035,23 +1035,14 @@ public class NearbyActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void removeFavorite(final FavoriteEntityBase _toRemove) {
+    private void removeFavorite(final String _favIdToRemove, boolean showUndo) {
 
-        mFavoriteListViewModel.removeFavorite(_toRemove.getId());
-
-        //To setup correct name
-        final BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
-        getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
-
-        if (_toRemove instanceof FavoriteEntityStation)
-            getListPagerAdapter().notifyStationChangedAll(_toRemove.getId());
-
-        Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_removed,
-                Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
-                .show();
+        /*0.*/onFavoriteItemDeleted(_favIdToRemove, showUndo);
+        //Ordering matters : undo setup retrieves favorite data from model
+        /*1*/mFavoriteListViewModel.removeFavorite(_favIdToRemove);
     }
 
-    private void addFavorite(final FavoriteEntityBase _toAdd) {
+    private void addFavorite(final FavoriteEntityBase _toAdd, boolean showUndo) {
 
         mFavoriteListViewModel.addFavorite(_toAdd);
 
@@ -1062,9 +1053,21 @@ public class NearbyActivity extends AppCompatActivity
         if (_toAdd instanceof FavoriteEntityStation)
             getListPagerAdapter().notifyStationChangedAll(_toAdd.getId());
 
-        Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_added,
-                Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
-                .show();
+        if (!showUndo) {
+            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_added,
+                    Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
+                    .show();
+        } else {
+            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_added, Snackbar.LENGTH_LONG, ContextCompat.getColor(this, R.color.theme_primary_dark))
+                    .setAction(R.string.undo, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            removeFavorite(_toAdd.getId(), false);
+                            getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
+                        }
+                    }).show();
+        }
     }
 
     private void setupFavoritePickerFab() {
@@ -1157,6 +1160,39 @@ public class NearbyActivity extends AppCompatActivity
         BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
         getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
         getListPagerAdapter().notifyStationChangedAll(favoriteId);
+    }
+
+    @Override
+    public void onFavoriteItemDeleted(final String favoriteId, boolean showUndo) {
+
+        //To setup correct name
+        final BikeStation closestBikeStation = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
+        getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
+
+        //TODO: this should be done by observing the list of favorite stations
+        //if (_toRemove instanceof FavoriteEntityStation)
+        getListPagerAdapter().notifyStationChangedAll(favoriteId);
+
+        if(!showUndo){
+
+            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_removed,
+                    Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
+                    .show();
+        }
+        else {
+            final FavoriteEntityBase toReAdd = mFavoriteListViewModel.getFavoriteEntityForId(favoriteId);
+            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_removed,
+                    Snackbar.LENGTH_LONG, ContextCompat.getColor(this, R.color.theme_primary_dark))
+                    .setAction(R.string.undo, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            addFavorite(toReAdd, false);
+                            //mFavoritesSheetFab.scrollToTop();
+                            getListPagerAdapter().setupBTabStationARecap(closestBikeStation, mDataOutdated);
+                        }
+                    }).show();
+        }
     }
 
     @Override
@@ -1947,7 +1983,7 @@ public class NearbyActivity extends AppCompatActivity
             hideSetupShowTripDetailsWidget();
         }
 
-        final FavoriteEntityBase favorite = FavoriteRepository.getInstance().getFavoriteEntityStationForId(_favoriteId).getValue();
+        final FavoriteEntityBase favorite = mFavoriteListViewModel.getFavoriteEntityForId(_favoriteId);
 
         getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
                 true,
@@ -2092,7 +2128,7 @@ public class NearbyActivity extends AppCompatActivity
                             mCurrentUserLatLng, mStationMapFragment.getMarkerALatLng(), selectedStation.getLocation()));
 
             if (!mFavoritePicked){
-                FavoriteEntityBase fav = FavoriteRepository.getInstance().getFavoriteEntityStationForId(_selectedStationId).getValue();
+                FavoriteEntityBase fav = mFavoriteListViewModel.getFavoriteEntityForId(_selectedStationId);
                 if (fav != null)
                     mStationMapFragment.setPinForPickedFavorite(fav.getDisplayName(), getLatLngForStation(_selectedStationId), null );
             }
@@ -2493,7 +2529,7 @@ public class NearbyActivity extends AppCompatActivity
 
             if (null != clickedStation) {
 
-                boolean newState = FavoriteRepository.getInstance().getFavoriteEntityStationForId(clickedStation.getLocationHash()) == null;
+                boolean newState = !mFavoriteListViewModel.isFavorite(clickedStation.getLocationHash());
 
                 if (newState) {
 
@@ -2503,19 +2539,19 @@ public class NearbyActivity extends AppCompatActivity
                     }
 
                     if (mStationMapFragment.getMarkerPickedPlaceVisibleName().isEmpty()) {
-                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName()));
+                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName()), false);
                     }
                     else {   //there's a third destination
                         FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName());
                         toAdd.setCustomName(mStationMapFragment.getMarkerPickedPlaceVisibleName());
-                        addFavorite(toAdd);
+                        addFavorite(toAdd, false);
                     }
                     //TODO: how should that happen ?
                     //mFavoritesSheetFab.scrollToTop();
                     //should be provided by favorite list fragment ?
 
                 } else {
-                    removeFavorite((FavoriteRepository.getInstance().getFavoriteEntityStationForId(clickedStation.getLocationHash()).getValue()));
+                    removeFavorite(clickedStation.getLocationHash(), false);
                 }
             }
         }
@@ -2741,7 +2777,7 @@ public class NearbyActivity extends AppCompatActivity
                             mStationMapFragment.getMarkerBVisibleLatLng().longitude != mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng().longitude)
                             )
                         locationToShow = mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng();
-                    else if(!mStationMapFragment.isPickedFavoriteMarkerVisible() && FavoriteRepository.getInstance().getFavoriteEntityStationForId(highlightedStation.getLocationHash()) == null)
+                    else if(!mStationMapFragment.isPickedFavoriteMarkerVisible() && !mFavoriteListViewModel.isFavorite(highlightedStation.getLocationHash()))
                         mAddFavoriteFAB.show();
 
                     if (locationToShow != null) {
@@ -3629,7 +3665,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 List<BikeStation> networkStationList = RootApplication.getBikeNetworkStationList();
                 for(BikeStation station : networkStationList) {
-                    if (!FavoriteRepository.getInstance().isFavorite(station.getLocationHash())) {
+                    if (!mFavoriteListViewModel.isFavorite(station.getLocationHash())) {
 
                         if (addedCount > 3)
                             break;

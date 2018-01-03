@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.fragments;
 
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,9 +23,9 @@ import com.ludoscity.findmybikes.RootApplication;
 import com.ludoscity.findmybikes.StationRecyclerViewAdapter;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
-import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.DividerItemDecoration;
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager;
+import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 
 import java.util.Comparator;
 import java.util.List;
@@ -53,6 +54,8 @@ public class StationListFragment extends Fragment
     private ImageView mProximityHeaderToImageView;
     private TextView mAvailabilityTextView;
 
+    private FavoriteListViewModel mFavoriteListModelView;
+
     private OnStationListFragmentInteractionListener mListener;
 
     private StationRecyclerViewAdapter getStationRecyclerViewAdapter(){
@@ -62,6 +65,9 @@ public class StationListFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        mFavoriteListModelView = ViewModelProviders.of(this).get(FavoriteListViewModel.class);
+
         // Inflate the layout for this fragment
         View inflatedView =  inflater.inflate(R.layout.fragment_station_list, container, false);
         mEmptyListTextView = inflatedView.findViewById(R.id.empty_list_text);
@@ -72,7 +78,7 @@ public class StationListFragment extends Fragment
         mStationRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         //mStationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mStationRecyclerView.setLayoutManager(new ScrollingLinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false, 300));
-        mStationRecyclerView.setAdapter(new StationRecyclerViewAdapter(this, getContext()));
+        mStationRecyclerView.setAdapter(new StationRecyclerViewAdapter(this, getContext(), mFavoriteListModelView));
         mStationRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -228,9 +234,8 @@ public class StationListFragment extends Fragment
         if (getContext() == null)
             return false;
 
-        //TODO: this is broken, fix it
-        if (FavoriteRepository.getInstance().getFavoriteEntityStationForId(_station.getLocationHash()).getValue() != null) {
-            mStationRecapName.setText(FavoriteRepository.getInstance().getFavoriteEntityStationForId(_station.getLocationHash()).getValue().getSpannedDisplayName(getContext(), true ));
+        if (mFavoriteListModelView.isFavorite(_station.getLocationHash())) {
+            mStationRecapName.setText(mFavoriteListModelView.getFavoriteEntityForId(_station.getLocationHash()).getSpannedDisplayName(getContext(), true ));
         }
         else {
             mStationRecapName.setText(_station.getName());

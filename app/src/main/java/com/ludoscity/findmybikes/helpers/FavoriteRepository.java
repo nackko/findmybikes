@@ -28,23 +28,6 @@ public class FavoriteRepository {
         return mInstance;
     }
 
-    //private final FavoriteEntityStationDao mFavStationDao;
-
-    //TODO: add an in memory cache ?
-
-    //TODO: Build a cache of bikeStationList that have already been checked. Repo is perfect place !
-    //This is called every time the list binds a station - There is a hidden 'favorite' button on each
-    //BikeStation list element displayed in tab 'a' and tab 'B'
-    //it happens a lot (every time user location is updated).
-    //getFavoriteAll loads data from db
-    public boolean isFavorite(String id) {
-        return getFavoriteEntityStationForId(id).getValue() != null;
-    }
-
-    public @Nullable LiveData<FavoriteEntityStation> getFavoriteEntityStationForId(String favoriteId) {
-        return DBHelper.getInstance().getDatabase().favoriteEntityStationDao().getForId(favoriteId);
-    }
-
     public boolean hasAtleastNValidFavorites(String nearestBikeStationId, int n){
         Long count = DBHelper.getInstance().getDatabase().favoriteEntityStationDao().validFavoriteCount(nearestBikeStationId).getValue();
 

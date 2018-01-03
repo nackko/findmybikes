@@ -22,8 +22,8 @@ import android.widget.TextView;
 
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
-import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.Utils;
+import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +54,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
     private static boolean mSheetEditing = false;
 
     private static LifecycleOwner mOwner;
+    private static FavoriteListViewModel mFavoriteListViewModel;
 
     //TODO: Use ViewModel (Android architecture component)
     //Present self to past self : bingo !
@@ -142,7 +143,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
     public FavoriteRecyclerViewAdapter(OnFavoriteListItemClickListener _onItemClicklistener,
                                        OnFavoriteListItemStartDragListener _onItemDragListener, Context _ctx,
-                                       LifecycleOwner _owner){
+                                       FavoriteListViewModel favListViewModel, LifecycleOwner _owner){
         super();
         mItemClickListener = _onItemClicklistener;
         mItemStartDragListener = _onItemDragListener;
@@ -151,6 +152,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         mResolvedThemeAccentColor = ContextCompat.getColor(_ctx, R.color.theme_accent);
         mResolvedThemeAccentTransparentColor = ContextCompat.getColor(_ctx, R.color.theme_accent_transparent);
         mInputMethodManager = (InputMethodManager) _ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+        mFavoriteListViewModel = favListViewModel;
         mOwner = _owner;
     }
 
@@ -205,7 +207,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
         void bindFavorite(FavoriteEntityBase _favorite){
 
-            FavoriteRepository.getInstance().getFavoriteEntityStationForId(_favorite.getId()).observe(mOwner, new Observer<FavoriteEntityStation>() {
+            mFavoriteListViewModel.getFavoriteEntityStationForId(_favorite.getId()).observe(mOwner, new Observer<FavoriteEntityStation>() {
                 @Override
                 public void onChanged(@Nullable FavoriteEntityStation favoriteEntityStation) {
 

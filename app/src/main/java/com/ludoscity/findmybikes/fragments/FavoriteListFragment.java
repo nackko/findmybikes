@@ -132,7 +132,7 @@ public class FavoriteListFragment extends Fragment implements
             }
         });
 
-        mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter( this, this, getActivity().getApplicationContext(), this);
+        mFavoriteRecyclerViewAdapter = new FavoriteRecyclerViewAdapter( this, this, getActivity().getApplicationContext(), mFavoriteListViewModel, this);
 
         favoriteRecyclerView.setAdapter(mFavoriteRecyclerViewAdapter);
 
@@ -196,16 +196,14 @@ public class FavoriteListFragment extends Fragment implements
 
         if (!_favoriteId.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
 
-            //TODO: the real original name is 'lost' here, it only ever exists in the BikeStation anymore
-            FavoriteEntityBase updatedFav = new FavoriteEntityStation(_favoriteId, _newName);
-
-            updatedFav.setCustomName(_newName);
-            mFavoriteListViewModel.updateFavorite(updatedFav);
+            FavoriteEntityBase fav = mFavoriteListViewModel.getFavoriteEntityForId(_favoriteId);
+            fav.setCustomName(_newName);
+            mFavoriteListViewModel.updateFavorite(fav);
 
             mListener.onFavoriteItemEditDone(_favoriteId);
         }
         else{
-            FavoriteEntityBase favEntity = FavoriteRepository.getInstance().getFavoriteEntityStationForId(_favoriteId).getValue();
+            FavoriteEntityBase favEntity = mFavoriteListViewModel.getFavoriteEntityForId(_favoriteId);
             CharSequence attr = favEntity.getAttributions();
             String attrString = "";
             if (attr != null)
@@ -235,7 +233,10 @@ public class FavoriteListFragment extends Fragment implements
     @Override
     public void onFavoriteListItemDelete(String favoriteId, int adapterPosition) {
         mFavoriteRecyclerViewAdapter.removeFavorite(favoriteId, adapterPosition);
-        mFavoriteListViewModel.removeFavorite(favoriteId);
+
+        /*0.*/mListener.onFavoriteItemDeleted(favoriteId, true);
+        //Ordering matters : undo setup retrieves favorite data from model
+        /*1.*/mFavoriteListViewModel.removeFavorite(favoriteId);
     }
 
     @Override
@@ -246,6 +247,7 @@ public class FavoriteListFragment extends Fragment implements
     public interface OnFavoriteListFragmentInteractionListener {
 
         void onFavoriteItemEditDone(String fsvoriteId);
+        void onFavoriteItemDeleted(String favoriteId, boolean showUndo);
         void onFavoriteListChanged(boolean noFavorite);
     }
 
