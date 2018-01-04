@@ -319,32 +319,4 @@ public class DBHelper {
                 .getBoolean(PREF_LAST_SAVE_CORRUPTED, true);
 
     }
-
-    public BikeStation getStation(final String _stationId){
-        return mDatabase.bikeStationDao().getStation(_stationId).getValue();
-    }
-
-    public void deleteAllStations() {
-        mDatabase.bikeStationDao().deleteAllBikeStation();
-    }
-
-    public List<BikeStation> getStationsNetwork() {
-        List<BikeStation> toReturn = mDatabase.bikeStationDao().getAll().getValue();
-
-        if (toReturn == null)
-        {
-            toReturn = new ArrayList<>();
-        }
-
-        return toReturn;
-    }
-
-    public void saveStationNetwork(List<BikeStation> stationListNetwork) {
-        mDatabase.bikeStationDao().insertBikeStationList(stationListNetwork);
-    }
-
-    public void dropFavoriteAll(){
-        mDatabase.favoriteEntityStationDao().deleteAll();
-        //mDatabase.favoriteEntityPlaceDao().deleteAll();
-    }
 }

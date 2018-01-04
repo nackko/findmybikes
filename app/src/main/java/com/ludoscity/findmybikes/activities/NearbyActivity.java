@@ -90,6 +90,7 @@ import com.ludoscity.findmybikes.citybik_es.model.NetworkStatusAnswerRoot;
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.fragments.StationMapFragment;
+import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.Utils;
@@ -1210,6 +1211,21 @@ public class NearbyActivity extends AppCompatActivity
                     Utils.fromHtml(String.format(getResources().getString(R.string.favorites_sheet_header), DBHelper.getInstance().getBikeNetworkName(this))));
 
             ((FloatingActionButton)findViewById(R.id.favorite_sheet_edit_fab)).show();
+        }
+    }
+
+    @Override
+    public void onFavoriteListItemClicked(String favoriteId) {
+        BikeStation stationA = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
+
+        if (stationA.getLocationHash().equalsIgnoreCase(favoriteId)) {
+
+            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.such_short_trip, Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
+                    .show();
+
+        } else {
+            mFavoritePicked = true;
+            setupBTabSelectionClosestDock(favoriteId);
         }
     }
 
@@ -3174,7 +3190,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     toReturn.put("new_network_city", closestNetwork.location.city);
 
-                    DBHelper.getInstance().deleteAllStations();
+                    BikeStationRepository.getInstance().setAll(null);
                     DBHelper.getInstance().saveBikeNetworkDesc(closestNetwork, NearbyActivity.this);
                 }
 
@@ -3269,7 +3285,7 @@ public class NearbyActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Void... params) {
 
-            DBHelper.getInstance().saveStationNetwork(RootApplication.getBikeNetworkStationList());
+            BikeStationRepository.getInstance().setAll(RootApplication.getBikeNetworkStationList());
 
             return null;
         }

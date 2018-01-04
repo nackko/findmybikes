@@ -177,21 +177,9 @@ public class FavoriteListFragment extends Fragment implements
 
     @Override
     public void onFavoriteListItemClick(String _stationId) {
-        //////////////////////////////////////////////////////
-        //from NearbyActivity
-        /*BikeStation stationA = getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS);
 
-        if (stationA.getLocationHash().equalsIgnoreCase(_favoriteID)) {
-
-            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.such_short_trip, Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
-                    .show();
-
-        } else {
-            mFavoritePicked = true;
-            setupBTabSelectionClosestDock(_favoriteID);
-        }*/
-        /////////////////////////////////////////////////////////
-
+        //TODO: act on NearbyActivityViewModel instead of a direct callback
+        mListener.onFavoriteListItemClicked(_stationId);
     }
 
     @Override
@@ -252,6 +240,8 @@ public class FavoriteListFragment extends Fragment implements
         void onFavoriteItemEditDone(String fsvoriteId);
         void onFavoriteItemDeleted(String favoriteId, boolean showUndo);
         void onFavoriteListChanged(boolean noFavorite);
+
+        void onFavoriteListItemClicked(String favoriteId);
     }
 
 }

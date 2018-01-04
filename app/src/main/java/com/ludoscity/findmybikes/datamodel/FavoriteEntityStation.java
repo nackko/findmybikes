@@ -3,7 +3,7 @@ package com.ludoscity.findmybikes.datamodel;
 import android.arch.persistence.room.Entity;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 
 /**
  * Created by F8Full on 2017-12-23. This file is part of #findmybikes
@@ -23,6 +23,6 @@ public class FavoriteEntityStation extends FavoriteEntityBase {
 
     @Override
     public LatLng getLocation() {
-        return DBHelper.getInstance().getStation(getId()).getLocation();
+        return BikeStationRepository.getInstance().getStation(getId()).getLocation();
     }
 }

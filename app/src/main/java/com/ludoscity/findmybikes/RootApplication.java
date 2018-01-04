@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
+import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class RootApplication extends Application {
         if(!DBHelper.getInstance().wasLastSavePartial(this)){
 
 
-            mBikeshareStationList = DBHelper.getInstance().getStationsNetwork();
+            mBikeshareStationList = BikeStationRepository.getInstance().getStationList();
 
 
             Log.i("RootApplication", mBikeshareStationList.size() + " stations loaded from DB");
