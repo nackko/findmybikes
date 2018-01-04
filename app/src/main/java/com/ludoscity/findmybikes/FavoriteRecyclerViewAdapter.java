@@ -71,6 +71,9 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
                 Collections.swap(mFavoriteList, i, i - 1);
             }
         }
+
+        //modify persisted data here ?? check what happens when a favorite is removed
+        //NO : YOU CAN CANCEL YOUR EDITS, WAIT UNTIL EDIT DONE BUTTON IS TAPPED
         notifyItemMoved(fromPosition, toPosition);
         return true;
 
@@ -103,6 +106,31 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
     public void setSheetEditing(boolean sheetEditing) {
         mSheetEditing = sheetEditing;
         notifyDataSetChanged();
+    }
+
+    public void onFavoriteSheetEditDone() {
+        //List<FavoriteEntityBase> newlyOrderedFavList = new ArrayList<>();
+        //newlyOrderedFavList.addAll(mFavoriteRecyclerViewAdapter.);
+
+        //TODO: rig UI index to new Room database column
+        int i=0;
+
+        for (FavoriteEntityBase fav :
+                mFavoriteList) {
+            //fav.setUIIndex(i);
+            mFavoriteListViewModel.updateFavorite(fav);
+            ++i;
+        }
+
+
+        /*mFavoriteRecyclerViewAdapter.clearFavoriteList();
+
+        ListIterator<FavoriteEntityBase> li = newlyOrderedFavList.listIterator(newlyOrderedFavList.size());
+
+        while (li.hasPrevious())
+        {
+            addFavorite(li.previous(), true, false);
+        }*/
     }
 
     //TODO: investigate making the sheet (and not NearbyActivity) listening and forwarding relevant

@@ -13,13 +13,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.ludoscity.findmybikes.EditableMaterialSheetFab;
 import com.ludoscity.findmybikes.FavoriteRecyclerViewAdapter;
 import com.ludoscity.findmybikes.ItemTouchHelperAdapter;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
-import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.DividerItemDecoration;
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
@@ -29,7 +29,8 @@ import java.util.List;
 
 public class FavoriteListFragment extends Fragment implements
         FavoriteRecyclerViewAdapter.OnFavoriteListItemStartDragListener,//TODO: investigate making the sheet listening and forwarding
-        FavoriteRecyclerViewAdapter.OnFavoriteListItemClickListener{
+        FavoriteRecyclerViewAdapter.OnFavoriteListItemClickListener,
+        EditableMaterialSheetFab.OnFavoriteSheetEventListener{
 
     public static final String FAVORITE_LIST_ITEM_CLICK_PATH = "station_list_item_click";
     public static final String FAVORITE_LIST_INACTIVE_ITEM_CLICK_PATH = "station_list_inactive_item_click";
@@ -233,6 +234,17 @@ public class FavoriteListFragment extends Fragment implements
     @Override
     public void onFavoriteListItemStartDrag(RecyclerView.ViewHolder _viewHolder){
         mFavoriteItemTouchHelper.startDrag(_viewHolder);
+    }
+
+    @Override
+    public void onFavoriteSheetEditDone() {
+
+        mFavoriteRecyclerViewAdapter.onFavoriteSheetEditDone();
+    }
+
+    @Override
+    public void onFavoriteSheetEditCancel() {
+        //mFavoriteListViewModel.setFavoriteEntityBaseList();
     }
 
     public interface OnFavoriteListFragmentInteractionListener {
