@@ -122,7 +122,6 @@ public class NearbyActivity extends AppCompatActivity
         implements StationMapFragment.OnStationMapFragmentInteractionListener,
         StationListFragment.OnStationListFragmentInteractionListener,
         FavoriteListFragment.OnFavoriteListFragmentInteractionListener,
-        EditableMaterialSheetFab.OnFavoriteSheetEventListener,
         SwipeRefreshLayout.OnRefreshListener,
         ViewPager.OnPageChangeListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -1079,12 +1078,11 @@ public class NearbyActivity extends AppCompatActivity
         //Sheet stays in nearby activity for now
         //but contains only a frame in which to do a fragment transaction
 
+        FavoriteListFragment newFavListFragment = new FavoriteListFragment();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.favorite_list_fragment_holder, new FavoriteListFragment());
+        transaction.replace(R.id.favorite_list_fragment_holder, newFavListFragment);
         transaction.commit();
-
-
 
         ///////////////
 
@@ -1095,7 +1093,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //Caused by: java.lang.NullPointerException (sheetView)
         // Create material sheet FAB
-        mFavoritesSheetFab = new EditableMaterialSheetFab(this, mNearbyActivityViewModel, mFavoritePickerFAB, sheetView, overlay, sheetColor, fabColor, this);
+        mFavoritesSheetFab = new EditableMaterialSheetFab(this, mNearbyActivityViewModel, mFavoritePickerFAB, sheetView, overlay, sheetColor, fabColor, newFavListFragment);
 
 
 
@@ -2948,31 +2946,6 @@ public class NearbyActivity extends AppCompatActivity
         mFavoriteItemEditInProgress = false;
     }*/
 
-    @Override
-    public void onFavoriteSheetEditDone() {
-
-        //TODO: Repair sheet editing feature
-        /*List<FavoriteEntityBase> newlyOrderedFavList = new ArrayList<>();
-        newlyOrderedFavList.addAll(mFavoriteRecyclerViewAdapter.getCurrentFavoriteList());
-
-        DBHelper.dropFavoriteAll();
-        mFavoriteRecyclerViewAdapter.clearFavoriteList();
-
-        ListIterator<FavoriteEntityBase> li = newlyOrderedFavList.listIterator(newlyOrderedFavList.size());
-
-        while (li.hasPrevious())
-        {
-            addFavorite(li.previous(), true, false);
-        }*/
-    }
-
-    @Override
-    public void onFavoriteSheetEditCancel(){
-        //TODO: Repair sheet editing feature
-        //mFavoriteListViewModel.setFavoriteEntityBaseList(DBHelper.getFavoriteAll());
-
-        //mFavoriteRecyclerViewAdapter.setupFavoriteList(DBHelper.getFavoriteAll());
-    }
     private class RedrawMarkersTask extends AsyncTask<Boolean, Void, Void> {
 
         /*public RedrawMarkersTask(){

@@ -71,7 +71,6 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
         mListener = _listener;
     }
 
-
     public void hideEditFab(){ mEditFAB.hide(); }
     public void showEditFab(){ mEditFAB.show(); }
     /*public void scrollToTop(){
@@ -86,6 +85,9 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
     public void hideSheet() {
 
         if (mEditDoneFAB.getVisibility() == View.VISIBLE){
+
+            mListener.onFavoriteSheetEditCancel();
+
             mNearbyActivityViewModel.favoriteSheetEditStop();
 
             //mFavRecyclerview.getAdapter().notifyDataSetChanged();
@@ -125,7 +127,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
                 //dropping all favorites
                 //adding them all back from the DBHelper (!)
                 //or modelView will allow update live one element by element
-                //mListener.onFavoriteSheetEditDone();
+                mListener.onFavoriteSheetEditDone();
                 break;
         }
     }
