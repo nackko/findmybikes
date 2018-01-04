@@ -94,7 +94,7 @@ public class BikeStation {//implements Parcelable {
     }
 
     public void setName(String name) {
-        extra.setName(name);
+        setExtra(new BikeStationExtra(false,name));
     }
 
     public String getTimestamp() {
