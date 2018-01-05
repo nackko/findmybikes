@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.datamodel;
 
 import android.arch.persistence.room.Entity;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -18,8 +19,8 @@ public class FavoriteEntityPlace extends FavoriteEntityBase {
     private LatLng location;
     private String attributions;
 
-    public FavoriteEntityPlace(String id, String placeName, LatLng location, String attributions){
-        super(PLACE_ID_PREFIX + id, placeName);
+    public FavoriteEntityPlace(String id, String placeName, LatLng location, String attributions, @NonNull Integer uiIndex){
+        super(PLACE_ID_PREFIX + id, placeName, uiIndex);
         this.location = location;
         this.attributions = attributions;
     }

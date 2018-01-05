@@ -2514,7 +2514,7 @@ public class NearbyActivity extends AppCompatActivity
                     setupBTabSelection(clickedStation.getLocationHash(), false);
 
                     FavoriteEntityStation newFavForStation = new FavoriteEntityStation(clickedStation.getLocationHash(),
-                            clickedStation.getName());
+                            clickedStation.getName(), -1);
 
                     boolean showFavoriteAddFab = false;
 
@@ -2553,7 +2553,7 @@ public class NearbyActivity extends AppCompatActivity
                     }
 
                     if (mStationMapFragment.getMarkerPickedPlaceVisibleName().isEmpty()) {
-                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName()), false);
+                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName(), ), false);
                     }
                     else {   //there's a third destination
                         FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName());

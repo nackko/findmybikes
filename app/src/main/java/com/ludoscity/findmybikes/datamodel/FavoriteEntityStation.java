@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.datamodel;
 
 import android.arch.persistence.room.Entity;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.ludoscity.findmybikes.helpers.BikeStationRepository;
@@ -12,8 +13,8 @@ import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 @Entity
 public class FavoriteEntityStation extends FavoriteEntityBase {
 
-    public FavoriteEntityStation(String id, String defaultName){
-        super(id,defaultName);
+    public FavoriteEntityStation(String id, String defaultName, @NonNull Integer uiIndex){
+        super(id,defaultName, uiIndex);
     }
 
     @Override
