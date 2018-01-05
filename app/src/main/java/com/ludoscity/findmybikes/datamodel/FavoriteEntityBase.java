@@ -19,7 +19,7 @@ import com.ludoscity.findmybikes.utils.Utils;
  * A data model class to handle the concept of Favorite and save it using Room
  */
 
-@Entity(indices = {@Index(value = "ui_index", unique=true)})
+@Entity
 public abstract class FavoriteEntityBase {
 
     @PrimaryKey
@@ -32,7 +32,6 @@ public abstract class FavoriteEntityBase {
     @ColumnInfo(name = "default_name")
     private /*final*/ String defaultName;
 
-    @NonNull
     @ColumnInfo(name = "ui_index")
     private Integer uiIndex;
 
@@ -40,7 +39,7 @@ public abstract class FavoriteEntityBase {
     private boolean defaultNameWasSet = false;
 
 
-    FavoriteEntityBase(@NonNull String id, String defaultName, @NonNull int uiIndex)
+    FavoriteEntityBase(@NonNull String id, String defaultName, int uiIndex)
     {
         this.id = id;
         this.defaultName = defaultName;

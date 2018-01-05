@@ -736,7 +736,8 @@ public class NearbyActivity extends AppCompatActivity
                 FavoriteEntityPlace newFavForPlace = new FavoriteEntityPlace(place.getId(),
                         place.getName().toString(),
                         place.getLatLng(),
-                        attrString);
+                        attrString,
+                        -1);
 
                 //TODO: fix this
                 final FavoriteEntityBase existingFavForPlace = null;//FavoriteRepository.getInstance().getFavoriteEntityForId(newFavForPlace.getId());
@@ -1372,7 +1373,7 @@ public class NearbyActivity extends AppCompatActivity
                 setupBTabSelection(highlighthedDockStation.getLocationHash(), isLookingForBike());
 
                 FavoriteEntityBase newFavForStation = new FavoriteEntityStation(highlighthedDockStation.getLocationHash(),
-                        highlighthedDockStation.getName());
+                        highlighthedDockStation.getName(), -1);
 
                 boolean showFavoriteAddFab = false;
 
@@ -1870,7 +1871,7 @@ public class NearbyActivity extends AppCompatActivity
                         if (mStationMapFragment.isPickedPlaceMarkerVisible())
                             showFavoriteAddFab = true;  //Don't setup the fab as it's been done in OnActivityResult
                         else if (setupAddFavoriteFab(new FavoriteEntityStation(clickedStationId,
-                                getStation(clickedStationId).getName())))
+                                getStation(clickedStationId).getName(), -1)))
                             showFavoriteAddFab = true;
                     }
 
@@ -2553,10 +2554,10 @@ public class NearbyActivity extends AppCompatActivity
                     }
 
                     if (mStationMapFragment.getMarkerPickedPlaceVisibleName().isEmpty()) {
-                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName(), ), false);
+                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName(), -1), false);
                     }
                     else {   //there's a third destination
-                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName());
+                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName(),-1);
                         toAdd.setCustomName(mStationMapFragment.getMarkerPickedPlaceVisibleName());
                         addFavorite(toAdd, false);
                     }
@@ -3660,12 +3661,12 @@ public class NearbyActivity extends AppCompatActivity
                             break;
 
                         else if (addedCount % 2 == 0) { //non default favorite name
-                            FavoriteEntityStation testFavToAdd = new FavoriteEntityStation(station.getLocationHash(), station.getName());
+                            FavoriteEntityStation testFavToAdd = new FavoriteEntityStation(station.getLocationHash(), station.getName(),-1);
                             testFavToAdd.setCustomName(station.getName() + "-test");
                             mFavoriteListViewModel.addFavorite(testFavToAdd);
                         }
                         else{   //default favorite name
-                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName()));
+                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName(), -1));
                         }
 
                         ++addedCount;

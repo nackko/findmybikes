@@ -102,6 +102,10 @@ public class FavoriteListViewModel extends ViewModel {
     }
 
     public void addFavorite(final FavoriteEntityBase toAdd){
+
+        if(toAdd.getUiIndex() == -1)
+            toAdd.setUiIndex(mFavoriteStationList.getValue().size());
+
         FavoriteRepository.getInstance().addOrUpdateFavorite(toAdd);
     }
 

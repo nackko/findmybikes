@@ -19,7 +19,7 @@ public class FavoriteEntityPlace extends FavoriteEntityBase {
     private LatLng location;
     private String attributions;
 
-    public FavoriteEntityPlace(String id, String placeName, LatLng location, String attributions, @NonNull Integer uiIndex){
+    public FavoriteEntityPlace(String id, String placeName, LatLng location, String attributions, Integer uiIndex){
         super(PLACE_ID_PREFIX + id, placeName, uiIndex);
         this.location = location;
         this.attributions = attributions;

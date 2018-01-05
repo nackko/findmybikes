@@ -41,10 +41,7 @@ public abstract class AppDatabase extends RoomDatabase {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
 
-            database.execSQL("ALTER TABLE FavoriteEntityStation ADD COLUMN ui_index INTEGER");
-
-
-
+            database.execSQL("ALTER TABLE FavoriteEntityStation ADD COLUMN ui_index INTEGER DEFAULT NULL");
         }
     };
 }

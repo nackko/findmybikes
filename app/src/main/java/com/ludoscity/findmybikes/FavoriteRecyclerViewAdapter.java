@@ -112,28 +112,16 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
     }
 
     public void onFavoriteSheetEditDone() {
-        //List<FavoriteEntityBase> newlyOrderedFavList = new ArrayList<>();
-        //newlyOrderedFavList.addAll(mFavoriteRecyclerViewAdapter.);
 
-        //TODO: rig UI index to new Room database column
-        int i=0;
+        int i=1;
 
         for (FavoriteEntityBase fav :
                 mFavoriteList) {
-            //fav.setUIIndex(i);
+            fav.setUiIndex(mFavoriteList.size() - i);
+
             mFavoriteListViewModel.updateFavorite(fav);
             ++i;
         }
-
-
-        /*mFavoriteRecyclerViewAdapter.clearFavoriteList();
-
-        ListIterator<FavoriteEntityBase> li = newlyOrderedFavList.listIterator(newlyOrderedFavList.size());
-
-        while (li.hasPrevious())
-        {
-            addFavorite(li.previous(), true, false);
-        }*/
     }
 
     //TODO: investigate making the sheet (and not NearbyActivity) listening and forwarding relevant

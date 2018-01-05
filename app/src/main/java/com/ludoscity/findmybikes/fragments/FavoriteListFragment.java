@@ -201,7 +201,7 @@ public class FavoriteListFragment extends Fragment implements
             if (attr != null)
                 attrString = attr.toString();
 
-            mFavoriteListViewModel.addFavorite(new FavoriteEntityPlace(favEntity.getId(), _newName, favEntity.getLocation(), attrString));
+            mFavoriteListViewModel.addFavorite(new FavoriteEntityPlace(favEntity.getId(), _newName, favEntity.getLocation(), attrString, favEntity.getUiIndex()));
         }
 
         mNearbyActivityViewModel.showFavoriteSheetEditFab();
@@ -225,6 +225,7 @@ public class FavoriteListFragment extends Fragment implements
     @Override
     public void onFavoriteListItemDelete(String favoriteId, int adapterPosition) {
         mFavoriteRecyclerViewAdapter.removeFavorite(favoriteId, adapterPosition);
+        mFavoriteRecyclerViewAdapter.onFavoriteSheetEditDone(); //to trigger persisting of ui indexes
 
         mListener.onFavoriteItemDeleted(favoriteId, false);
         mFavoriteListViewModel.removeFavorite(favoriteId);
@@ -243,7 +244,7 @@ public class FavoriteListFragment extends Fragment implements
 
     @Override
     public void onFavoriteSheetEditCancel() {
-        //mFavoriteListViewModel.setFavoriteEntityBaseList();
+        mFavoriteRecyclerViewAdapter.resetFavoriteList(mFavoriteListViewModel.getFavoriteEntityStationList().getValue());
     }
 
     public interface OnFavoriteListFragmentInteractionListener {
