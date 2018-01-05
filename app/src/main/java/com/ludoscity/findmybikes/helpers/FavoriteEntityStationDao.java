@@ -16,7 +16,7 @@ import java.util.List;
 @Dao
 public interface FavoriteEntityStationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    long insertOne(FavoriteEntityStation favoriteEntityStation);
+    void insertOne(FavoriteEntityStation favoriteEntityStation);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<FavoriteEntityStation> favoriteEntityStationList);
@@ -24,7 +24,7 @@ public interface FavoriteEntityStationDao {
     @Query("DELETE FROM FavoriteEntityStation WHERE id = :favoriteId")
     void deleteOne(String favoriteId);
 
-    @Query("SELECT * FROM FavoriteEntityStation")
+    @Query("SELECT * FROM FavoriteEntityStation ORDER BY ui_index DESC")
     LiveData<List<FavoriteEntityStation>> getAll();
 
     //TODO: a more complex query that can be returned as a LiveData<FavoriteEntityBase> ?

@@ -13,7 +13,7 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
  * Created by F8Full on 2017-12-17.
  * This file is part of #findmybikes
  */
-@Database(entities = {BikeStation.class, FavoriteEntityStation.class}, version = 2)
+@Database(entities = {BikeStation.class, FavoriteEntityStation.class}, version = 3)
 //@TypeConverters({LatLngTypeConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract BikeStationDao bikeStationDao();
@@ -34,6 +34,14 @@ public abstract class AppDatabase extends RoomDatabase {
 
             //After migration all custom_name column values are NULL. A more refined migration would have read the boolean values in the v1 table and used it to generate variable SQL queries for insert in v2 table
             //TODO: you still have to check the data migration (using SQL)
+        }
+    };
+
+    static final Migration MIGRATION_2_3 = new Migration(2,3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+
+            database.execSQL("ALTER TABLE FavoriteEntityStation ADD COLUMN ui_index INTEGER DEFAULT NULL");
         }
     };
 }

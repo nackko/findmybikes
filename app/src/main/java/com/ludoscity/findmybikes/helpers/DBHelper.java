@@ -11,15 +11,13 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.citybik_es.model.NetworkDesc;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_1_2;
+import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_2_3;
 
 /**
  * Created by F8Full on 2015-04-02.
@@ -76,6 +74,7 @@ public class DBHelper {
     public void init(Context context) throws IOException, PackageManager.NameNotFoundException {
         mDatabase = Room.databaseBuilder(context, AppDatabase.class, "findmybikes-database")
                 .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_2_3)
                 .build();
 
         //Check for SharedPreferences versioning

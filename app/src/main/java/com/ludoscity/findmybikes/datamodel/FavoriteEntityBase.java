@@ -3,6 +3,7 @@ package com.ludoscity.findmybikes.datamodel;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -31,15 +32,19 @@ public abstract class FavoriteEntityBase {
     @ColumnInfo(name = "default_name")
     private /*final*/ String defaultName;
 
+    @ColumnInfo(name = "ui_index")
+    private Integer uiIndex;
+
     @Ignore //so that Room don't persist it
     private boolean defaultNameWasSet = false;
 
 
-    FavoriteEntityBase(@NonNull String id, String defaultName)
+    FavoriteEntityBase(@NonNull String id, String defaultName, int uiIndex)
     {
         this.id = id;
         this.defaultName = defaultName;
         this.customName = null;
+        this.uiIndex = uiIndex;
     }
 
     public abstract CharSequence getAttributions();
@@ -52,6 +57,15 @@ public abstract class FavoriteEntityBase {
 
     public void setId(@NonNull String id) {
         this.id = id;
+    }
+
+    @NonNull
+    public Integer getUiIndex(){
+        return uiIndex;
+    }
+
+    public void setUiIndex(@NonNull Integer uiIndex){
+        this.uiIndex = uiIndex;
     }
 
     public boolean isDisplayNameDefault(){
