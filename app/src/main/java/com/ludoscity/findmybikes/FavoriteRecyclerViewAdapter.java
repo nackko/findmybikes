@@ -6,6 +6,7 @@ import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.percent.PercentLayoutHelper;
@@ -20,6 +21,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.dinuscxj.progressbar.CircleProgressBar;
+import com.dmitrymalkovich.android.ProgressFloatingActionButton;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.utils.Utils;
@@ -181,7 +184,12 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         String mFavoriteId;
         FloatingActionButton mEditFab;
         FloatingActionButton mDoneFab;
-        FloatingActionButton mDeleteFab = (FloatingActionButton) itemView.findViewById(R.id.favorite_delete_fab);
+        FloatingActionButton mDeleteFab;
+        ProgressFloatingActionButton mDeleteCancelProgressFab;
+        FloatingActionButton mDeleteCancelFab;
+        CircleProgressBar mDeleteCancelCircleProgressBar;
+        CountDownTimer mDeleteCancelCountDownTimer;
+
         ImageView mOrderingAffordanceHandle;
 
         boolean mEditing = false;
@@ -195,6 +203,10 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
             mName = itemView.findViewById(R.id.favorite_name);
             mEditFab = itemView.findViewById(R.id.favorite_name_edit_fab);
             mDoneFab = itemView.findViewById(R.id.favorite_name_done_fab);
+            mDeleteFab = itemView.findViewById(R.id.favorite_delete_fab);
+            mDeleteCancelProgressFab = itemView.findViewById(R.id.favorite_cancel_delete_progressfab);
+            mDeleteCancelFab = itemView.findViewById(R.id.favorite_cancel_delete_fab);
+            mDeleteCancelCircleProgressBar = itemView.findViewById(R.id.favorite_cancel_delete_progressbar);
 
             mOrderingAffordanceHandle = itemView.findViewById(R.id.reorder_affordance_handle);
             mOrderingAffordanceHandle.setOnTouchListener(this);
@@ -203,6 +215,27 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
             mEditFab.setOnClickListener(this);
             mDoneFab.setOnClickListener(this);
             mDeleteFab.setOnClickListener(this);
+            mDeleteCancelFab.setOnClickListener(this);
+
+            mDeleteCancelCountDownTimer = new CountDownTimer(3000, 50) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    int progressPercentage = (3000-(int)millisUntilFinished)/30;
+                    mDeleteCancelCircleProgressBar.setProgress(progressPercentage);
+                    mName.setAlpha((100.f-(float)progressPercentage)/100.f);
+                }
+
+                @Override
+                public void onFinish() {
+                    //This is glitchy but required for now
+                    //TODO: refactor item layout xml file with ContraintLayout
+                    mDeleteCancelProgressFab.setVisibility(View.INVISIBLE);
+                    mDeleteFab.setVisibility(View.VISIBLE);
+                    mOrderingAffordanceHandle.setVisibility(View.VISIBLE);
+                    mName.setAlpha(1.f);
+                    mItemClickListener.onFavoriteListItemDelete(mFavoriteId, getAdapterPosition());
+                }
+            };
         }
 
         void bindFavorite(FavoriteEntityBase _favorite){
@@ -331,7 +364,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         @Override
         public void onClick(View v) {
 
-            if (mSheetEditing && v.getId() != R.id.favorite_delete_fab)
+            if (mSheetEditing && v.getId() != R.id.favorite_delete_fab && v.getId() != R.id.favorite_cancel_delete_fab)
                 return;
 
             switch (v.getId()){
@@ -355,7 +388,19 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
                     break;
 
                 case R.id.favorite_delete_fab:
-                    mItemClickListener.onFavoriteListItemDelete(mFavoriteId, getAdapterPosition());
+
+                    mDeleteFab.setVisibility(View.INVISIBLE);
+                    mOrderingAffordanceHandle.setVisibility(View.INVISIBLE);
+                    mDeleteCancelProgressFab.setVisibility(View.VISIBLE);
+                    mDeleteCancelCountDownTimer.start();
+                    break;
+
+                case R.id.favorite_cancel_delete_fab:
+                    mDeleteCancelCountDownTimer.cancel();
+                    mDeleteCancelProgressFab.setVisibility(View.INVISIBLE);
+                    mDeleteFab.setVisibility(View.VISIBLE);
+                    mOrderingAffordanceHandle.setVisibility(View.VISIBLE);
+                    mName.setAlpha(1.f);
                     break;
             }
         }

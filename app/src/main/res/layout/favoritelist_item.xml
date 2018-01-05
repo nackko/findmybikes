@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--TODO: refactor this with Constraintlayout -->
 <android.support.percent.PercentRelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -72,6 +73,47 @@
 
         style="@style/listitem_floating_action_button"
         />
+    <com.dmitrymalkovich.android.ProgressFloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/favorite_cancel_delete_progressfab"
+
+        android:layout_centerInParent="true"
+        android:layout_toEndOf="@+id/favorite_name"
+        android:layout_toRightOf="@+id/favorite_name"
+
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="invisible"
+        style="@style/listitem_floating_action_button">
+
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:id="@+id/favorite_cancel_delete_fab"
+            app:backgroundTint="@color/theme_accent"
+            app:srcCompat="@drawable/ic_action_clear_24dp"
+            app:fabSize="mini"
+
+            android:focusable="true"
+            style="@style/listitem_floating_action_button"
+            />
+
+        <com.dinuscxj.progressbar.CircleProgressBar
+            android:id="@+id/favorite_cancel_delete_progressbar"
+            app:draw_progress_text="false"
+            app:progress_start_color="@color/theme_primary_dark"
+            app:progress_end_color="@color/theme_primary_dark"
+            app:style="solid_line"
+
+            style="@style/listitem_floating_action_button"
+            app:progress_stroke_width="@dimen/circleprogressbar_stroke_width"
+            app:progress_stroke_cap="round"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </com.dmitrymalkovich.android.ProgressFloatingActionButton>
 
     <android.support.design.widget.FloatingActionButton
         android:layout_height="wrap_content"

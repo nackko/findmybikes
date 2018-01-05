@@ -121,6 +121,9 @@ dependencies {
 
     implementation 'com.afollestad.material-dialogs:core:0.9.4.2'
 
+    implementation 'com.dmitrymalkovich.android:progress-fab:1.6'
+    implementation 'com.dinuscxj:circleprogressbar:1.1.1'
+
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.1'
 
     androidTestImplementation 'android.arch.persistence.room:testing:1.0.0'

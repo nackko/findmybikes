@@ -225,9 +225,8 @@ public class FavoriteListFragment extends Fragment implements
     public void onFavoriteListItemDelete(String favoriteId, int adapterPosition) {
         mFavoriteRecyclerViewAdapter.removeFavorite(favoriteId, adapterPosition);
 
-        /*0.*/mListener.onFavoriteItemDeleted(favoriteId, true);
-        //Ordering matters : undo setup retrieves favorite data from model
-        /*1.*/mFavoriteListViewModel.removeFavorite(favoriteId);
+        mListener.onFavoriteItemDeleted(favoriteId, false);
+        mFavoriteListViewModel.removeFavorite(favoriteId);
     }
 
     @Override
