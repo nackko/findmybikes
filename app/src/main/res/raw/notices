@@ -19,16 +19,28 @@
         <license>Apache Software License 2.0</license>
     </notice>
     <notice>
-            <name>Twitter4J</name>
-            <url>https://github.com/yusuke/twitter4j</url>
-            <copyright>Copyright © 2007 Yusuke Yamamoto</copyright>
-            <license>Apache Software License 2.0</license>
+        <name>Twitter4J</name>
+        <url>https://github.com/yusuke/twitter4j</url>
+        <copyright>Copyright © 2007 Yusuke Yamamoto</copyright>
+        <license>Apache Software License 2.0</license>
     </notice>
     <notice>
         <name>LicensesDialog</name>
         <url>https://github.com/PSDev/LicensesDialog</url>
         <copyright>Copyright © 2013 Philip Schiffer</copyright>
         <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>ProgressFloatingActionButton</name>
+        <url>https://github.com/DmitryMalkovich/circular-with-floating-action-button</url>
+        <copyright>Copyright © 2016 Dmitry Malkovich</copyright>
+        <license>Apache Software License 2.0</license>
+     </notice>
+     <notice>
+         <name>CircleProgressBar</name>
+         <url>https://github.com/dinuscxj/CircleProgressBar</url>
+         <copyright>Copyright © 2015-2019 dinuscxj</copyright>
+         <license>Apache Software License 2.0</license>
     </notice>
     <notice>
         <name>ShowcaseView</name>

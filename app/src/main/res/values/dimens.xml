@@ -53,6 +53,7 @@
     <!--So I want it offset by half its width minus any padding I wannna put in there
     //40/2 - 4 = 20 - 4 = 16.-->
     <dimen name="station_availability_margin_left_selected">16dp</dimen>
+    <dimen name="circleprogressbar_stroke_width">4dp</dimen>
 
 
 </resources>
