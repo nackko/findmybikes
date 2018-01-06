@@ -27,6 +27,8 @@
 
     <item name="camera_animation_duration" type="integer">850</item>
 
+    <item name="favorite_item_delete_cancel_duraiton_millis" type="integer">1875</item>
+
     <item name="station_item_critical_availability_alpha" type="fraction">25%</item>
     <item name="station_item_name_bad_availability_alpha" type="fraction">50%</item>
     <item name="station_item_availability_bad_availability_alpha" type="fraction">65%</item>

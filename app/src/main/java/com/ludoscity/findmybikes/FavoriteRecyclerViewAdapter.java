@@ -58,6 +58,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
     private static LifecycleOwner mOwner;
     private static FavoriteListViewModel mFavoriteListViewModel;
+    private static int mFavoriteItemDeleteCancelDurationMillis;
 
     //TODO: Use ViewModel (Android architecture component)
     //Present self to past self : bingo !
@@ -171,6 +172,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         mResolvedThemeAccentColor = ContextCompat.getColor(_ctx, R.color.theme_accent);
         mResolvedThemeAccentTransparentColor = ContextCompat.getColor(_ctx, R.color.theme_accent_transparent);
         mInputMethodManager = (InputMethodManager) _ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
+        mFavoriteItemDeleteCancelDurationMillis = _ctx.getResources().getInteger(R.integer.favorite_item_delete_cancel_duraiton_millis);
         mFavoriteListViewModel = favListViewModel;
         mOwner = _owner;
     }
@@ -233,10 +235,11 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
             mDeleteFab.setOnClickListener(this);
             mDeleteCancelFab.setOnClickListener(this);
 
-            mDeleteCancelCountDownTimer = new CountDownTimer(3000, 50) {
+            mDeleteCancelCountDownTimer = new CountDownTimer(mFavoriteItemDeleteCancelDurationMillis, 17) {
+                //60 frames a second = one frame each 17 ms roughly
                 @Override
                 public void onTick(long millisUntilFinished) {
-                    int progressPercentage = (3000-(int)millisUntilFinished)/30;
+                    int progressPercentage = (int) (((float)mFavoriteItemDeleteCancelDurationMillis-(float)millisUntilFinished)/ (mFavoriteItemDeleteCancelDurationMillis/100.f));
                     mDeleteCancelCircleProgressBar.setProgress(progressPercentage);
                     mName.setAlpha((100.f-(float)progressPercentage)/100.f);
                 }
