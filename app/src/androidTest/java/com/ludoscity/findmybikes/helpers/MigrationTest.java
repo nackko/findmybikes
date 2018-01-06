@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_1_2;
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_2_3;
+import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_3_4;
 
 
 /**
@@ -84,6 +85,37 @@ public class MigrationTest {
 
         // MigrationTestHelper automatically verifies the schema changes,
         // but you need to validate that the data was migrated properly.
+    }
+
+    @Test
+    public void migrate3To4() throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 3);
+
+        // db has schema version 3. insert some data using SQL queries.
+        // You cannot use DAO classes because they expect the latest schema.
+
+        db.execSQL("INSERT into favoriteentitystation(id, custom_name, default_name, ui_index)"
+                +"VALUES('TEST_ID_0', 'Custom', 'Default', '0')"
+        );
+
+        db.execSQL("INSERT into favoriteentitystation(id, custom_name, default_name, ui_index)"
+                +"VALUES('TEST_ID_1', NULL , 'Default', '1')"
+        );
+
+        // Prepare for the next version.
+        db.close();
+
+        // Re-open the database with version 2 and provide
+        // MIGRATION_1_2 as the migration process.
+        db = helper.runMigrationsAndValidate(TEST_DB, 4, true, MIGRATION_3_4);
+        // MigrationTestHelper automatically verifies the schema changes
+
+        db.execSQL("INSERT into favoriteentityplace(id, custom_name, default_name, ui_index, location, attributions)"
+                +"VALUES('TEST_ID_1', NULL , 'Default', '2', '45.508897|-73.554279', 'Attributions string')"
+        );
+
+        db.close();
+
     }
 
 

@@ -3,22 +3,24 @@ package com.ludoscity.findmybikes.helpers;
 import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
+import android.arch.persistence.room.TypeConverters;
 import android.arch.persistence.room.migration.Migration;
 import android.support.annotation.NonNull;
 
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 
 /**
  * Created by F8Full on 2017-12-17.
  * This file is part of #findmybikes
  */
-@Database(entities = {BikeStation.class, FavoriteEntityStation.class}, version = 3)
-//@TypeConverters({LatLngTypeConverter.class})
+@Database(entities = {BikeStation.class, FavoriteEntityStation.class, FavoriteEntityPlace.class}, version = 4)
+@TypeConverters({LatLngTypeConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract BikeStationDao bikeStationDao();
     public abstract FavoriteEntityStationDao favoriteEntityStationDao();
-    //public abstract FavoriteEntityPlaceDao favoriteEntityPlaceDao();
+    public abstract FavoriteEntityPlaceDao favoriteEntityPlaceDao();
 
     static final Migration MIGRATION_1_2 = new Migration(1,2){
 
@@ -42,6 +44,14 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(@NonNull SupportSQLiteDatabase database) {
 
             database.execSQL("ALTER TABLE FavoriteEntityStation ADD COLUMN ui_index INTEGER DEFAULT NULL");
+        }
+    };
+
+    static final Migration MIGRATION_3_4 = new Migration(3,4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+
+            database.execSQL("CREATE TABLE IF NOT EXISTS `FavoriteEntityPlace` (`location` TEXT, `attributions` TEXT, `id` TEXT NOT NULL, `custom_name` TEXT, `default_name` TEXT, `ui_index` INTEGER, PRIMARY KEY(`id`))");
         }
     };
 }

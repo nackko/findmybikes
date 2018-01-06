@@ -3,12 +3,11 @@ package com.ludoscity.findmybikes.helpers;
 import android.arch.lifecycle.LiveData;
 
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Created by F8Full on 2017-12-26. This file is part of #findmybikes
@@ -40,7 +39,12 @@ public class FavoriteRepository {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                DBHelper.getInstance().getDatabase().favoriteEntityStationDao().deleteOne(favIdToRemove);
+                if (favIdToRemove.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)){
+                    DBHelper.getInstance().getDatabase().favoriteEntityPlaceDao().deleteOne(favIdToRemove);
+                }
+                else{
+                    DBHelper.getInstance().getDatabase().favoriteEntityStationDao().deleteOne(favIdToRemove);
+                }
             }
         }).start();
     }
@@ -57,45 +61,46 @@ public class FavoriteRepository {
                 }
             }).start();
         }
-            /*else    //_favoriteEntity instanceof FavoriteEntityPlace
-            {
-                if(isFavorite) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mDatabase.favoriteEntityPlaceDao().insertOne((FavoriteEntityPlace) _favoriteEntity);
+        else    //_favoriteEntity instanceof FavoriteEntityPlace
+        {
+            new Thread(new Runnable() {
+            @Override
+            public void run() {
+                    DBHelper.getInstance().getDatabase().favoriteEntityPlaceDao().insertOne((FavoriteEntityPlace)_favoriteEntity);
+            }
+            }).start();
 
-                        }
-                    }).start();
-
-                }
-                else
-                    mDatabase.favoriteEntityPlaceDao().deleteOne(_favoriteEntity.getId());
-            }*/
+        }
     }
 
     private FavoriteRepository(){}
 
-    /*@Inject
-    public FavoriteRepository(FavoriteEntityStationDao favStationDao){
-        //this.mFavStationDao = favStationDao;
-    }*/
-
     public void setAll(List<FavoriteEntityBase> toSet){
 
-        List<FavoriteEntityStation> stationToSet = new ArrayList<>();
+        List<FavoriteEntityStation> stationListToSet = new ArrayList<>();
+        List<FavoriteEntityPlace> placeListToset = new ArrayList<>();
 
         for (FavoriteEntityBase fav:
              toSet) {
             if(fav instanceof FavoriteEntityStation){
-                stationToSet.add((FavoriteEntityStation)fav);
+                stationListToSet.add((FavoriteEntityStation)fav);
+            }
+            else{   //fav instanceof FavoriteEntityStation
+                placeListToset.add((FavoriteEntityPlace)fav);
             }
         }
-        DBHelper.getInstance().getDatabase().favoriteEntityStationDao().insertAll(stationToSet);
+
+        DBHelper.getInstance().getDatabase().favoriteEntityStationDao().insertAll(stationListToSet);
+        DBHelper.getInstance().getDatabase().favoriteEntityPlaceDao().insertAll(placeListToset);
     }
 
     public LiveData<List<FavoriteEntityStation>> getFavoriteStationList()
     {
         return DBHelper.getInstance().getDatabase().favoriteEntityStationDao().getAll();
+    }
+
+    public LiveData<List<FavoriteEntityPlace>> getFavoritePlaceList()
+    {
+        return DBHelper.getInstance().getDatabase().favoriteEntityPlaceDao().getAll();
     }
 }

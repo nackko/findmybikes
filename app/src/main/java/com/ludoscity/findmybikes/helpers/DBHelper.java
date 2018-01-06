@@ -18,6 +18,7 @@ import java.util.Calendar;
 
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_1_2;
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_2_3;
+import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_3_4;
 
 /**
  * Created by F8Full on 2015-04-02.
@@ -75,6 +76,7 @@ public class DBHelper {
         mDatabase = Room.databaseBuilder(context, AppDatabase.class, "findmybikes-database")
                 .addMigrations(MIGRATION_1_2)
                 .addMigrations(MIGRATION_2_3)
+                .addMigrations(MIGRATION_3_4)
                 .build();
 
         //Check for SharedPreferences versioning

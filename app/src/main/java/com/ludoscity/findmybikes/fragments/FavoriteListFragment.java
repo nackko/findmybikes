@@ -111,18 +111,19 @@ public class FavoriteListFragment extends Fragment implements
         favoriteRecyclerView.setLayoutManager(new ScrollingLinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false, 300));
 
         mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel.class);
-        mFavoriteListViewModel.getFavoriteEntityStationList().observe(this, new Observer<List<FavoriteEntityStation>>() {
+        mFavoriteListViewModel.getFavoriteEntityList().observe(this, new Observer<List<? extends FavoriteEntityBase>>() {
+
+
             @Override
-            public void onChanged(@Nullable List<FavoriteEntityStation> favoriteEntityStations) {
-                //TODO: have more elaborate code, right now when a single item is changed, both this and the individual holders get notified
-                //TODO: maybe add UI index comparison, or that will be taken care of by individual items observer pattern ?
-                if (favoriteEntityStations.size() > mFavoriteRecyclerViewAdapter.getItemCount()) {
-                    mFavoriteRecyclerViewAdapter.resetFavoriteList(favoriteEntityStations);
+            public void onChanged(@Nullable List<? extends FavoriteEntityBase> favoriteEntityBases) {
+
+                if (favoriteEntityBases.size() > mFavoriteRecyclerViewAdapter.getItemCount()) {
+                    mFavoriteRecyclerViewAdapter.resetFavoriteList(favoriteEntityBases);
                 }
 
                 //TODO: investigate communicating the required state change through NearbyActivityViewModel
                 //actually that should be done now by also observing the same model
-                mListener.onFavoriteListChanged(favoriteEntityStations.size() == 0);
+                mListener.onFavoriteListChanged(favoriteEntityBases.size() == 0);
             }
         });
 
@@ -186,23 +187,15 @@ public class FavoriteListFragment extends Fragment implements
     @Override
     public void onFavoriteListItemNameEditDone(String _favoriteId, String _newName) {
 
-        if (!_favoriteId.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
-
-            FavoriteEntityBase fav = mFavoriteListViewModel.getFavoriteEntityForId(_favoriteId);
+        FavoriteEntityBase fav = mFavoriteListViewModel.getFavoriteEntityForId(_favoriteId);
+        if (!_newName.isEmpty())
             fav.setCustomName(_newName);
-            mFavoriteListViewModel.updateFavorite(fav);
+        else
+            fav.setCustomName(null);
 
-            mListener.onFavoriteItemEditDone(_favoriteId);
-        }
-        else{
-            FavoriteEntityBase favEntity = mFavoriteListViewModel.getFavoriteEntityForId(_favoriteId);
-            CharSequence attr = favEntity.getAttributions();
-            String attrString = "";
-            if (attr != null)
-                attrString = attr.toString();
+        mFavoriteListViewModel.updateFavorite(fav);
 
-            mFavoriteListViewModel.addFavorite(new FavoriteEntityPlace(favEntity.getId(), _newName, favEntity.getLocation(), attrString, favEntity.getUiIndex()));
-        }
+        mListener.onFavoriteItemEditDone(_favoriteId);
 
         mNearbyActivityViewModel.showFavoriteSheetEditFab();
         mNearbyActivityViewModel.favoriteItemNameEditStop();
@@ -244,7 +237,7 @@ public class FavoriteListFragment extends Fragment implements
 
     @Override
     public void onFavoriteSheetEditCancel() {
-        mFavoriteRecyclerViewAdapter.resetFavoriteList(mFavoriteListViewModel.getFavoriteEntityStationList().getValue());
+        mFavoriteRecyclerViewAdapter.resetFavoriteList(mFavoriteListViewModel.getFavoriteEntityList().getValue());
     }
 
     public interface OnFavoriteListFragmentInteractionListener {

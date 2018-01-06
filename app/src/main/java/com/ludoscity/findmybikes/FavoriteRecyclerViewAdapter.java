@@ -24,12 +24,14 @@ import android.widget.TextView;
 import com.dinuscxj.progressbar.CircleProgressBar;
 import com.dmitrymalkovich.android.ProgressFloatingActionButton;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.utils.Utils;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -92,6 +94,14 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
     public void resetFavoriteList(List<? extends FavoriteEntityBase> newList){
         mFavoriteList.clear();
         mFavoriteList.addAll(newList);
+
+        Collections.sort(mFavoriteList, new Comparator<FavoriteEntityBase>() {
+            @Override
+            public int compare(FavoriteEntityBase favoriteEntityBase, FavoriteEntityBase t1) {
+
+                return t1.getUiIndex() - favoriteEntityBase.getUiIndex();
+            }
+        });
 
         notifyDataSetChanged();
     }
@@ -259,75 +269,76 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
         void bindFavorite(FavoriteEntityBase _favorite){
 
-            mFavoriteListViewModel.getFavoriteEntityStationForId(_favorite.getId()).observe(mOwner, new Observer<FavoriteEntityStation>() {
-                @Override
-                public void onChanged(@Nullable FavoriteEntityStation favoriteEntityStation) {
+            //TODO: refactor this when layout file will be updated
+            if (_favorite instanceof FavoriteEntityStation) {
 
-                    if (favoriteEntityStation == null)  //Our favorite been deleted, fragment observer code will take care of that
-                        return;
+                mFavoriteListViewModel.getFavoriteEntityStationLiveDataForId(_favorite.getId()).observe(mOwner, new Observer<FavoriteEntityStation>() {
+                    @Override
+                    public void onChanged(@Nullable FavoriteEntityStation favoriteEntityStation) {
 
-                    if (favoriteEntityStation.isDisplayNameDefault())
-                        mName.setTypeface(null, Typeface.ITALIC);
-                    else
-                        mName.setTypeface(null, Typeface.BOLD);
+                        if (favoriteEntityStation == null)  //Our favorite been deleted, fragment observer code will take care of that
+                            return;
 
-                    mName.setText(favoriteEntityStation.getDisplayName());
-                    mFavoriteId = favoriteEntityStation.getId();
+                        if (favoriteEntityStation.isDisplayNameDefault())
+                            mName.setTypeface(null, Typeface.ITALIC);
+                        else
+                            mName.setTypeface(null, Typeface.BOLD);
 
-                    itemView.setBackgroundResource(R.color.theme_accent_transparent);
+                        mName.setText(favoriteEntityStation.getDisplayName());
+                        mFavoriteId = favoriteEntityStation.getId();
+
+                        itemView.setBackgroundResource(R.color.theme_accent_transparent);
 
 
-                    if (mSheetEditing){
-                        mEditFab.hide(new FloatingActionButton.OnVisibilityChangedListener(){
-                            @Override
-                            public void onHidden(FloatingActionButton fab) {
-                                super.onHidden(fab);
-                                mEditFab.setVisibility(View.INVISIBLE);
-                            }
-                        });
+                        if (mSheetEditing) {
+                            mEditFab.hide(new FloatingActionButton.OnVisibilityChangedListener() {
+                                @Override
+                                public void onHidden(FloatingActionButton fab) {
+                                    super.onHidden(fab);
+                                    mEditFab.setVisibility(View.INVISIBLE);
+                                }
+                            });
 
-                        mDeleteFab.show();
+                            mDeleteFab.show();
 
-                        mOrderingAffordanceHandle.setVisibility(View.VISIBLE);
+                            mOrderingAffordanceHandle.setVisibility(View.VISIBLE);
 
-                        //The width percentage is updated so that the name TextView gives room to the fabs
-                        //RecyclerView gives us free opacity/bounds resizing animations
-                        PercentRelativeLayout.LayoutParams params =(PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
-                        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+                            //The width percentage is updated so that the name TextView gives room to the fabs
+                            //RecyclerView gives us free opacity/bounds resizing animations
+                            PercentRelativeLayout.LayoutParams params = (PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
+                            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
 
-                        info.widthPercent = mFavoriteNameWidthSheetEditing;
-                        mName.requestLayout();
+                            info.widthPercent = mFavoriteNameWidthSheetEditing;
+                            mName.requestLayout();
+
+                        } else {
+                            mDeleteFab.hide(new FloatingActionButton.OnVisibilityChangedListener() {
+                                @Override
+                                public void onHidden(FloatingActionButton fab) {
+                                    super.onHidden(fab);
+                                    mDeleteFab.setVisibility(View.INVISIBLE);
+                                }
+                            });
+                            mEditFab.show();
+
+                            mOrderingAffordanceHandle.setVisibility(View.GONE);
+
+                            PercentRelativeLayout.LayoutParams params = (PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
+                            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+
+                            info.widthPercent = mFavoriteNameWidthNoSheetEditing;
+                            mName.requestLayout();
+                        }
 
                     }
-                    else {
-                        mDeleteFab.hide(new FloatingActionButton.OnVisibilityChangedListener(){
-                            @Override
-                            public void onHidden(FloatingActionButton fab) {
-                                super.onHidden(fab);
-                                mDeleteFab.setVisibility(View.INVISIBLE);
-                            }
-                        });
-                        mEditFab.show();
-
-                        mOrderingAffordanceHandle.setVisibility(View.GONE);
-
-                        PercentRelativeLayout.LayoutParams params =(PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
-                        PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
-
-                        info.widthPercent = mFavoriteNameWidthNoSheetEditing;
-                        mName.requestLayout();
-                    }
-
-                }
-            });
+                });
 
 
-
-            //Beware FloatingActionButton bugs !!
-            //so, to get nicely animated buttons I need
-            // - 1ms delay (using Handler)
-            // - set button visibility manualy to invisible at the end of the hiding animation
-            //(using fab provided animation interface)
+                //Beware FloatingActionButton bugs !!
+                //so, to get nicely animated buttons I need
+                // - 1ms delay (using Handler)
+                // - set button visibility manualy to invisible at the end of the hiding animation
+                //(using fab provided animation interface)
             /*Handler handler = new Handler();
 
             handler.postDelayed(new Runnable() {
@@ -377,7 +388,71 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
                 }
             }, 1);*/
+            }
+            else{ //favorite instanceof FavoriteEntityPlace
 
+                mFavoriteListViewModel.getFavoriteEntityPlaceLiveDataForId(_favorite.getId()).observe(mOwner, new Observer<FavoriteEntityPlace>() {
+                    @Override
+                    public void onChanged(@Nullable FavoriteEntityPlace favoriteEntityPlace) {
+
+                        if (favoriteEntityPlace == null)  //Our favorite been deleted, fragment observer code will take care of that
+                            return;
+
+                        if (favoriteEntityPlace.isDisplayNameDefault())
+                            mName.setTypeface(null, Typeface.ITALIC);
+                        else
+                            mName.setTypeface(null, Typeface.BOLD);
+
+                        mName.setText(favoriteEntityPlace.getDisplayName());
+                        mFavoriteId = favoriteEntityPlace.getId();
+
+                        itemView.setBackgroundResource(R.color.theme_accent_transparent);
+
+
+                        if (mSheetEditing) {
+                            mEditFab.hide(new FloatingActionButton.OnVisibilityChangedListener() {
+                                @Override
+                                public void onHidden(FloatingActionButton fab) {
+                                    super.onHidden(fab);
+                                    mEditFab.setVisibility(View.INVISIBLE);
+                                }
+                            });
+
+                            mDeleteFab.show();
+
+                            mOrderingAffordanceHandle.setVisibility(View.VISIBLE);
+
+                            //The width percentage is updated so that the name TextView gives room to the fabs
+                            //RecyclerView gives us free opacity/bounds resizing animations
+                            PercentRelativeLayout.LayoutParams params = (PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
+                            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+
+                            info.widthPercent = mFavoriteNameWidthSheetEditing;
+                            mName.requestLayout();
+
+                        } else {
+                            mDeleteFab.hide(new FloatingActionButton.OnVisibilityChangedListener() {
+                                @Override
+                                public void onHidden(FloatingActionButton fab) {
+                                    super.onHidden(fab);
+                                    mDeleteFab.setVisibility(View.INVISIBLE);
+                                }
+                            });
+                            mEditFab.show();
+
+                            mOrderingAffordanceHandle.setVisibility(View.GONE);
+
+                            PercentRelativeLayout.LayoutParams params = (PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
+                            PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
+
+                            info.widthPercent = mFavoriteNameWidthNoSheetEditing;
+                            mName.requestLayout();
+                        }
+
+                    }
+                });
+
+            }
         }
 
         @Override
@@ -449,13 +524,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
                 mName.setTextIsSelectable(false);
                 mName.setFocusableInTouchMode(false);
 
-                String newName = mName.getText().toString().trim();
-
-                if (!newName.isEmpty())
-                    mName.setText(newName);
-                else
-                    //restoring original name
-                    mName.setText(mNameBeforeEdit);
+                mName.setText(mName.getText().toString().trim());
 
                 mDoneFab.hide();
                 mEditFab.show();

@@ -13,8 +13,8 @@ import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 @Entity
 public class FavoriteEntityStation extends FavoriteEntityBase {
 
-    public FavoriteEntityStation(String id, String defaultName, Integer uiIndex){
-        super(id,defaultName, uiIndex);
+    public FavoriteEntityStation(String id, String defaultName){
+        super(id,defaultName, -1);
     }
 
     @Override

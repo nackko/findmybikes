@@ -32,10 +32,10 @@ public interface FavoriteEntityStationDao {
     LiveData<FavoriteEntityStation> getForId(String favoriteId);
 
     //TODO: this seems broken
-    @Query("SELECT COUNT(*) FROM FavoriteEntityStation WHERE id <> :favoriteId")
-    LiveData<Long> validFavoriteCount(String favoriteId);
+    @Query("SELECT COUNT(*) FROM FavoriteEntityStation WHERE id <> :favoriteIdToExclude")
+    LiveData<Long> validFavoriteCount(String favoriteIdToExclude);
 
-    @Query("DELETE FROM favoriteentitystation")
-    void deleteAll();
+    /*@Query("DELETE FROM favoriteentitystation")
+    void deleteAll();*/
 
 }
