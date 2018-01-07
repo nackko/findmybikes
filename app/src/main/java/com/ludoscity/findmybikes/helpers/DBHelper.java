@@ -12,13 +12,23 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.citybik_es.model.NetworkDesc;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_1_2;
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_2_3;
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_3_4;
+import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_4_5;
 
 /**
  * Created by F8Full on 2015-04-02.
@@ -40,6 +50,9 @@ public class DBHelper {
 
         return mInstance;
     }
+
+    //TODO: migrate bike system information to Room
+    public static String CURRENT_BIKE_SYSTEM_ID = "";
 
     private  static final String TAG = "DBHelper";
     private static AppDatabase mDatabase = null;
@@ -77,6 +90,7 @@ public class DBHelper {
                 .addMigrations(MIGRATION_1_2)
                 .addMigrations(MIGRATION_2_3)
                 .addMigrations(MIGRATION_3_4)
+                .addMigrations(MIGRATION_4_5)
                 .build();
 
         //Check for SharedPreferences versioning
@@ -92,8 +106,6 @@ public class DBHelper {
             editor = settings.edit();
 
             boolean cleared = false;
-
-            //TODO: write migrating code for Favorites From SharedPref to Room
 
             /*if (sharedPrefVersion == 0 && currentVersionCode >= 8){
                 //Because the way favorites are saved changed
@@ -121,10 +133,71 @@ public class DBHelper {
                 editor.apply();
             }*/
 
+            if (currentVersionCode > 68 && settings.contains(buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_JSONARRAY, context))){
+
+                int i = 0;
+                for(FavoriteEntityBase fav : getFavoriteAll(context))
+                {
+                    fav.setUiIndex(i);
+                    FavoriteRepository.getInstance().addOrUpdateFavorite(fav);
+
+                    ++i;
+                }
+
+                editor.remove(buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_JSONARRAY, context));
+                editor.apply();
+            }
+
             editor.putInt(SHARED_PREF_VERSION_CODE, currentVersionCode);
             editor.apply();
         }
+
+        if (isBikeNetworkIdAvailable(context))
+        {
+            CURRENT_BIKE_SYSTEM_ID = getBikeNetworkId(context);
+        }
     }
+
+    //Scheduled for removal. Used for favorites conversion from SharedPref to Room
+    //TODO: Add validation of IDs to handle the case were a favorite station been removed
+    //Replace edit fab with red delete one
+    private static List<FavoriteEntityBase> getFavoriteAll(Context _ctx){
+        List<FavoriteEntityBase> toReturn = new ArrayList<>();
+
+        SharedPreferences sp = _ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
+
+        try {
+            JSONArray favoritesJSONArray = new JSONArray(sp.getString(
+                    buildNetworkSpecificKey(PREF_SUFFIX_FAVORITES_JSONARRAY, _ctx), "[]" ));
+
+            //reverse iteration so that newly added favorites appear on top of the list
+            for (int i=favoritesJSONArray.length()-1; i>=0; --i){
+
+                JSONObject curFav = favoritesJSONArray.optJSONObject(i);
+
+                if ( curFav != null){
+
+                    if (curFav.getString("favorite_id").startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)){
+                        toReturn.add(new FavoriteEntityPlace(
+                                curFav.getString("favorite_id"),
+                                curFav.getString("display_name"),
+                                getBikeNetworkId(_ctx),
+                                new LatLng(curFav.getDouble("latitude"), curFav.getDouble("longitude")),
+                                curFav.getString("attributions")));
+                    }
+                    else{
+                        toReturn.add(new FavoriteEntityStation(curFav.getString("favorite_id"), curFav.getString("display_name"), getBikeNetworkId(_ctx)));
+                    }
+                }
+            }
+
+        } catch (JSONException e) {
+            Log.d(TAG, "Error while loading favorites from prefs", e);
+        }
+
+        return toReturn;
+    }
+
 
     public AppDatabase getDatabase(){
         return mDatabase;
@@ -220,6 +293,7 @@ public class DBHelper {
 
         //Important to apply right away so that subsequent calls to buildNetworkSpecificKey work
         IdEditor.putString(PREF_CURRENT_BIKE_NETWORK_ID, networkDesc.id).apply();
+        CURRENT_BIKE_SYSTEM_ID = networkDesc.id;
 
         SharedPreferences.Editor editor = sp.edit();
 
@@ -275,11 +349,11 @@ public class DBHelper {
         return new LatLngBounds(southwestPadded, northeastPadded);
     }
 
-    private String buildNetworkSpecificKey(String suffix, Context ctx){
+    private static String buildNetworkSpecificKey(String suffix, Context ctx){
         return getBikeNetworkId(ctx) + suffix;
     }
 
-    public String getBikeNetworkId(Context ctx){
+    public static String getBikeNetworkId(Context ctx){
 
         SharedPreferences sp = ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
 

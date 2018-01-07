@@ -6,6 +6,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.Nullable;
 
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
@@ -131,11 +132,11 @@ public class FavoriteListViewModel extends ViewModel {
         return toReturn;
     }
 
-    public boolean hasAtleastNValidFavorites(String nearestBikeStationId, int n){
+    public boolean hasAtleastNValidFavorites(BikeStation nearestBikeStation, int n){
         int count = 0;
 
         for (FavoriteEntityBase fav : mFavoriteList.getValue()){
-            if (!fav.getId().equalsIgnoreCase(nearestBikeStationId)) {
+            if (nearestBikeStation == null || !fav.getId().equalsIgnoreCase(nearestBikeStation.getLocationHash())) {
                 ++count;
                 if (count >= n)
                     break;

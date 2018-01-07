@@ -35,16 +35,20 @@ public abstract class FavoriteEntityBase {
     @ColumnInfo(name = "ui_index")
     private Integer uiIndex;
 
+    @ColumnInfo(name = "bike_system_id")
+    private String bikeSystemId;
+
     @Ignore //so that Room don't persist it
     private boolean defaultNameWasSet = false;
 
 
-    FavoriteEntityBase(@NonNull String id, String defaultName, int uiIndex)
+    FavoriteEntityBase(@NonNull String id, String defaultName, int uiIndex, String bikeSystemId)
     {
         this.id = id;
         this.defaultName = defaultName;
         this.customName = null;
         this.uiIndex = uiIndex;
+        this.bikeSystemId = bikeSystemId;
     }
 
     public abstract CharSequence getAttributions();
@@ -70,6 +74,14 @@ public abstract class FavoriteEntityBase {
 
     public boolean isDisplayNameDefault(){
         return customName == null;
+    }
+
+    public String getBikeSystemId(){
+        return bikeSystemId;
+    }
+
+    public void setBikeSystemId(String toSet){
+        bikeSystemId = toSet;
     }
 
     //must be provided for Room generated code

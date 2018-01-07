@@ -90,7 +90,12 @@ public class BikeStation {//implements Parcelable {
     }
 
     public String getName() {
-        return extra.getName();
+        String toReturn = extra.getName();
+
+        if (toReturn == null)
+            toReturn = name;
+
+        return toReturn;
     }
 
     public void setName(String name) {
@@ -111,7 +116,8 @@ public class BikeStation {//implements Parcelable {
     public LatLng getLocation() {return new LatLng(latitude,longitude);}
 
     public boolean isLocked() {
-        return extra.getLocked();
+
+        return extra.getLocked() != null && extra.getLocked();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

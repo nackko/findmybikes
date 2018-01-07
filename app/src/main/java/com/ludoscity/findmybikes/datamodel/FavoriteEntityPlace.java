@@ -18,8 +18,8 @@ public class FavoriteEntityPlace extends FavoriteEntityBase {
     private LatLng location;
     private String attributions;
 
-    public FavoriteEntityPlace(String id, String defaultName, LatLng location, String attributions){
-        super(id, defaultName, -1);
+    public FavoriteEntityPlace(String id, String defaultName, String bikeSystemId, LatLng location, String attributions){
+        super(id, defaultName, -1, bikeSystemId);
 
         if (!getId().contains(PLACE_ID_PREFIX))
             setId(PLACE_ID_PREFIX + id);

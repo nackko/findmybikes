@@ -735,6 +735,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 FavoriteEntityPlace newFavForPlace = new FavoriteEntityPlace(place.getId(),
                         place.getName().toString(),
+                        DBHelper.CURRENT_BIKE_SYSTEM_ID,
                         place.getLatLng(),
                         attrString);
 
@@ -1247,7 +1248,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //count valid favorites
         if ( !mFavoriteListViewModel.hasAtleastNValidFavorites(
-                getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS).getLocationHash(),
+                getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS),
                 minValidFavorites) ){
 
             if (_step == eONBOARDING_STEP.ONBOARDING_STEP_SEARCH_SHOWCASE)
@@ -1370,7 +1371,8 @@ public class NearbyActivity extends AppCompatActivity
                 setupBTabSelection(highlighthedDockStation.getLocationHash(), isLookingForBike());
 
                 FavoriteEntityBase newFavForStation = new FavoriteEntityStation(highlighthedDockStation.getLocationHash(),
-                        highlighthedDockStation.getName());
+                        highlighthedDockStation.getName(),
+                        DBHelper.CURRENT_BIKE_SYSTEM_ID);
 
                 boolean showFavoriteAddFab = false;
 
@@ -1868,7 +1870,8 @@ public class NearbyActivity extends AppCompatActivity
                         if (mStationMapFragment.isPickedPlaceMarkerVisible())
                             showFavoriteAddFab = true;  //Don't setup the fab as it's been done in OnActivityResult
                         else if (setupAddFavoriteFab(new FavoriteEntityStation(clickedStationId,
-                                getStation(clickedStationId).getName())))
+                                getStation(clickedStationId).getName(),
+                                DBHelper.CURRENT_BIKE_SYSTEM_ID)))
                             showFavoriteAddFab = true;
                     }
 
@@ -2512,7 +2515,8 @@ public class NearbyActivity extends AppCompatActivity
                     setupBTabSelection(clickedStation.getLocationHash(), false);
 
                     FavoriteEntityStation newFavForStation = new FavoriteEntityStation(clickedStation.getLocationHash(),
-                            clickedStation.getName());
+                            clickedStation.getName(),
+                            DBHelper.CURRENT_BIKE_SYSTEM_ID);
 
                     boolean showFavoriteAddFab = false;
 
@@ -2551,10 +2555,10 @@ public class NearbyActivity extends AppCompatActivity
                     }
 
                     if (mStationMapFragment.getMarkerPickedPlaceVisibleName().isEmpty()) {
-                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName()), false);
+                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName(), DBHelper.CURRENT_BIKE_SYSTEM_ID), false);
                     }
                     else {   //there's a third destination
-                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName());
+                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName(), DBHelper.CURRENT_BIKE_SYSTEM_ID);
                         toAdd.setCustomName(mStationMapFragment.getMarkerPickedPlaceVisibleName());
                         addFavorite(toAdd, false);
                     }
@@ -3658,12 +3662,12 @@ public class NearbyActivity extends AppCompatActivity
                             break;
 
                         else if (addedCount % 2 == 0) { //non default favorite name
-                            FavoriteEntityStation testFavToAdd = new FavoriteEntityStation(station.getLocationHash(), station.getName());
+                            FavoriteEntityStation testFavToAdd = new FavoriteEntityStation(station.getLocationHash(), station.getName(), DBHelper.CURRENT_BIKE_SYSTEM_ID);
                             testFavToAdd.setCustomName(station.getName() + "-test");
                             mFavoriteListViewModel.addFavorite(testFavToAdd);
                         }
                         else{   //default favorite name
-                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName()));
+                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName(), DBHelper.CURRENT_BIKE_SYSTEM_ID));
                         }
 
                         ++addedCount;

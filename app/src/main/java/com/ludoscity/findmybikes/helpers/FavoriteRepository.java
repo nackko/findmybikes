@@ -89,11 +89,11 @@ public class FavoriteRepository {
 
     public LiveData<List<FavoriteEntityStation>> getFavoriteStationList()
     {
-        return DBHelper.getInstance().getDatabase().favoriteEntityStationDao().getAll();
+        return DBHelper.getInstance().getDatabase().favoriteEntityStationDao().getAllForBikeSystem(DBHelper.CURRENT_BIKE_SYSTEM_ID);
     }
 
     public LiveData<List<FavoriteEntityPlace>> getFavoritePlaceList()
     {
-        return DBHelper.getInstance().getDatabase().favoriteEntityPlaceDao().getAll();
+        return DBHelper.getInstance().getDatabase().favoriteEntityPlaceDao().getAllForBikeSystem(DBHelper.CURRENT_BIKE_SYSTEM_ID);
     }
 }
