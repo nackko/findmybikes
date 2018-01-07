@@ -27,13 +27,6 @@ public class FavoriteRepository {
         return mInstance;
     }
 
-    public boolean hasAtleastNValidFavorites(String nearestBikeStationId, int n){
-        Long count = DBHelper.getInstance().getDatabase().favoriteEntityStationDao().validFavoriteCount(nearestBikeStationId).getValue();
-
-        return true;
-        //return count != null && count  >= n;
-    }
-
     public void removeFavorite(final String favIdToRemove)
     {
         new Thread(new Runnable() {

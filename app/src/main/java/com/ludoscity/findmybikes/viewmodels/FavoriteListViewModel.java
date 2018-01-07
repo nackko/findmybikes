@@ -131,6 +131,20 @@ public class FavoriteListViewModel extends ViewModel {
         return toReturn;
     }
 
+    public boolean hasAtleastNValidFavorites(String nearestBikeStationId, int n){
+        int count = 0;
+
+        for (FavoriteEntityBase fav : mFavoriteList.getValue()){
+            if (!fav.getId().equalsIgnoreCase(nearestBikeStationId)) {
+                ++count;
+                if (count >= n)
+                    break;
+            }
+        }
+
+        return count  >= n;
+    }
+
     public LiveData<List<? extends FavoriteEntityBase>> getFavoriteEntityList(){
         return mFavoriteList;
     }

@@ -1246,8 +1246,7 @@ public class NearbyActivity extends AppCompatActivity
             minValidFavorites = getApplicationContext().getResources().getInteger(R.integer.onboarding_none_min_valid_favorites_count);
 
         //count valid favorites
-        //TODO: count method in dao seems broken, or the use of a LiveData is incorrect
-        if ( !FavoriteRepository.getInstance().hasAtleastNValidFavorites(
+        if ( !mFavoriteListViewModel.hasAtleastNValidFavorites(
                 getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS).getLocationHash(),
                 minValidFavorites) ){
 
