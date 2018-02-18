@@ -51,9 +51,6 @@ public class DBHelper {
         return mInstance;
     }
 
-    //TODO: migrate bike system information to Room
-    public static String CURRENT_BIKE_SYSTEM_ID = "";
-
     private  static final String TAG = "DBHelper";
     private static AppDatabase mDatabase = null;
     private static final String mTRACKS_DB_NAME = "tracksdb";
@@ -150,11 +147,6 @@ public class DBHelper {
 
             editor.putInt(SHARED_PREF_VERSION_CODE, currentVersionCode);
             editor.apply();
-        }
-
-        if (isBikeNetworkIdAvailable(context))
-        {
-            CURRENT_BIKE_SYSTEM_ID = getBikeNetworkId(context);
         }
     }
 
@@ -293,7 +285,6 @@ public class DBHelper {
 
         //Important to apply right away so that subsequent calls to buildNetworkSpecificKey work
         IdEditor.putString(PREF_CURRENT_BIKE_NETWORK_ID, networkDesc.id).apply();
-        CURRENT_BIKE_SYSTEM_ID = networkDesc.id;
 
         SharedPreferences.Editor editor = sp.edit();
 

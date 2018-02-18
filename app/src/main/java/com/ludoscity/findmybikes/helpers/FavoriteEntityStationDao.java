@@ -24,8 +24,8 @@ public interface FavoriteEntityStationDao {
     @Query("DELETE FROM FavoriteEntityStation WHERE id = :favoriteId")
     void deleteOne(String favoriteId);
 
-    @Query("SELECT * FROM FavoriteEntityStation WHERE bike_system_id = :bikeSystemId ORDER BY ui_index DESC")
-    LiveData<List<FavoriteEntityStation>> getAllForBikeSystem(String bikeSystemId);
+    @Query("SELECT * FROM FavoriteEntityStation ORDER BY ui_index DESC")
+    LiveData<List<FavoriteEntityStation>> getAll();
 
     //TODO: a more complex query that can be returned as a LiveData<FavoriteEntityBase> ?
     @Query("SELECT * FROM FavoriteEntityStation WHERE id = :favoriteId")

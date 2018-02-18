@@ -15,6 +15,21 @@ public class NearbyActivityViewModel extends ViewModel {
     private MutableLiveData<Boolean> mFavoriteItemNameEditInProgress = new MutableLiveData<>();
     private MutableLiveData<Boolean> mFavoriteSheetEditInProgress = new MutableLiveData<>();
     private MutableLiveData<Boolean> mFavoriteSheetEditFabShown = new MutableLiveData<>();
+    private MutableLiveData<String> mCurrentBikeSytemId = new MutableLiveData<>();
+
+    public void postCurrentBikeSytemId(String toSet){
+        mCurrentBikeSytemId.postValue(toSet);
+    }
+    //TODO: revisit this to fix bug where you'd be asked to search for a destination after you switch network in a new city even though
+    //you already have favorites
+    public void setCurrentBikeSytemId(String toSet){
+        mCurrentBikeSytemId.setValue(toSet);
+    }
+
+
+    public LiveData<String> getCurrentBikeSytemId(){
+        return mCurrentBikeSytemId;
+    }
 
     public void showFavoriteFab(){
         mFavoriteFabShown.setValue(true);

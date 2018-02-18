@@ -27,6 +27,12 @@ public class FavoriteListViewModel extends ViewModel {
 
     private MutableLiveData<List<? extends FavoriteEntityBase>> mFavoriteList = new MutableLiveData<>();
 
+    private static NearbyActivityViewModel mNearbyActivityViewModel;
+
+    public static void setNearbyActivityModel(NearbyActivityViewModel toSet){
+        mNearbyActivityViewModel = toSet;
+    }
+
     //TODO: this bugs me, I hope setValue is thread safe. Revisit this
     //android app architecture guide : https://developer.android.com/topic/libraries/architecture/guide.html
     public FavoriteListViewModel(){
@@ -43,11 +49,13 @@ public class FavoriteListViewModel extends ViewModel {
                 if (oldList != null) {
                     for (FavoriteEntityBase fav : oldList)
                     {
+                        //noinspection SuspiciousMethodCalls
                         if (!favoriteEntityStations.contains(fav) && !fav.getId().startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX))
                         {
                             toPurge.add(fav);
                         }
                     }
+                    //noinspection SuspiciousMethodCalls
                     oldList.removeAll(toPurge);
                     mergedList.addAll(oldList);
                 }
@@ -56,7 +64,18 @@ public class FavoriteListViewModel extends ViewModel {
 
                 Set<FavoriteEntityBase> Unique_set = new HashSet<>(mergedList);
 
-                mFavoriteList.setValue(new ArrayList<>(Unique_set));
+                List<FavoriteEntityBase> mergedListUnique = new ArrayList<>(Unique_set);
+
+                List<FavoriteEntityBase> mergedUniqueListForCurrentBikeSystem = new ArrayList<>();
+
+                for (FavoriteEntityBase fav :
+                        mergedListUnique) {
+                    if (fav.getBikeSystemId().equalsIgnoreCase(mNearbyActivityViewModel.getCurrentBikeSytemId().getValue())){
+                        mergedUniqueListForCurrentBikeSystem.add(fav);
+                    }
+                }
+
+                mFavoriteList.setValue(mergedUniqueListForCurrentBikeSystem);
             }
         });
 
@@ -85,7 +104,18 @@ public class FavoriteListViewModel extends ViewModel {
 
                 Set<FavoriteEntityBase> Unique_set = new HashSet<>(mergedList);
 
-                mFavoriteList.setValue(new ArrayList<>(Unique_set));
+                List<FavoriteEntityBase> mergedListUnique = new ArrayList<>(Unique_set);
+
+                List<FavoriteEntityBase> mergedUniqueListForCurrentBikeSystem = new ArrayList<>();
+
+                for (FavoriteEntityBase fav :
+                        mergedListUnique) {
+                    if (fav.getBikeSystemId().equalsIgnoreCase(mNearbyActivityViewModel.getCurrentBikeSytemId().getValue())){
+                        mergedUniqueListForCurrentBikeSystem.add(fav);
+                    }
+                }
+
+                mFavoriteList.setValue(mergedUniqueListForCurrentBikeSystem);
             }
         });
     }
@@ -136,7 +166,7 @@ public class FavoriteListViewModel extends ViewModel {
         int count = 0;
 
         for (FavoriteEntityBase fav : mFavoriteList.getValue()){
-            if (nearestBikeStation == null || !fav.getId().equalsIgnoreCase(nearestBikeStation.getLocationHash())) {
+            if (fav.getBikeSystemId().equalsIgnoreCase(mNearbyActivityViewModel.getCurrentBikeSytemId().getValue()) && (nearestBikeStation == null || !fav.getId().equalsIgnoreCase(nearestBikeStation.getLocationHash()))) {
                 ++count;
                 if (count >= n)
                     break;

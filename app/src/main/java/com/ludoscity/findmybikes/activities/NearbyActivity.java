@@ -92,7 +92,6 @@ import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.fragments.StationMapFragment;
 import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 import com.ludoscity.findmybikes.helpers.DBHelper;
-import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.utils.Utils;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 import com.ludoscity.findmybikes.viewmodels.NearbyActivityViewModel;
@@ -320,8 +319,10 @@ public class NearbyActivity extends AppCompatActivity
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar_main));
         setupActionBarStrings();
 
-        mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel.class);
         mNearbyActivityViewModel = ViewModelProviders.of(this).get(NearbyActivityViewModel.class);
+        FavoriteListViewModel.setNearbyActivityModel(mNearbyActivityViewModel);
+        mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel.class);
+
         mNearbyActivityViewModel.isFavoriteFabShown().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
@@ -329,6 +330,46 @@ public class NearbyActivity extends AppCompatActivity
                     mFavoritesSheetFab.showFab();
                 else
                     mFavoritesSheetFab.hideSheetThenFab();
+            }
+        });
+
+        mNearbyActivityViewModel.getCurrentBikeSytemId().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String newBikeSystemId) {
+
+                setupFavoritePickerFab();
+
+                //special case for test versions in firebase lab
+                //full onboarding prevents meaningful coverage (robo test don't input anything in search autocomplete widget)
+                if (getString(R.string.app_version_name).contains("test") || getString(R.string.app_version_name).contains("alpha")){
+
+                    int addedCount = 4;
+
+                    List<BikeStation> networkStationList = RootApplication.getBikeNetworkStationList();
+                    for(BikeStation station : networkStationList) {
+                        if (!mFavoriteListViewModel.isFavorite(station.getLocationHash())) {
+
+                            if (addedCount > 3)
+                                break;
+
+                            else if (addedCount % 2 == 0) { //non default favorite name
+                                FavoriteEntityStation testFavToAdd = new FavoriteEntityStation(station.getLocationHash(), station.getName(), newBikeSystemId);
+                                testFavToAdd.setCustomName(station.getName() + "-test");
+                                mFavoriteListViewModel.addFavorite(testFavToAdd);
+                            }
+                            else{   //default favorite name
+                                mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName(), newBikeSystemId));
+                            }
+
+                            ++addedCount;
+                        }
+                    }
+
+                    if (mOnboardingShowcaseView != null)
+                        mOnboardingShowcaseView.hide();
+                    mOnboardingShowcaseView = null;
+                }
+
             }
         });
 
@@ -488,6 +529,8 @@ public class NearbyActivity extends AppCompatActivity
             mSplashScreenTextTop.setText(getString(R.string.auto_bike_select_finding));
 
             if (DBHelper.getInstance().isBikeNetworkIdAvailable(this)) {
+
+                mNearbyActivityViewModel.setCurrentBikeSytemId(DBHelper.getBikeNetworkId(this));
 
                 mDownloadWebTask = new DownloadWebTask();
                 mDownloadWebTask.execute();
@@ -735,7 +778,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 FavoriteEntityPlace newFavForPlace = new FavoriteEntityPlace(place.getId(),
                         place.getName().toString(),
-                        DBHelper.CURRENT_BIKE_SYSTEM_ID,
+                        mNearbyActivityViewModel.getCurrentBikeSytemId().getValue(),
                         place.getLatLng(),
                         attrString);
 
@@ -1372,7 +1415,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 FavoriteEntityBase newFavForStation = new FavoriteEntityStation(highlighthedDockStation.getLocationHash(),
                         highlighthedDockStation.getName(),
-                        DBHelper.CURRENT_BIKE_SYSTEM_ID);
+                        mNearbyActivityViewModel.getCurrentBikeSytemId().getValue());
 
                 boolean showFavoriteAddFab = false;
 
@@ -1871,7 +1914,7 @@ public class NearbyActivity extends AppCompatActivity
                             showFavoriteAddFab = true;  //Don't setup the fab as it's been done in OnActivityResult
                         else if (setupAddFavoriteFab(new FavoriteEntityStation(clickedStationId,
                                 getStation(clickedStationId).getName(),
-                                DBHelper.CURRENT_BIKE_SYSTEM_ID)))
+                                mNearbyActivityViewModel.getCurrentBikeSytemId().getValue())))
                             showFavoriteAddFab = true;
                     }
 
@@ -2516,7 +2559,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     FavoriteEntityStation newFavForStation = new FavoriteEntityStation(clickedStation.getLocationHash(),
                             clickedStation.getName(),
-                            DBHelper.CURRENT_BIKE_SYSTEM_ID);
+                            mNearbyActivityViewModel.getCurrentBikeSytemId().getValue());
 
                     boolean showFavoriteAddFab = false;
 
@@ -2555,10 +2598,10 @@ public class NearbyActivity extends AppCompatActivity
                     }
 
                     if (mStationMapFragment.getMarkerPickedPlaceVisibleName().isEmpty()) {
-                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName(), DBHelper.CURRENT_BIKE_SYSTEM_ID), false);
+                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName(), mNearbyActivityViewModel.getCurrentBikeSytemId().getValue()), false);
                     }
                     else {   //there's a third destination
-                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName(), DBHelper.CURRENT_BIKE_SYSTEM_ID);
+                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName(), mNearbyActivityViewModel.getCurrentBikeSytemId().getValue());
                         toAdd.setCustomName(mStationMapFragment.getMarkerPickedPlaceVisibleName());
                         addFavorite(toAdd, false);
                     }
@@ -3166,6 +3209,7 @@ public class NearbyActivity extends AppCompatActivity
                     toReturn.put("new_network_city", closestNetwork.location.city);
 
                     BikeStationRepository.getInstance().setAll(null);
+                    mNearbyActivityViewModel.postCurrentBikeSytemId(closestNetwork.id);
                     DBHelper.getInstance().saveBikeNetworkDesc(closestNetwork, NearbyActivity.this);
                 }
 
@@ -3647,37 +3691,6 @@ public class NearbyActivity extends AppCompatActivity
 
             //must be done last
             mDownloadWebTask = null;
-
-            //special case for test versions in firebase lab
-            //full onboarding prevents meaningful coverage (robo test don't input anything in search autocomplete widget)
-            if (getString(R.string.app_version_name).contains("test") || getString(R.string.app_version_name).contains("alpha")){
-
-                int addedCount = 0;
-
-                List<BikeStation> networkStationList = RootApplication.getBikeNetworkStationList();
-                for(BikeStation station : networkStationList) {
-                    if (!mFavoriteListViewModel.isFavorite(station.getLocationHash())) {
-
-                        if (addedCount > 3)
-                            break;
-
-                        else if (addedCount % 2 == 0) { //non default favorite name
-                            FavoriteEntityStation testFavToAdd = new FavoriteEntityStation(station.getLocationHash(), station.getName(), DBHelper.CURRENT_BIKE_SYSTEM_ID);
-                            testFavToAdd.setCustomName(station.getName() + "-test");
-                            mFavoriteListViewModel.addFavorite(testFavToAdd);
-                        }
-                        else{   //default favorite name
-                            mFavoriteListViewModel.addFavorite(new FavoriteEntityStation(station.getLocationHash(), station.getName(), DBHelper.CURRENT_BIKE_SYSTEM_ID));
-                        }
-
-                        ++addedCount;
-                    }
-                }
-
-                if (mOnboardingShowcaseView != null)
-                    mOnboardingShowcaseView.hide();
-                    mOnboardingShowcaseView = null;
-            }
         }
     }
 }
