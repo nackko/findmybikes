@@ -4,6 +4,10 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+
 /**
  * Created by F8Full on 2017-12-24. This file is part of #findmybikes
  * ViewModel for handling favoritelistFragment data prep for UI and business logic
@@ -16,6 +20,19 @@ public class NearbyActivityViewModel extends ViewModel {
     private MutableLiveData<Boolean> mFavoriteSheetEditInProgress = new MutableLiveData<>();
     private MutableLiveData<Boolean> mFavoriteSheetEditFabShown = new MutableLiveData<>();
     private MutableLiveData<String> mCurrentBikeSytemId = new MutableLiveData<>();
+
+    private MutableLiveData<Boolean> mNearestBikeAutoSelected = new MutableLiveData<>();
+    private MutableLiveData<Long> mLastDataUpdateEpochTimestamp = new MutableLiveData<>();
+    private MutableLiveData<LatLng> mCurrentUserLatLng = new MutableLiveData<>();
+    private MutableLiveData<BikeStation> mStationA = new MutableLiveData<>();
+    private MutableLiveData<BikeStation> mStationB = new MutableLiveData<>();
+    private MutableLiveData<FavoriteEntityBase> mPickedFavorite = new MutableLiveData<>();
+
+    //TODO: declare enum type
+    private MutableLiveData<Integer> mSelectedTab = new MutableLiveData<>();
+
+    private MutableLiveData<Boolean> mIsConnectivityAvailable = new MutableLiveData<>();
+    private MutableLiveData<Boolean> mIsLocationServiceAvailable = new MutableLiveData<>();
 
     public void postCurrentBikeSytemId(String toSet){
         mCurrentBikeSytemId.postValue(toSet);

@@ -615,6 +615,13 @@ public class NearbyActivity extends AppCompatActivity
         //TODO : BonPlatDePates. Spaghetti monster must be contained.
         //In need an FSM of some kind. States being A selected Y/N B selected Y/N ....
         //TODO: Think about it more
+        //DONE: use a viewmodel with following
+        //isDataOutdated
+        //isASelected/getSelectedA
+        //isBSelected/getSelectedB
+        //isConnectivityAvailable
+        //isFavoritePicked/getPickedFavorite
+        //currentSelectedTab (index or BIKELIST or STATIONLIST IDs ?)
         mAutoSelectBikeFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
