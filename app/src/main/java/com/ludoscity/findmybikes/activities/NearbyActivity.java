@@ -72,6 +72,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.maps.android.SphericalUtil;
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener;
 import com.ludoscity.findmybikes.EditableMaterialSheetFab;
 import com.ludoscity.findmybikes.Fab;
@@ -84,9 +85,9 @@ import com.ludoscity.findmybikes.StationListPagerAdapter;
 import com.ludoscity.findmybikes.StationRecyclerViewAdapter;
 import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
-import com.ludoscity.findmybikes.citybik_es.model.ListNetworksAnswerRoot;
-import com.ludoscity.findmybikes.citybik_es.model.NetworkDesc;
-import com.ludoscity.findmybikes.citybik_es.model.NetworkStatusAnswerRoot;
+import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkListAnswerRoot;
+import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkDesc;
+import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkStatusAnswerRoot;
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.fragments.StationMapFragment;
@@ -3178,25 +3179,26 @@ public class NearbyActivity extends AppCompatActivity
 
             Citybik_esAPI api = ((RootApplication) getApplication()).getCitybik_esApi();
 
-            final Call<ListNetworksAnswerRoot> call = api.listNetworks();
+            final Call<BikeNetworkListAnswerRoot> call = api.getBikeNetworkList();
 
-            Response<ListNetworksAnswerRoot> listAnswer;
+            Response<BikeNetworkListAnswerRoot> listAnswer;
 
             try {
                 listAnswer = call.execute();
 
-                ArrayList<NetworkDesc> answerList = listAnswer.body().networks;
+                ArrayList<BikeNetworkDesc> answerList = listAnswer.body().networks;
 
-                Collections.sort(answerList, new Comparator<NetworkDesc>() {
+                Collections.sort(answerList, new Comparator<BikeNetworkDesc>() {
                     @Override
-                    public int compare(NetworkDesc networkDesc, NetworkDesc t1) {
+                    public int compare(BikeNetworkDesc bikeNetworkDesc, BikeNetworkDesc t1) {
 
                         //NullPointerException on mCurrentUserLatLng been seen on Galaxy Nexus
-                        return (int) (networkDesc.getMeterFromLatLng(finalUserLoc) - t1.getMeterFromLatLng(finalUserLoc));
+                        return (int)(SphericalUtil.computeDistanceBetween(finalUserLoc, bikeNetworkDesc.location.getAsLatLng()) -
+                                SphericalUtil.computeDistanceBetween(finalUserLoc, t1.location.getAsLatLng()));
                     }
                 });
 
-                NetworkDesc closestNetwork = answerList.get(0);
+                BikeNetworkDesc closestNetwork = answerList.get(0);
 
                 if (closestNetwork.id.equalsIgnoreCase(NEW_YORK_HUDSON_BIKESHARE_ID)){
                     closestNetwork = answerList.get(1);
@@ -3213,7 +3215,7 @@ public class NearbyActivity extends AppCompatActivity
                         toReturn.put("old_network_name", DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this));
                     }
 
-                    toReturn.put("new_network_city", closestNetwork.location.city);
+                    toReturn.put("new_network_city", closestNetwork.location.getCity());
 
                     BikeStationRepository.getInstance().setAll(null);
                     mNearbyActivityViewModel.postCurrentBikeSytemId(closestNetwork.id);
@@ -3537,9 +3539,9 @@ public class NearbyActivity extends AppCompatActivity
 
             Citybik_esAPI api = ((RootApplication) getApplication()).getCitybik_esApi();
 
-            final Call<NetworkStatusAnswerRoot> call = api.getNetworkStatus(DBHelper.getInstance().getBikeNetworkHRef(NearbyActivity.this), UrlParams);
+            final Call<BikeNetworkStatusAnswerRoot> call = api.getBikeNetworkStatus(DBHelper.getInstance().getBikeNetworkHRef(NearbyActivity.this), UrlParams);
 
-            Response<NetworkStatusAnswerRoot> statusAnswer;
+            Response<BikeNetworkStatusAnswerRoot> statusAnswer;
 
             try {
                 statusAnswer = call.execute();

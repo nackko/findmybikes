@@ -11,7 +11,7 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.citybik_es.model.NetworkDesc;
+import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkDesc;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
@@ -78,7 +78,7 @@ public class DBHelper {
     private static final int PREF_CRITICAL_AVAILABILITY_MAX_DEFAULT = 1;
     private static final int PREF_BAD_AVAILABILITY_MAX_DEFAULT = 4;
 
-    private static boolean mAutoUpdatePaused = false;
+    private static boolean mAutoUpdatePaused = false; //TODO: should be in model
 
     private DBHelper() {}
 
@@ -278,19 +278,19 @@ public class DBHelper {
                 .getString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_CITY, _ctx), "");
     }
 
-    public void saveBikeNetworkDesc(NetworkDesc networkDesc, Context ctx){
+    public void saveBikeNetworkDesc(BikeNetworkDesc bikeNetworkDesc, Context ctx){
 
         SharedPreferences sp = ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor IdEditor = sp.edit();
 
         //Important to apply right away so that subsequent calls to buildNetworkSpecificKey work
-        IdEditor.putString(PREF_CURRENT_BIKE_NETWORK_ID, networkDesc.id).apply();
+        IdEditor.putString(PREF_CURRENT_BIKE_NETWORK_ID, bikeNetworkDesc.id).apply();
 
         SharedPreferences.Editor editor = sp.edit();
 
-        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_NAME, ctx), networkDesc.name);
-        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_HREF, ctx), networkDesc.href);
-        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_CITY, ctx), networkDesc.location.city);
+        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_NAME, ctx), bikeNetworkDesc.name);
+        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_HREF, ctx), bikeNetworkDesc.href);
+        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_CITY, ctx), bikeNetworkDesc.location.getCity());
 
         editor.apply();
     }

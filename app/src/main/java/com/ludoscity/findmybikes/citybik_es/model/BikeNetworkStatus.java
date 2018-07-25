@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 
 @SuppressWarnings("unused")
-public class NetworkStatus {
+public class BikeNetworkStatus {
     @SerializedName("stations")
     private ArrayList<BikeStation> bikeStationList;
 

@@ -1,7 +1,7 @@
 package com.ludoscity.findmybikes.citybik_es;
 
-import com.ludoscity.findmybikes.citybik_es.model.ListNetworksAnswerRoot;
-import com.ludoscity.findmybikes.citybik_es.model.NetworkStatusAnswerRoot;
+import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkListAnswerRoot;
+import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkStatusAnswerRoot;
 
 import java.util.Map;
 
@@ -20,10 +20,10 @@ public interface Citybik_esAPI {
 
     //http://api.citybik.es/v2/networks/bixi-montreal?fields=stations
     @GET("{href}")
-    Call<NetworkStatusAnswerRoot> getNetworkStatus(@Path("href") String href, @QueryMap Map<String, String> options);
+    Call<BikeNetworkStatusAnswerRoot> getBikeNetworkStatus(@Path("href") String href, @QueryMap Map<String, String> options);
     //http://api.citybik.es/v2/networks/
     @GET("/v2/networks")
-    Call<ListNetworksAnswerRoot> listNetworks();
+    Call<BikeNetworkListAnswerRoot> getBikeNetworkList();
 }
 
 

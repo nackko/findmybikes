@@ -10,6 +10,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.annotations.SerializedName;
 import com.google.maps.android.SphericalUtil;
 
+//TODO: Long term : separate mostly stable data (station location, name, etc...)
+//from highly volatile one (nb of bikes/free slots). Could allow nice
+//offline feature where stations location would be cached separately
 @SuppressWarnings("unused")
 @Entity
 public class BikeStation {//implements Parcelable {
