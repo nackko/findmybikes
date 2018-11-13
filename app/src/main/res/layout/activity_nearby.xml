@@ -1,4 +1,4 @@
-<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,8 +7,9 @@
     <!--suppress AndroidDomInspection -->
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:id="@+id/appbar_coordinator"
-        app:layout_heightPercent="@dimen/main_layout_list_section">
+        app:layout_constraintHeight_percent="0.45">
 
         <android.support.design.widget.AppBarLayout
             android:layout_width="match_parent"
@@ -46,19 +47,29 @@
         </android.support.v4.view.ViewPager>
     </android.support.design.widget.CoordinatorLayout>
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.45" />
+
     <!--suppress AndroidDomInspection -->
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:id="@+id/snackbar_coordinator"
+        android:layout_below="@id/appbar_coordinator"
         app:layout_marginTopPercent="31%"/>
 
     <!--suppress AndroidDomInspection -->
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        app:layout_heightPercent="@dimen/main_layout_map_section"
-        android:layout_below="@id/appbar_coordinator"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.55"
+        app:layout_constraintTop_toBottomOf="@+id/guideline"
+
         >
 
         <!-- TABS -->
@@ -235,4 +246,4 @@
         android:visibility="gone"
 
         layout="@layout/splashscreen" />
-</android.support.percent.PercentRelativeLayout>
+</android.support.constraint.ConstraintLayout>
