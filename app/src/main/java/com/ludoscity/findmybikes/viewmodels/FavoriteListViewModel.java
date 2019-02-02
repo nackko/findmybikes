@@ -12,6 +12,7 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.helpers.FavoriteRepository;
+import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -7,7 +7,8 @@ import android.view.View;
 
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.ludoscity.findmybikes.activities.NearbyActivity;
-import com.ludoscity.findmybikes.viewmodels.NearbyActivityViewModel;
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivity;
+import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 
 /**
  * Created by F8Full on 2016-06-03.
@@ -37,6 +38,41 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
      * @param fabColor   The background color of the FAB.
      */
     public EditableMaterialSheetFab(NearbyActivity isFavoriteSheetItemNameEditInProgress, NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
+        super(view, sheet, overlay, sheetColor, fabColor);
+        mEditFAB = sheet.findViewById(R.id.favorite_sheet_edit_fab);
+        mEditFAB.setOnClickListener(this);  //TODO: Consider making the fragment the listener ?
+
+        mEditDoneFAB = sheet.findViewById(R.id.favorite_sheet_edit_done_fab);
+        mEditDoneFAB.setOnClickListener(this);
+
+        mNearbyActivityViewModel = nearbyActivityViewModel;
+
+        mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(isFavoriteSheetItemNameEditInProgress, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isSheetEditing) {
+
+                if (mEditFAB.getVisibility() == View.INVISIBLE && mEditDoneFAB.getVisibility() == View.INVISIBLE)
+                    return;
+
+                if(isSheetEditing != null && isSheetEditing)
+                {
+                    mEditFAB.hide();
+                    mEditDoneFAB.show();
+                }
+                else
+                {
+                    mEditDoneFAB.hide();
+                    mEditFAB.show();
+                }
+            }
+        });
+
+
+
+        mListener = _listener;
+    }
+
+    public EditableMaterialSheetFab(FindMyBikesActivity isFavoriteSheetItemNameEditInProgress, NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
         super(view, sheet, overlay, sheetColor, fabColor);
         mEditFAB = sheet.findViewById(R.id.favorite_sheet_edit_fab);
         mEditFAB.setOnClickListener(this);  //TODO: Consider making the fragment the listener ?

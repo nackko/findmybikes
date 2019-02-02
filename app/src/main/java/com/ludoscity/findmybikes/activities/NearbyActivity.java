@@ -95,7 +95,7 @@ import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.utils.Utils;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
-import com.ludoscity.findmybikes.viewmodels.NearbyActivityViewModel;
+import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -195,8 +195,6 @@ public class NearbyActivity extends AppCompatActivity
     private boolean mRequestingLocationUpdates = false;
 
     private boolean mClosestBikeAutoSelected = false;
-
-    private boolean mFavoriteItemEditInProgress = false;
 
     private Snackbar mFindBikesSnackbar;
 
