@@ -23,8 +23,6 @@ import android.view.animation.Interpolator
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import com.github.amlcurran.showcaseview.ShowcaseView
-import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.location.places.ui.PlaceAutocomplete
@@ -95,8 +93,6 @@ class FindMyBikesActivity : AppCompatActivity(),
     private lateinit var findBikesSnackbar: Snackbar
 
     //TODO: re add onboarding
-    //private lateinit var onboardingShowcaseView: ShowcaseView
-    //private lateinit var onboardingSnackBar: Snackbar //Used to display hints
 
 
     //TODO: Status bar fragment ?
@@ -282,10 +278,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         if (autoCompleteLoadingProgressBarVisible)
             placeAutocompleteLoadingProgressBar.visibility = View.VISIBLE
 
-        /*if (showcaseTripTotalPlaceName != null) {
-            setupShowcaseTripTotal()
-        }*/
-
         if (savedInstanceState == null)
             splashScreen.visibility = View.VISIBLE
 
@@ -430,10 +422,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         stationMapFragment.setMapPaddingRight(0)
         hideTripDetailsWidget()
         clearBTab()
-
-        /*if (!checkOnboarding(OnboardingLevelEnum.ONBOARDING_LEVEL_FULL, OnboardingStepEnum.ONBOARDING_STEP_SEARCH_SHOWCASE)) {
-            checkOnboarding(OnboardingLevelEnum.ONBOARDING_LEVEL_LIGHT, OnboardingStepEnum.ONBOARDING_STEP_MAIN_CHOICE_HINT)
-        }*/
     }
 
     private fun clearBTab() {
@@ -580,9 +568,6 @@ class FindMyBikesActivity : AppCompatActivity(),
 
                 getContentListPagerAdapter().hideStationRecap()
 
-                /*if (!checkOnboarding(OnboardingLevelEnum.ONBOARDING_LEVEL_LIGHT, OnboardingStepEnum.ONBOARDING_STEP_SEARCH_HINT))
-                    dismissOnboardingHint()*/
-
             } catch (e: GooglePlayServicesRepairableException) {
                 Log.d("mPlacePickerFAB onClick", "oops", e)
             } catch (e: GooglePlayServicesNotAvailableException) {
@@ -639,172 +624,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         return stationListViewPager.getAdapter() as StationListPagerAdapter
     }
 
-    //TODO: Onboarding fragment -- few hundred lines
-    /*private fun setupShowcaseSearch() {
-
-        if (Utils.Connectivity.isConnected(applicationContext)) {
-
-            /*if(mFavoritesSheetFab.isSheetVisible())
-                mFavoritesSheetFab.hideSheet();*/
-            nearbyActivityViewModel.hideFavoriteSheet()
-
-
-            onboardingShowcaseView.setContentTitle(getString(R.string.onboarding_showcase_search_title))
-            onboardingShowcaseView.setContentText(getString(R.string.onboarding_showcase_search_text))
-        } else {
-            setupHintMainChoice()
-        }
-    }
-
-    private fun setupShowcaseTripTotal() {
-        onboardingShowcaseView.hide()
-
-        onboardingShowcaseView = ShowcaseView.Builder(this@FindMyBikesActivity)
-                .setTarget(ViewTarget(R.id.trip_details_total, this@FindMyBikesActivity))
-                .setStyle(R.style.OnboardingShowcaseTheme)
-                .setContentTitle(R.string.onboarding_showcase_total_time_title)
-                .withMaterialShowcase()
-                .setOnClickListener {
-                    if (!stationMapFragment.isPickedFavoriteMarkerVisible)
-                        animateShowcaseToAddFavorite()
-                    else
-                        animateShowcaseToItinerary()
-                }
-                .build()
-
-        //TODO: position button depending on screen orientation
-        //RelativeLayout.LayoutParams lps = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        /*lps.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        lps.addRule(RelativeLayout.RIGHT_OF, R.id.trip_details_total);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            lps.addRule(RelativeLayout.END_OF, R.id.trip_details_total);
-        }*/
-
-        //lps.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        //lps.addRule(RelativeLayout.CENTER_IN_PARENT);
-        //int margin = ((Number) (getResources().getDisplayMetrics().density * 12)).intValue();
-        //lps.setMargins(margin, margin, margin, margin);
-
-        //mOnboardingShowcaseView.setButtonPosition(lps);
-
-    }
-
-    private fun setupHintMainChoice() {
-
-        var messageResourceId = R.string.onboarding_hint_main_choice
-
-        if (!Utils.Connectivity.isConnected(applicationContext))
-            messageResourceId = R.string.onboarding_hint_main_choice_no_connectivity
-
-        onboardingSnackBar = Utils.Snackbar.makeStyled(coordinatorLayout, messageResourceId, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(this, R.color.theme_primary_dark))/*.setAction(R.string.gotit, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        //Snackbar dismisses itself on click
-                    }
-                })*/
-        if (!Utils.Connectivity.isConnected(applicationContext))
-            onboardingSnackBar.getView().setTag("NO_CONNECTIVITY")
-        else
-            onboardingSnackBar.getView().setTag("CONNECTIVITY")
-
-        /*onboardingSnackBar.addCallback(object : Snackbar.Callback() {
-            override fun onDismissed(snackbar: Snackbar?, event: Int) {
-                if (event == Snackbar.Callback.DISMISS_EVENT_SWIPE)
-                    onboardingSnackBar = null
-            }
-        })*/
-
-
-        onboardingSnackBar.show()
-    }
-
-    private fun setupHintTapFavName() {
-        onboardingSnackBar = Utils.Snackbar.makeStyled(coordinatorLayout,
-                R.string.onboarding_hint_tap_favorite_name, Snackbar.LENGTH_INDEFINITE,
-                ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_primary_dark))
-        onboardingSnackBar.view.tag = null
-        onboardingSnackBar.show()
-    }
-
-    private fun setupHintSearch() {
-        onboardingSnackBar = Utils.Snackbar.makeStyled(coordinatorLayout,
-                R.string.onboarding_hint_search, Snackbar.LENGTH_INDEFINITE,
-                ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_primary_dark))
-        onboardingSnackBar.view.tag = null
-        onboardingSnackBar.show()
-    }
-
-    private fun animateShowcaseToAddFavorite() {
-        onboardingShowcaseView.hideButton()
-
-        onboardingShowcaseView.setShowcase(ViewTarget(addFavoriteFAB), true)
-        onboardingShowcaseView.setContentTitle(getString(R.string.onboarding_showcase_add_favorite_title))
-        onboardingShowcaseView.setContentText(getString(R.string.onboarding_showcase_add_favorite_text))
-    }
-
-    private fun animateShowcaseToItinerary() {
-        onboardingShowcaseView.hideButton()
-
-        onboardingShowcaseView.setShowcase(ViewTarget(R.id.trip_details_directions_a_to_b, this), true)
-        onboardingShowcaseView.setContentTitle(getString(R.string.onboarding_showcase_itinerary_title))
-        onboardingShowcaseView.setContentText(getString(R.string.onboarding_showcase_itinerary_favorite_text))
-    }
-
-    private enum class OnboardingStepEnum {
-        ONBOARDING_STEP_CHECKONLY, ONBOARDING_STEP_SEARCH_SHOWCASE, ONBOARDING_STEP_TRIP_TOTAL_SHOWCASE,
-        ONBOARDING_STEP_MAIN_CHOICE_HINT, ONBOARDING_STEP_TAP_FAV_NAME_HINT, ONBOARDING_STEP_SEARCH_HINT
-    }
-
-    private enum class OnboardingLevelEnum {
-        ONBOARDING_LEVEL_FULL, ONBOARDING_LEVEL_LIGHT, ONBOARDING_LEVEL_ULTRA_LIGHT
-    }
-
-    //TODO
-    //returns true if conditions satisfied (onboarding is showed)
-    private fun checkOnboarding(_level: OnboardingLevelEnum, _step: OnboardingStepEnum): Boolean {
-
-        var toReturn = false
-
-        var minValidFavorites = -1
-
-        if (_level == OnboardingLevelEnum.ONBOARDING_LEVEL_FULL)
-            minValidFavorites = applicationContext.resources.getInteger(R.integer.onboarding_light_min_valid_favorites_count)
-        else if (_level == OnboardingLevelEnum.ONBOARDING_LEVEL_LIGHT)
-            minValidFavorites = applicationContext.resources.getInteger(R.integer.onboarding_ultra_light_min_valid_favorites_count)
-        else if (_level == OnboardingLevelEnum.ONBOARDING_LEVEL_ULTRA_LIGHT)
-            minValidFavorites = applicationContext.resources.getInteger(R.integer.onboarding_none_min_valid_favorites_count)
-
-
-        //TODO: replug this (needs favorites model)
-        toReturn = true
-        //count valid favorites
-        /*if (!favoriteListViewModel.hasAtleastNValidFavorites(
-                        getContentListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS),
-                        minValidFavorites)) {
-
-            if (_step == OnboardingStepEnum.ONBOARDING_STEP_SEARCH_SHOWCASE)
-                setupShowcaseSearch()
-            else if (_step == OnboardingStepEnum.ONBOARDING_STEP_TRIP_TOTAL_SHOWCASE)
-                setupShowcaseTripTotal()
-            else if (_step == OnboardingStepEnum.ONBOARDING_STEP_MAIN_CHOICE_HINT)
-                setupHintMainChoice()
-            else if (_step == OnboardingStepEnum.ONBOARDING_STEP_TAP_FAV_NAME_HINT)
-                setupHintTapFavName()
-            else if (_step == OnboardingStepEnum.ONBOARDING_STEP_SEARCH_HINT)
-                setupHintSearch()
-
-            toReturn = true
-        }*/
-
-        return toReturn
-    }
-
-    private fun dismissOnboardingHint() {
-        onboardingSnackBar.dismiss()
-    }
-    //End TODO: Onboarding fragment*/
-
-
+    //TODO: Onboarding fragment
 
     private fun setupFavoritePickerFab() {
 
@@ -841,9 +661,6 @@ class FindMyBikesActivity : AppCompatActivity(),
 
                 searchFAB.hide()
                 //mFavoriteSheetVisible = true;   //This is tracked in viewmodel
-
-                /*if (!checkOnboarding(OnboardingLevelEnum.ONBOARDING_LEVEL_ULTRA_LIGHT, OnboardingStepEnum.ONBOARDING_STEP_TAP_FAV_NAME_HINT))
-                    dismissOnboardingHint()*/
             }
 
             override fun onSheetHidden() {
@@ -854,10 +671,6 @@ class FindMyBikesActivity : AppCompatActivity(),
                     //B tab with no selection
                     if (Utils.Connectivity.isConnected(this@FindMyBikesActivity))
                         searchFAB.show()
-
-                    /*if (!checkOnboarding(OnboardingLevelEnum.ONBOARDING_LEVEL_FULL, OnboardingStepEnum.ONBOARDING_STEP_SEARCH_SHOWCASE) && !checkOnboarding(OnboardingLevelEnum.ONBOARDING_LEVEL_LIGHT, OnboardingStepEnum.ONBOARDING_STEP_MAIN_CHOICE_HINT)) {
-                        dismissOnboardingHint()
-                    }*/
                 }
 
                 //mFavoriteSheetVisible = false;
