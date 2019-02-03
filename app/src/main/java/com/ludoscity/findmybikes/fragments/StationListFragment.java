@@ -168,7 +168,7 @@ public class StationListFragment extends Fragment
                 mStationRecapAvailability.getPaint().setTypeface(Typeface.DEFAULT_BOLD);
             }
 
-            setupUI(RootApplication.getBikeNetworkStationList(), savedInstanceState.getBoolean("looking_for_bike"),
+            setupUI(RootApplication.Companion.getBikeNetworkStationList(), savedInstanceState.getBoolean("looking_for_bike"),
                     savedInstanceState.getBoolean("proximity_header_visible"),
                     savedInstanceState.getInt("proximity_header_from_icon_resid") == -1 ? null : savedInstanceState.getInt("proximity_header_from_icon_resid"),
                     savedInstanceState.getInt("proximity_header_to_icon_resid") == -1 ? null : savedInstanceState.getInt("proximity_header_to_icon_resid"),

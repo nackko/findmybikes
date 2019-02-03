@@ -341,7 +341,10 @@ class FindMyBikesActivity : AppCompatActivity(),
         circularRevealInterpolator = AnimationUtils.loadInterpolator(this, R.interpolator.msf_interpolator)
 
         //Not empty if RootApplication::onCreate got database data
-        if (RootApplication.getBikeNetworkStationList().isEmpty()) {
+        //TODO: this is clearly wrong : no copy of data should exist in root application
+        //data should disseminate through repo observation
+        //Observe some LiveData and detect when an initial setup is required
+        if (RootApplication.bikeNetworkStationList.isEmpty()) {
 
             tryInitialSetup()
         }

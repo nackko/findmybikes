@@ -87,7 +87,7 @@ import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkListAnswerRoot;
 import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkDesc;
-import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkStatusAnswerRoot;
+import com.ludoscity.findmybikes.citybik_es.model.BikeSystemStatusAnswerRoot;
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.fragments.StationMapFragment;
@@ -344,7 +344,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     int addedCount = 4;
 
-                    List<BikeStation> networkStationList = RootApplication.getBikeNetworkStationList();
+                    List<BikeStation> networkStationList = RootApplication.Companion.getBikeNetworkStationList();
                     for(BikeStation station : networkStationList) {
                         if (!mFavoriteListViewModel.isFavorite(station.getLocationHash())) {
 
@@ -516,7 +516,7 @@ public class NearbyActivity extends AppCompatActivity
         mCircularRevealInterpolator = AnimationUtils.loadInterpolator(this, R.interpolator.msf_interpolator);
 
         //Not empty if RootApplication::onCreate got database data
-        if(RootApplication.getBikeNetworkStationList().isEmpty()){
+        if(RootApplication.Companion.getBikeNetworkStationList().isEmpty()){
 
             tryInitialSetup();
         }
@@ -1397,7 +1397,7 @@ public class NearbyActivity extends AppCompatActivity
     private void setupTabPages() {
 
         //TAB A
-        getListPagerAdapter().setupUI(StationListPagerAdapter.BIKE_STATIONS, RootApplication.getBikeNetworkStationList(),
+        getListPagerAdapter().setupUI(StationListPagerAdapter.BIKE_STATIONS, RootApplication.Companion.getBikeNetworkStationList(),
                 true, null, R.drawable.ic_walking_24dp_white,
                 "",
                 mCurrentUserLatLng != null ? new StationRecyclerViewAdapter.DistanceComparator(mCurrentUserLatLng) : null);
@@ -1960,7 +1960,7 @@ public class NearbyActivity extends AppCompatActivity
             hideSetupShowTripDetailsWidget();
         }
 
-        getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
+        getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.Companion.getBikeNetworkStationList(),
                 true ,
                 R.drawable.ic_destination_arrow_white_24dp,
                 R.drawable.ic_pin_search_24dp_white,
@@ -2009,7 +2009,7 @@ public class NearbyActivity extends AppCompatActivity
                     //hackfix. On some devices timing issues led to infinite loop with isRecyclerViewReadyForItemSelection always returning false
                     //so, retry setting up the UI before repost
                     //Replace recyclerview content
-                    getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
+                    getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.Companion.getBikeNetworkStationList(),
                             true ,
                             R.drawable.ic_destination_arrow_white_24dp,
                             R.drawable.ic_pin_search_24dp_white,
@@ -2049,7 +2049,7 @@ public class NearbyActivity extends AppCompatActivity
 
         final FavoriteEntityBase favorite = mFavoriteListViewModel.getFavoriteEntityForId(_favoriteId);
 
-        getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
+        getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.Companion.getBikeNetworkStationList(),
                 true,
                 R.drawable.ic_destination_arrow_white_24dp,
                 R.drawable.ic_pin_favorite_24dp_white,
@@ -2109,7 +2109,7 @@ public class NearbyActivity extends AppCompatActivity
                     //hackfix. On some devices timing issues led to infinite loop with isRecyclerViewReadyForItemSelection always returning false
                     //so, retry stting up the UI before repost
                     //Replace recyclerview content
-                    getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
+                    getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.Companion.getBikeNetworkStationList(),
                             true,
                             R.drawable.ic_destination_arrow_white_24dp,
                             R.drawable.ic_pin_favorite_24dp_white,
@@ -2181,7 +2181,7 @@ public class NearbyActivity extends AppCompatActivity
             getListPagerAdapter().smoothScrollHighlightedInViewForPage(StationListPagerAdapter.DOCK_STATIONS, isAppBarExpanded());
         }
         else{   //it's just an A-B trip
-            getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
+            getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.Companion.getBikeNetworkStationList(),
                     false,
                     null,
                     null,
@@ -2223,7 +2223,7 @@ public class NearbyActivity extends AppCompatActivity
                         //hackfix. On some devices timing issues led to infinite loop with isRecyclerViewReadyForItemSelection always returning false
                         //so, retry stting up the UI before repost
                         //Replace recyclerview content
-                        getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.getBikeNetworkStationList(),
+                        getListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, RootApplication.Companion.getBikeNetworkStationList(),
                                 false,
                                 null,
                                 null,
@@ -2499,7 +2499,7 @@ public class NearbyActivity extends AppCompatActivity
     private BikeStation getStation(String _stationId){
         BikeStation toReturn = null;
 
-        List<BikeStation> networkStationList = RootApplication.getBikeNetworkStationList();
+        List<BikeStation> networkStationList = RootApplication.Companion.getBikeNetworkStationList();
         for(BikeStation station : networkStationList){
             if (station.getLocationHash().equalsIgnoreCase(_stationId)){
                 toReturn = station;
@@ -3027,7 +3027,7 @@ public class NearbyActivity extends AppCompatActivity
 
             mStationMapFragment.clearMarkerGfxData();
             //SETUP MARKERS DATA
-            List<BikeStation> networkStationList = RootApplication.getBikeNetworkStationList();
+            List<BikeStation> networkStationList = RootApplication.Companion.getBikeNetworkStationList();
             for (BikeStation item : networkStationList){
                 mStationMapFragment.addMarkerForBikeStation(bools[0], item, bools[1]);
             }
@@ -3311,7 +3311,7 @@ public class NearbyActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Void... params) {
 
-            BikeStationRepository.getInstance().setAll(RootApplication.getBikeNetworkStationList());
+            BikeStationRepository.getInstance().setAll(RootApplication.Companion.getBikeNetworkStationList());
 
             return null;
         }
@@ -3335,7 +3335,7 @@ public class NearbyActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(String... params) {
 
-            List<BikeStation> networkStationList = RootApplication.getBikeNetworkStationList();
+            List<BikeStation> networkStationList = RootApplication.Companion.getBikeNetworkStationList();
 
             Map<String, BikeStation> networkStationMap = new HashMap<>(networkStationList.size());
 
@@ -3537,14 +3537,14 @@ public class NearbyActivity extends AppCompatActivity
 
             Citybik_esAPI api = ((RootApplication) getApplication()).getCitybik_esApi();
 
-            final Call<BikeNetworkStatusAnswerRoot> call = api.getBikeNetworkStatus(DBHelper.getInstance().getBikeNetworkHRef(NearbyActivity.this), UrlParams);
+            final Call<BikeSystemStatusAnswerRoot> call = api.getBikeNetworkStatus(DBHelper.getInstance().getBikeNetworkHRef(NearbyActivity.this), UrlParams);
 
-            Response<BikeNetworkStatusAnswerRoot> statusAnswer;
+            Response<BikeSystemStatusAnswerRoot> statusAnswer;
 
             try {
                 statusAnswer = call.execute();
 
-                List<BikeStation> newBikeNetworkStationList = RootApplication.addAllToBikeNetworkStationList(statusAnswer.body().network.getBikeStationList(), NearbyActivity.this);
+                List<BikeStation> newBikeNetworkStationList = RootApplication.Companion.addAllToBikeNetworkStationList(statusAnswer.body().network.getBikeStationList());
 
                 //Calculate bounds
                 LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
@@ -3606,7 +3606,7 @@ public class NearbyActivity extends AppCompatActivity
             getListPagerAdapter().setRefreshingAll(false);
 
             //wasn't initial download
-            if(!RootApplication.getBikeNetworkStationList().isEmpty()) {
+            if(!RootApplication.Companion.getBikeNetworkStationList().isEmpty()) {
 
                 if (mDataOutdated){
                     mRefreshMarkers = true;
@@ -3666,7 +3666,7 @@ public class NearbyActivity extends AppCompatActivity
             DBHelper.getInstance().saveLastUpdateTimestampAsNow(getApplicationContext());
             DBHelper.getInstance().saveBikeNetworkBounds(mDownloadedBikeNetworkBounds, NearbyActivity.this);
 
-            Log.d("nearbyActivity", RootApplication.getBikeNetworkStationList().size() + " bikeStationList downloaded from citibik.es");
+            Log.d("nearbyActivity", RootApplication.Companion.getBikeNetworkStationList().size() + " bikeStationList downloaded from citibik.es");
 
             //users are inside bounds
             if (mCurrentUserLatLng == null || DBHelper.getInstance().getBikeNetworkBounds(NearbyActivity.this, 5).contains(mCurrentUserLatLng) ){

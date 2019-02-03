@@ -8,7 +8,7 @@ package com.ludoscity.findmybikes.citybik_es.model;
  */
 
 
-public class BikeNetworkStatusAnswerRoot {
-    public BikeNetworkStatus network;
+public class BikeSystemStatusAnswerRoot {
+    public BikeSystemStatus network;
 }
 
