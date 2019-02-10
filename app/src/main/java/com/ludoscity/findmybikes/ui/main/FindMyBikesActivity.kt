@@ -100,10 +100,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     private lateinit var statusTextView: TextView
     private lateinit var statusBar: View
 
-    //TODO: Splash screen fragment
     private lateinit var splashScreen: View
-    private lateinit var splashScreenTextTop: TextView
-    private lateinit var splashScreenTextBottom: TextView
 
     private val PLACE_AUTOCOMPLETE_REQUEST_CODE = 1
 
@@ -181,7 +178,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             showcaseTripTotalPlaceName = savedInstanceState.getString("onboarding_showcase_trip_total_place_name", null)
         }*/
 
-        setContentView(R.layout.activity_nearby)
+        setContentView(R.layout.activity_findmybikes)
         setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
         setupActionBarStrings()
 
@@ -271,10 +268,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         coordinatorLayout = findViewById(R.id.snackbar_coordinator)
 
-        //TODO: splash screen fragment
-        splashScreen = findViewById<View>(R.id.splashscreen)
-        splashScreenTextTop = findViewById(R.id.splashscreen_text_top)
-        splashScreenTextBottom = findViewById(R.id.splashscreen_text_bottom)
+        splashScreen = findViewById<View>(R.id.fragment_splash_screen)
 
         //TODO: trip details fragment
         tripDetailsWidget = findViewById<View>(R.id.trip_details)
