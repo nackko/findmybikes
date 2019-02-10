@@ -39,7 +39,7 @@ public interface BikeStationDao {
     @Query("SELECT * FROM bikestation")
     LiveData<List<BikeStation>> getAll();
 
-    @Query("SELECT * FROM bikestation WHERE location_hash = :stationId")
+    @Query("SELECT * FROM bikestation WHERE uid = :stationId")
     LiveData<BikeStation> getStation(String stationId);
 
     //TODO: Add queries for inserting or removing only one BikeStation ? Or use the list one with a list of size 1 ?

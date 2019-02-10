@@ -29,6 +29,7 @@ import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_1_2;
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_2_3;
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_3_4;
 import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_4_5;
+import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_5_6;
 
 /**
  * Created by F8Full on 2015-04-02.
@@ -88,6 +89,7 @@ public class DBHelper {
                 .addMigrations(MIGRATION_2_3)
                 .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_5_6)
                 .build();
 
         //Check for SharedPreferences versioning

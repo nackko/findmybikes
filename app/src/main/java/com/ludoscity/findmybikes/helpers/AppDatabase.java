@@ -15,7 +15,7 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
  * Created by F8Full on 2017-12-17.
  * This file is part of #findmybikes
  */
-@Database(entities = {BikeStation.class, FavoriteEntityStation.class, FavoriteEntityPlace.class}, version = 5)
+@Database(entities = {BikeStation.class, FavoriteEntityStation.class, FavoriteEntityPlace.class}, version = 6)
 @TypeConverters({LatLngTypeConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract BikeStationDao bikeStationDao();
@@ -61,6 +61,15 @@ public abstract class AppDatabase extends RoomDatabase {
 
             database.execSQL("ALTER TABLE FavoriteEntityStation ADD COLUMN bike_system_id TEXT DEFAULT 'bixi-montreal'");
             database.execSQL("ALTER TABLE FavoriteEntityPlace ADD COLUMN bike_system_id TEXT DEFAULT 'bixi-montreal'");
+        }
+    };
+
+    static final Migration MIGRATION_5_6 = new Migration(5,6) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+
+            database.execSQL("DROP TABLE BikeStation");
+            database.execSQL("CREATE TABLE IF NOT EXISTS `BikeStation` (`uid` TEXT NOT NULL, `empty_slots` INTEGER, `free_bikes` INTEGER, `latitude` REAL, `longitude` REAL, `name` TEXT, `timestamp` TEXT, `locationHash` TEXT, `extra_locked` INTEGER, `extra_name` TEXT, `extra_uid` INTEGER, `extra_renting` INTEGER, `extra_returning` INTEGER, `extra_status` TEXT, PRIMARY KEY(`uid`))");
         }
     };
 }

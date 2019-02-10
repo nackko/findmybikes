@@ -7,7 +7,7 @@ import android.content.Intent
 import android.util.Log
 import com.ludoscity.findmybikes.RootApplication
 import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation
+import com.ludoscity.findmybikes.citybik_es.model.BikeSystemStatus
 import com.ludoscity.findmybikes.citybik_es.model.BikeSystemStatusAnswerRoot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,14 +27,14 @@ class BikeSystemNetworkDataSource private constructor(){
     // writing out a bunch of multiplication ourselves and risk making a silly mistake.
 
 
-    private val downloadedBikeSystemStationData: MutableLiveData<Array<BikeStation>> = MutableLiveData()
+    private val downloadedBikeSystemStatus: MutableLiveData<BikeSystemStatus> = MutableLiveData()
 
-    val stationData : LiveData<Array<BikeStation>>
-        get() = downloadedBikeSystemStationData
+    val bikeSystemStatusData : LiveData<BikeSystemStatus>
+        get() = downloadedBikeSystemStatus
 
     fun startFetchBikeSystemService(ctx: Context){
         val intentToFetch = Intent(ctx, FetchBikeSystemIntentService::class.java)
-        intentToFetch.putExtra("system_href", "httpPROUT")
+        intentToFetch.putExtra("system_href", "/v2/networks/velov")
 
         FetchBikeSystemIntentService.enqueueWork(ctx, intentToFetch)
 
@@ -48,7 +48,7 @@ class BikeSystemNetworkDataSource private constructor(){
     fun fetchBikeSystem(citybik_esAPI : Citybik_esAPI, bikeSystemHRef: String){
         coroutineScopeIO.launch {
             val UrlParams = HashMap<String, String>()
-            UrlParams["fields"] = "stations"
+            UrlParams["fields"] = "stations,id"
 
             val call = citybik_esAPI.getBikeNetworkStatus(bikeSystemHRef, UrlParams)
 
@@ -61,15 +61,7 @@ class BikeSystemNetworkDataSource private constructor(){
                 val newBikeNetworkStationList = RootApplication.addAllToBikeNetworkStationList(statusAnswer.body()!!.network.bikeStationList!!)
 
 
-                downloadedBikeSystemStationData.postValue(statusAnswer.body()!!.network.bikeStationList)
-                //Calculate bounds - TODO: this should happen in some code observing data changes
-                /*val boundsBuilder = LatLngBounds.Builder()
-
-                for (station in statusAnswer.body()!!.network.bikeStationList) {
-                    boundsBuilder.include(station.location)
-                }
-
-                mDownloadedBikeNetworkBounds = boundsBuilder.build()*/
+                downloadedBikeSystemStatus.postValue(statusAnswer.body()!!.network)
 
             } catch (e: IOException) {
 

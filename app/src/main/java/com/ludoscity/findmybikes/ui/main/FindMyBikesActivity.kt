@@ -39,6 +39,7 @@ import com.ludoscity.findmybikes.fragments.FavoriteListFragment
 import com.ludoscity.findmybikes.fragments.StationListFragment
 import com.ludoscity.findmybikes.fragments.StationMapFragment
 import com.ludoscity.findmybikes.helpers.DBHelper
+import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
 import java.util.ArrayList
@@ -146,6 +147,10 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     private val DEBUG_FAKE_USER_CUR_LOC = LatLng(4.835659, 45.764043)
 
+    companion object {
+        private val TAG = FindMyBikesActivity::class.java.simpleName
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.FindMyBikesTheme) //https://developer.android.com/topic/performance/launch-time.html
 
@@ -180,7 +185,18 @@ class FindMyBikesActivity : AppCompatActivity(),
         setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
         setupActionBarStrings()
 
-        nearbyActivityViewModel = ViewModelProviders.of(this).get(NearbyActivityViewModel::class.java)
+        val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this)
+        nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
+
+        nearbyActivityViewModel.stationData.observe(this, Observer {
+            Log.d(TAG, "New data has " + (it?.size ?: "") + " stations")
+
+            if(it!!.isNotEmpty()){
+                Log.d(TAG, "un nom : " + it[0].name)
+            }
+        })
+
+        //nearbyActivityViewModel = ViewModelProviders.of(this).get(NearbyActivityViewModel::class.java)
         //TODO: retrieve favorites model
         FavoriteListViewModel.setNearbyActivityModel(nearbyActivityViewModel)
         //mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel::class.java)

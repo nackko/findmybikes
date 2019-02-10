@@ -3,9 +3,11 @@ package com.ludoscity.findmybikes.ui.main
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import android.content.Context
 
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
+import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
 
 /**
@@ -13,7 +15,7 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
  * ViewModel for handling favoritelistFragment data prep for UI and business logic
  */
 
-class NearbyActivityViewModel : ViewModel() {
+class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewModel() {
     private val favoriteFabShown = MutableLiveData<Boolean>()
     private val favoriteSheetShown = MutableLiveData<Boolean>()
     private val favoriteItemNameEditInProgress = MutableLiveData<Boolean>()
@@ -131,5 +133,14 @@ class NearbyActivityViewModel : ViewModel() {
     fun hideFavoriteSheetEditFab() {
         favoriteSheetEditFabShown.value = false
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    private val repository : FindMyBikesRepository = repo
+    val stationData: LiveData<List<BikeStation>>
+
+    init {
+        stationData = repo.getBikeSystemStationData(ctx)
+    }
+
 
 }

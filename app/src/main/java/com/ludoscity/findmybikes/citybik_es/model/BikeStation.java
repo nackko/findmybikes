@@ -20,11 +20,10 @@ public class BikeStation {//implements Parcelable {
     public BikeStation() {}
 
     @SuppressWarnings("NullableProblems")
-    @SerializedName("id")
-    @ColumnInfo(name = "location_hash")
+    @ColumnInfo(name = "uid")
     @PrimaryKey
     @NonNull
-    private String locationHash; //used as a uid
+    private String uid;
 
     @ColumnInfo(name = "empty_slots")
     @SerializedName("empty_slots")
@@ -43,14 +42,19 @@ public class BikeStation {//implements Parcelable {
     @ColumnInfo(name = "timestamp")
     private String timestamp;
 
+    @SerializedName("id")
+    private String locationHash;
+
     @NonNull
-    public String getLocationHash() {
-        return locationHash;
+    public String getUid() { return uid; }
+
+    public void setUid(@NonNull String uid) {
+        this.uid = uid;
     }
 
-    public void setLocationHash(@NonNull String locationHash) {
-        this.locationHash = locationHash;
-    }
+    public String getLocationHash(){ return locationHash;}
+
+    public void setLocationHash(String locationHash){this.locationHash = locationHash;}
 
     public Integer getEmptySlots() {
         return emptySlots;
@@ -93,16 +97,11 @@ public class BikeStation {//implements Parcelable {
     }
 
     public String getName() {
-        String toReturn = extra.getName();
-
-        if (toReturn == null)
-            toReturn = name;
-
-        return toReturn;
+        return name;
     }
 
     public void setName(String name) {
-        setExtra(new BikeStationExtra(false,name));
+        this.name = name;
     }
 
     public String getTimestamp() {
@@ -120,7 +119,19 @@ public class BikeStation {//implements Parcelable {
 
     public boolean isLocked() {
 
-        return extra.getLocked() != null && extra.getLocked();
+        boolean toReturn = false;
+
+        if (extra != null){
+
+            if (extra.getRenting() != null && extra.getReturning() != null){
+                toReturn = !extra.getRenting() || !extra.getReturning();
+            }
+            else if (extra.getLocked() != null){
+                toReturn = extra.getLocked();
+            }
+        }
+
+        return toReturn;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

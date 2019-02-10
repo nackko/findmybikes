@@ -95,7 +95,7 @@ class RootApplication : Application() {
         lateinit var bikeNetworkStationList: List<BikeStation>
             private set
 
-        fun addAllToBikeNetworkStationList(_bikeStationList: Array<BikeStation>): List<BikeStation> {
+        fun addAllToBikeNetworkStationList(_bikeStationList: ArrayList<BikeStation>): List<BikeStation> {
 
             val newList = ArrayList<BikeStation>(_bikeStationList.size)
 
