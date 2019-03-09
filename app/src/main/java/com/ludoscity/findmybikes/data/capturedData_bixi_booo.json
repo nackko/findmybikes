@@ -1,0 +1,37 @@
+{
+  "network": {
+    "company": [
+      "Motivate International, Inc.",
+      "PBSC Urban Solutions",
+      "BIXI Montr\u00e9al"
+    ],
+    "gbfs_href": "https://api-core.bixi.com/gbfs/gbfs.json",
+    "href": "/v2/networks/bixi-montreal",
+    "id": "bixi-montreal",
+    "location": {
+      "city": "Montr\u00e9al, QC",
+      "country": "CA",
+      "latitude": 45.508693,
+      "longitude": -73.553928
+    },
+    "name": "Bixi",
+    "stations": [
+      {
+        "empty_slots": 0,
+        "extra": {
+          "address": null,
+          "last_updated": 1,
+          "renting": 1,
+          "returning": 1,
+          "uid": "617"
+        },
+        "free_bikes": 0,
+        "id": "1e974fb62171b0910ab3881c94c4751c",
+        "latitude": 45.57065664170425,
+        "longitude": -73.65184217691422,
+        "name": "de St-Firmin / Fleury",
+        "timestamp": "2019-02-25T20:19:48.035000Z"
+      }
+    ]
+  }
+}
