@@ -1,11 +1,17 @@
 package com.ludoscity.findmybikes.utils
 
+import android.app.Application
 import android.content.Context
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.network.BikeSystemNetworkDataSource
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
+import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
 
+/**
+ * Created by F8Full on 2019-02-15. This file is part of #findmybikes
+ * Enables dependency injection by providing static methods to retrieve components. TODO: Dagger2
+ */
 class InjectorUtils {
 
     companion object {
@@ -26,6 +32,11 @@ class InjectorUtils {
         fun provideMainActivityViewModelFactory(context: Context): FindMyBikesModelFactory {
             val repository = provideRepository()
             return FindMyBikesModelFactory(repository, context.applicationContext)
+        }
+
+        fun provideMapFragmentViewModelFactory(app: Application): MapFragmentModelFactory {
+            val repository = provideRepository()
+            return MapFragmentModelFactory(repository, app)
         }
     }
 

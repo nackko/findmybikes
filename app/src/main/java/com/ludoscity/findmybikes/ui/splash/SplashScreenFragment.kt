@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
 import com.ludoscity.findmybikes.R
 
 class SplashScreenFragment : Fragment() {
@@ -36,6 +35,27 @@ class SplashScreenFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(SplashScreenViewModel::class.java)
         // TODO: Use the ViewModel
+        /*val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!)
+        val findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
+
+        findMyBikesActivityViewModel.currentBckState.observe(this, Observer {
+
+
+            when(it){
+                NearbyActivityViewModel.BackgroundState.STATE_NETWORK_DOWNLOAD ->{
+                    splashScreenTextTop.text = getString(R.string.downloading)
+
+                }
+                NearbyActivityViewModel.BackgroundState.STATE_MAP_REFRESH ->{
+
+                }
+                else -> {
+
+                }
+
+            }
+
+        })*/
     }
 
 }

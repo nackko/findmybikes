@@ -80,7 +80,7 @@
             android:layout_height="match_parent">
             <fragment
                 xmlns:android="http://schemas.android.com/apk/res/android"
-                android:name="com.ludoscity.findmybikes.fragments.StationMapFragment"
+                android:name="com.ludoscity.findmybikes.ui.map.StationMapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/station_map_fragment"
@@ -230,6 +230,7 @@
         </android.support.design.widget.CoordinatorLayout>
     </LinearLayout>
 
+    <!--TODO: re add splash screen
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -238,6 +239,7 @@
         android:name="com.ludoscity.findmybikes.ui.splash.SplashScreenFragment"
         android:id="@+id/fragment_splash_screen"
         />
+        !-->
 
 
 </android.support.percent.PercentRelativeLayout>

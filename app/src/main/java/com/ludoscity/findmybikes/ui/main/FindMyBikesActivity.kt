@@ -37,20 +37,20 @@ import com.ludoscity.findmybikes.activities.WebViewActivity
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment
 import com.ludoscity.findmybikes.fragments.StationListFragment
-import com.ludoscity.findmybikes.fragments.StationMapFragment
 import com.ludoscity.findmybikes.helpers.DBHelper
+import com.ludoscity.findmybikes.ui.map.StationMapFragment
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
-import java.util.ArrayList
+import java.util.*
 
 class FindMyBikesActivity : AppCompatActivity(),
         StationMapFragment.OnStationMapFragmentInteractionListener,
         StationListFragment.OnStationListFragmentInteractionListener,
         FavoriteListFragment.OnFavoriteListFragmentInteractionListener,
         SwipeRefreshLayout.OnRefreshListener {
-    override fun onStationMapFragmentInteraction(uri: Uri?) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun onStationMapFragmentInteraction(uri: Uri) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onStationListFragmentInteraction(uri: Uri?) {
@@ -245,7 +245,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_accent))
 
         stationListViewPager = findViewById<ViewPager>(R.id.station_list_viewpager)
-        stationListViewPager.setAdapter(StationListPagerAdapter(supportFragmentManager))
+        stationListViewPager.adapter = StationListPagerAdapter(supportFragmentManager)
         //TODO: replug this
         //mStationListViewPager.addOnPageChangeListener(this)
 
@@ -268,7 +268,8 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         coordinatorLayout = findViewById(R.id.snackbar_coordinator)
 
-        splashScreen = findViewById<View>(R.id.fragment_splash_screen)
+        //TODO: add splashscreen back
+        //splashScreen = findViewById<View>(R.id.fragment_splash_screen)
 
         //TODO: trip details fragment
         tripDetailsWidget = findViewById<View>(R.id.trip_details)
@@ -288,8 +289,9 @@ class FindMyBikesActivity : AppCompatActivity(),
         if (autoCompleteLoadingProgressBarVisible)
             placeAutocompleteLoadingProgressBar.visibility = View.VISIBLE
 
-        if (savedInstanceState == null)
-            splashScreen.visibility = View.VISIBLE
+        //TODO: add splashscreen back
+        /*if (savedInstanceState == null)
+            splashScreen.visibility = View.VISIBLE*/
 
         setupDirectionsLocToAFab()
         setupSearchFab()
@@ -310,26 +312,26 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_loc_to_a).setOnClickListener {
-            launchGoogleMapsForDirections(DEBUG_FAKE_USER_CUR_LOC, stationMapFragment.getMarkerALatLng(), true)
+            launchGoogleMapsForDirections(DEBUG_FAKE_USER_CUR_LOC, stationMapFragment.markerALatLng!!, true)
         }
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_a_to_b).setOnClickListener {
-            launchGoogleMapsForDirections(stationMapFragment.getMarkerALatLng(), stationMapFragment.getMarkerBVisibleLatLng(), false)
+            launchGoogleMapsForDirections(stationMapFragment.markerALatLng!!, stationMapFragment.markerBVisibleLatLng!!, false)
         }
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_b_to_destination).setOnClickListener {
-            if (stationMapFragment.isPickedPlaceMarkerVisible())
-                launchGoogleMapsForDirections(stationMapFragment.getMarkerBVisibleLatLng(), stationMapFragment.markerPickedPlaceVisibleLatLng, true)
+            if (stationMapFragment.isPickedPlaceMarkerVisible)
+                launchGoogleMapsForDirections(stationMapFragment.markerBVisibleLatLng!!, stationMapFragment.markerPickedPlaceVisibleLatLng!!, true)
             else
             //Either Place marker or Favorite marker is visible, but not both at once
-                launchGoogleMapsForDirections(stationMapFragment.getMarkerBVisibleLatLng(), stationMapFragment.markerPickedFavoriteVisibleLatLng, true)
+                launchGoogleMapsForDirections(stationMapFragment.markerBVisibleLatLng!!, stationMapFragment.markerPickedFavoriteVisibleLatLng!!, true)
         }
         findViewById<View>(R.id.trip_details_share).setOnClickListener {
             //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
             //I will be at the Bixi station Hutchison/beaubien in ~15min ! Shared via #findmybikes
             val message = String.format(resources.getString(R.string.trip_details_share_message_content),
-                    DBHelper.getInstance().getBikeNetworkName(applicationContext), getContentListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.DOCK_STATIONS)!!.getName(),
-                    tripDetailsProximityTotal.getText().toString())
+                    DBHelper.getInstance().getBikeNetworkName(applicationContext), getContentListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.DOCK_STATIONS)!!.name,
+                    tripDetailsProximityTotal.text.toString())
 
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
@@ -393,7 +395,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         //Because the citybik.es landing page is javascript heavy
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
 
-            statusBar.setOnClickListener(View.OnClickListener {
+            statusBar.setOnClickListener {
                 if (Utils.Connectivity.isConnected(applicationContext)) {
                     // use the android system webview
                     val intent = Intent(this@FindMyBikesActivity, WebViewActivity::class.java)
@@ -402,7 +404,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                     intent.putExtra(WebViewActivity.EXTRA_JAVASCRIPT_ENABLED, true)
                     startActivity(intent)
                 }
-            })
+            }
         }
     }
 
@@ -424,9 +426,9 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     private fun setupClearFab() {
-        clearFAB = findViewById<FloatingActionButton>(R.id.clear_fab)
+        clearFAB = findViewById(R.id.clear_fab)
 
-        clearFAB.setOnClickListener(View.OnClickListener { clearBSelection() })
+        clearFAB.setOnClickListener { clearBSelection() }
     }
 
     private fun clearBSelection() {
@@ -452,7 +454,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         getContentListPagerAdapter().setClickResponsivenessForPage(StationListPagerAdapter.BIKE_STATIONS, false)
 
         if (nearbyActivityViewModel.isLookingForBikes.value == null || nearbyActivityViewModel.isLookingForBikes.value == false) {
-            stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(stationMapFragment.getMarkerALatLng(), 13f))
+            stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(stationMapFragment.markerALatLng, 13f))
             //mFavoritesSheetFab.showFab();
             nearbyActivityViewModel.showFavoriteFab()
             //mFavoriteListViewModel.showFab();
@@ -469,7 +471,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     private fun animateCameraToShowUserAndStation(station: BikeStation?) {
 
         if (DEBUG_FAKE_USER_CUR_LOC != null) {
-            if (tripDetailsWidget.getVisibility() != View.VISIBLE)
+            if (tripDetailsWidget.visibility != View.VISIBLE)
             //Directions to A fab is visible
                 animateCameraToShow(resources.getDimension(R.dimen.camera_fab_padding).toInt(), station!!.location, DEBUG_FAKE_USER_CUR_LOC, null)
             else
@@ -503,7 +505,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         hideAnimator!!.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 super.onAnimationEnd(animation)
-                tripDetailsWidget.setVisibility(View.INVISIBLE)
+                tripDetailsWidget.visibility = View.INVISIBLE
             }
         })
         hideAnimator.start()
@@ -522,9 +524,9 @@ class FindMyBikesActivity : AppCompatActivity(),
 
             // Native circular reveal uses coordinates relative to the view
             val revealStartX = 0
-            val revealStartY = tripDetailsWidget.getHeight()
+            val revealStartY = tripDetailsWidget.height
 
-            val radiusMax = Math.hypot(tripDetailsWidget.getHeight().toDouble(), tripDetailsWidget.getWidth().toDouble()).toFloat()
+            val radiusMax = Math.hypot(tripDetailsWidget.height.toDouble(), tripDetailsWidget.width.toDouble()).toFloat()
             val radiusMin = radiusMax * minRadiusMultiplier
 
             if (_show) {
@@ -561,7 +563,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     private fun setupSearchFab() {
 
         searchFAB.setOnClickListener(View.OnClickListener {
-            if (placeAutocompleteLoadingProgressBar.getVisibility() != View.GONE)
+            if (placeAutocompleteLoadingProgressBar.visibility != View.GONE)
                 return@OnClickListener
 
             try {
@@ -601,10 +603,10 @@ class FindMyBikesActivity : AppCompatActivity(),
                 val walkMode = nearbyActivityViewModel.isLookingForBikes.value
 
                 if (walkMode != null) {
-                    launchGoogleMapsForDirections(tripLegOrigin, tripLegDestination, walkMode)
+                    launchGoogleMapsForDirections(tripLegOrigin!!, tripLegDestination, walkMode)
                 }
                 else{
-                    launchGoogleMapsForDirections(tripLegOrigin, tripLegDestination, false)
+                    launchGoogleMapsForDirections(tripLegOrigin!!, tripLegDestination, false)
                 }
             }
         }
@@ -634,7 +636,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     private fun getContentListPagerAdapter(): StationListPagerAdapter {
-        return stationListViewPager.getAdapter() as StationListPagerAdapter
+        return stationListViewPager.adapter as StationListPagerAdapter
     }
 
     //TODO: Onboarding fragment

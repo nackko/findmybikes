@@ -15,6 +15,7 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
  * ViewModel for handling favoritelistFragment data prep for UI and business logic
  */
 
+//TODO: use AndroidViewModel instead of passing context
 class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewModel() {
     private val favoriteFabShown = MutableLiveData<Boolean>()
     private val favoriteSheetShown = MutableLiveData<Boolean>()
@@ -135,6 +136,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
+    //findMyBikesActivityViewModel
     private val repository : FindMyBikesRepository = repo
     val stationData: LiveData<List<BikeStation>>
 
@@ -142,5 +144,18 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
         stationData = repo.getBikeSystemStationData(ctx)
     }
 
+    //TODO: added for status display. Revisit when usage is clearer (splash screen and status bar)
+    //TODO: add splashScreen back when clearer view of background processes by replacing all asynctasks
+    /*enum class BackgroundState {
+        STATE_IDLE_NOMINAL,
+        STATE_IDLE_OFFLINE,
+        STATE_IDLE_NETWORK_ERROR,
+        STATE_NETWORK_DOWNLOAD, STATE_MAP_REFRESH
+    }
+
+    private val backgroundState = MutableLiveData<BackgroundState>()
+
+    val currentBckState: LiveData<BackgroundState>
+        get() = backgroundState*/
 
 }

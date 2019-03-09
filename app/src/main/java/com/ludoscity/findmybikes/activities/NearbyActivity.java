@@ -33,7 +33,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
-import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -76,26 +75,26 @@ import com.google.maps.android.SphericalUtil;
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener;
 import com.ludoscity.findmybikes.EditableMaterialSheetFab;
 import com.ludoscity.findmybikes.Fab;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.RootApplication;
 import com.ludoscity.findmybikes.StationListPagerAdapter;
 import com.ludoscity.findmybikes.StationRecyclerViewAdapter;
 import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI;
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
-import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkListAnswerRoot;
 import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkDesc;
+import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkListAnswerRoot;
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.citybik_es.model.BikeSystemStatusAnswerRoot;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment;
 import com.ludoscity.findmybikes.fragments.StationListFragment;
-import com.ludoscity.findmybikes.fragments.StationMapFragment;
 import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
+import com.ludoscity.findmybikes.ui.map.StationMapFragment;
 import com.ludoscity.findmybikes.utils.Utils;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
-import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -315,7 +314,7 @@ public class NearbyActivity extends AppCompatActivity
         }
 
         setContentView(R.layout.activity_nearby);
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar_main));
+        setSupportActionBar(findViewById(R.id.toolbar_main));
         setupActionBarStrings();
 
         mNearbyActivityViewModel = ViewModelProviders.of(this).get(NearbyActivityViewModel.class);
@@ -1864,7 +1863,8 @@ public class NearbyActivity extends AppCompatActivity
         //Will be warned of station details click, will make info fragment to replace list fragment
 
         //Map ready
-        if (uri.getPath().equalsIgnoreCase("/" + StationMapFragment.MAP_READY_PATH))
+        //TODO: delete, this is handled at fragment level now
+        if (uri.getPath().equalsIgnoreCase("/" + StationMapFragment.Companion.getMAP_READY_PATH()))
         {
             long wishedUpdateTime = DBHelper.getInstance().getLastUpdateTimestamp(getApplicationContext()) + NearbyActivity.this.getApplicationContext().getResources().getInteger(R.integer.update_auto_interval_minute) * 1000 * 60;  //comes from Prefs
 
@@ -1874,19 +1874,19 @@ public class NearbyActivity extends AppCompatActivity
                 refreshMap();
         }
         //Marker click - ignored if onboarding is in progress
-        else if ( uri.getPath().equalsIgnoreCase("/" + StationMapFragment.MARKER_CLICK_PATH) && mOnboardingShowcaseView == null){
+        else if (uri.getPath().equalsIgnoreCase("/" + StationMapFragment.Companion.getMARKER_CLICK_PATH()) && mOnboardingShowcaseView == null) {
 
             if(!isLookingForBike() || mStationMapFragment.getMarkerBVisibleLatLng() != null) {
 
                 if (isLookingForBike()) {
 
-                    if (getListPagerAdapter().highlightStationForPage(uri.getQueryParameter(StationMapFragment.MARKER_CLICK_TITLE_PARAM),
+                    if (getListPagerAdapter().highlightStationForPage(uri.getQueryParameter(StationMapFragment.Companion.getMARKER_CLICK_TITLE_PARAM()),
                             StationListPagerAdapter.BIKE_STATIONS)) {
 
                         getListPagerAdapter().smoothScrollHighlightedInViewForPage(StationListPagerAdapter.BIKE_STATIONS, isAppBarExpanded());
 
                         mStationMapFragment.setPinOnStation(true,
-                                uri.getQueryParameter(StationMapFragment.MARKER_CLICK_TITLE_PARAM));
+                                uri.getQueryParameter(StationMapFragment.Companion.getMARKER_CLICK_TITLE_PARAM()));
                         getListPagerAdapter().setupBTabStationARecap(getListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS), mDataOutdated);
 
                         if (mStationMapFragment.getMarkerBVisibleLatLng() != null) {
@@ -1910,7 +1910,7 @@ public class NearbyActivity extends AppCompatActivity
                         mAppBarLayout.setExpanded(false, true);
 
                     //B Tab, looking for dock
-                    final String clickedStationId = uri.getQueryParameter(StationMapFragment.MARKER_CLICK_TITLE_PARAM);
+                    final String clickedStationId = uri.getQueryParameter(StationMapFragment.Companion.getMARKER_CLICK_TITLE_PARAM());
                     setupBTabSelection(clickedStationId, false);
 
                     boolean showFavoriteAddFab = false;
