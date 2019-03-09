@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes;
+package com.ludoscity.findmybikes.ui.page;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -18,8 +18,8 @@ import android.widget.TextView;
 
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.maps.model.LatLng;
+import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
-import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.utils.Utils;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
@@ -37,7 +37,7 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  *
  * Adapter used to show the datas of every stationItem
  */
-public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecyclerViewAdapter.BikeStationListItemViewHolder> {
+public class StationPageRecyclerViewAdapter extends RecyclerView.Adapter<StationPageRecyclerViewAdapter.BikeStationListItemViewHolder> {
 
     public static final String AVAILABILITY_POSTFIX_START_SEQUENCE = "_AVAILABILITY_";
     public static final String AOK_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "AOK";
@@ -250,8 +250,8 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
         void onStationListItemClick(String _path);
     }
 
-    public StationRecyclerViewAdapter(OnStationListItemClickListener listener,
-                                      Context _ctx, FavoriteListViewModel favListViewModel){
+    public StationPageRecyclerViewAdapter(OnStationListItemClickListener listener,
+                                          Context _ctx, FavoriteListViewModel favListViewModel) {
         super();
         mListener = listener;
         mCtx = _ctx;
@@ -547,16 +547,16 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                 case R.id.list_item_root:
 
                     if (!mRespondToClick){
-                        mListener.onStationListItemClick(StationListFragment.STATION_LIST_INACTIVE_ITEM_CLICK_PATH);
+                        mListener.onStationListItemClick(StationPageFragment.Companion.getSTATION_LIST_INACTIVE_ITEM_CLICK_PATH());
                     } else {
 
                         int oldSelectedPos = mSelectedPos;
 
-                        StationRecyclerViewAdapter.this.setSelection(mStationId, false);
+                        StationPageRecyclerViewAdapter.this.setSelection(mStationId, false);
 
                         if (oldSelectedPos != mSelectedPos) {
 
-                            mListener.onStationListItemClick(StationListFragment.STATION_LIST_ITEM_CLICK_PATH);
+                            mListener.onStationListItemClick(StationPageFragment.Companion.getSTATION_LIST_ITEM_CLICK_PATH());
                             requestFabAnimation();
                         }
                     }
@@ -565,7 +565,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
                 case R.id.favorite_fab:
                     //must redo binding for favorite name display
                     notifyItemChanged(getStationItemPositionInList(getSelected().getLocationHash()));
-                    mListener.onStationListItemClick(StationListFragment.STATION_LIST_FAVORITE_FAB_CLICK_PATH);
+                    mListener.onStationListItemClick(StationPageFragment.Companion.getSTATION_LIST_FAVORITE_FAB_CLICK_PATH());
                     //ordering matters
                     if (mFavoriteListViewModel.isFavorite(getSelected().getLocationHash()))
                         mFavoriteFab.setImageResource(R.drawable.ic_action_favorite_24dp);
@@ -662,7 +662,7 @@ public class StationRecyclerViewAdapter extends RecyclerView.Adapter<StationRecy
 
     private String getClosestStationIdWithAvailability(boolean _lookingForBike){
 
-        StringBuilder availabilityDataPostfixBuilder = new StringBuilder("");
+        StringBuilder availabilityDataPostfixBuilder = new StringBuilder();
 
         if (mOutdatedAvailability){
             availabilityDataPostfixBuilder.append(mStationList.get(0).getLocationHash()).append(OUTDATED_AVAILABILITY_POSTFIX);

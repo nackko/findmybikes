@@ -1,11 +1,10 @@
-package com.ludoscity.findmybikes;
+package com.ludoscity.findmybikes.ui.page;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
-import com.ludoscity.findmybikes.fragments.StationListFragment;
 import com.ludoscity.findmybikes.utils.SmartFragmentPagerAdapter;
 
 import java.util.Comparator;
@@ -15,7 +14,7 @@ import java.util.List;
  * Created by F8Full on 2015-10-19.
  * Adapter for view pager displaying station lists
  */
-public class StationListPagerAdapter extends SmartFragmentPagerAdapter {
+public class StationPagerAdapter extends SmartFragmentPagerAdapter {
 
     @SuppressWarnings("FieldCanBeLocal")
     private static int NUM_ITEMS = 2;
@@ -23,7 +22,7 @@ public class StationListPagerAdapter extends SmartFragmentPagerAdapter {
     public static int BIKE_STATIONS = 0;
     public static int DOCK_STATIONS = 1;
 
-    public StationListPagerAdapter(FragmentManager fm) {
+    public StationPagerAdapter(FragmentManager fm) {
         super(fm);
     }
 
@@ -31,15 +30,15 @@ public class StationListPagerAdapter extends SmartFragmentPagerAdapter {
     public Fragment getItem(int position) {
         /*Fragment toReturn;
         if (position == BIKE_STATIONS)
-            toReturn = new StationListFragment();
+            toReturn = new StationPageFragment();
         else {
-            toReturn = new StationListFragment();
+            toReturn = new StationPageFragment();
             Bundle args = new Bundle();
-            args.putInt(StationListFragment.STATION_LIST_ARG_BACKGROUND_RES_ID, R.drawable.ic_favorites_background);
+            args.putInt(StationPageFragment.STATION_LIST_ARG_BACKGROUND_RES_ID, R.drawable.ic_favorites_background);
             toReturn.setArguments(args);
         }*/
 
-        return new StationListFragment();
+        return new StationPageFragment();
     }
 
     @Override
@@ -69,8 +68,8 @@ public class StationListPagerAdapter extends SmartFragmentPagerAdapter {
         retrieveListFragment(DOCK_STATIONS).setRefreshEnable(toSet);
     }
 
-    private StationListFragment retrieveListFragment(int position){
-        return ((StationListFragment)getRegisteredFragment(position));
+    private StationPageFragment retrieveListFragment(int position) {
+        return ((StationPageFragment) getRegisteredFragment(position));
     }
 
     public BikeStation getHighlightedStationForPage(int position) {
@@ -88,7 +87,7 @@ public class StationListPagerAdapter extends SmartFragmentPagerAdapter {
 
     public void setCurrentUserLatLng(LatLng currentUserLatLng) {
         if (isViewPagerReady()) {
-            retrieveListFragment(BIKE_STATIONS).setSortComparatorAndSort(new StationRecyclerViewAdapter.DistanceComparator(currentUserLatLng));
+            retrieveListFragment(BIKE_STATIONS).setSortComparatorAndSort(new StationPageRecyclerViewAdapter.DistanceComparator(currentUserLatLng));
             retrieveListFragment(DOCK_STATIONS).updateTotalTripSortComparator(currentUserLatLng, null);
         }
     }

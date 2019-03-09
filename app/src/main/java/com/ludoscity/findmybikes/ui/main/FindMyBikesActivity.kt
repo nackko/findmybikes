@@ -32,13 +32,17 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
-import com.ludoscity.findmybikes.*
+import com.ludoscity.findmybikes.EditableMaterialSheetFab
+import com.ludoscity.findmybikes.Fab
+import com.ludoscity.findmybikes.R
+import com.ludoscity.findmybikes.RootApplication
 import com.ludoscity.findmybikes.activities.WebViewActivity
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment
-import com.ludoscity.findmybikes.fragments.StationListFragment
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
+import com.ludoscity.findmybikes.ui.page.StationPageFragment
+import com.ludoscity.findmybikes.ui.page.StationPagerAdapter
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
@@ -46,14 +50,14 @@ import java.util.*
 
 class FindMyBikesActivity : AppCompatActivity(),
         StationMapFragment.OnStationMapFragmentInteractionListener,
-        StationListFragment.OnStationListFragmentInteractionListener,
+        StationPageFragment.OnStationListFragmentInteractionListener,
         FavoriteListFragment.OnFavoriteListFragmentInteractionListener,
         SwipeRefreshLayout.OnRefreshListener {
-    override fun onStationMapFragmentInteraction(uri: Uri) {
+    override fun onStationListFragmentInteraction(uri: Uri) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onStationListFragmentInteraction(uri: Uri?) {
+    override fun onStationMapFragmentInteraction(uri: Uri) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -245,7 +249,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_accent))
 
         stationListViewPager = findViewById<ViewPager>(R.id.station_list_viewpager)
-        stationListViewPager.adapter = StationListPagerAdapter(supportFragmentManager)
+        stationListViewPager.adapter = StationPagerAdapter(supportFragmentManager)
         //TODO: replug this
         //mStationListViewPager.addOnPageChangeListener(this)
 
@@ -330,7 +334,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
             //I will be at the Bixi station Hutchison/beaubien in ~15min ! Shared via #findmybikes
             val message = String.format(resources.getString(R.string.trip_details_share_message_content),
-                    DBHelper.getInstance().getBikeNetworkName(applicationContext), getContentListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.DOCK_STATIONS)!!.name,
+                    DBHelper.getInstance().getBikeNetworkName(applicationContext), getContentListPagerAdapter().getHighlightedStationForPage(StationPagerAdapter.DOCK_STATIONS)!!.name,
                     tripDetailsProximityTotal.text.toString())
 
             val sendIntent = Intent()
@@ -440,9 +444,9 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     private fun clearBTab() {
-        getContentListPagerAdapter().removeStationHighlightForPage(StationListPagerAdapter.DOCK_STATIONS)
+        getContentListPagerAdapter().removeStationHighlightForPage(StationPagerAdapter.DOCK_STATIONS)
 
-        getContentListPagerAdapter().setupUI(StationListPagerAdapter.DOCK_STATIONS, ArrayList<BikeStation>(),
+        getContentListPagerAdapter().setupUI(StationPagerAdapter.DOCK_STATIONS, ArrayList<BikeStation>(),
                 false, null, null,
                 getString(R.string.b_tab_question), null)
 
@@ -451,7 +455,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         stationMapFragment.clearMarkerPickedFavorite()
 
         //A TAB
-        getContentListPagerAdapter().setClickResponsivenessForPage(StationListPagerAdapter.BIKE_STATIONS, false)
+        getContentListPagerAdapter().setClickResponsivenessForPage(StationPagerAdapter.BIKE_STATIONS, false)
 
         if (nearbyActivityViewModel.isLookingForBikes.value == null || nearbyActivityViewModel.isLookingForBikes.value == false) {
             stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(stationMapFragment.markerALatLng, 13f))
@@ -463,7 +467,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             clearFAB.hide()
             addFavoriteFAB.hide()
         } else {
-            val highlightedStation = getContentListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS)
+            val highlightedStation = getContentListPagerAdapter().getHighlightedStationForPage(StationPagerAdapter.BIKE_STATIONS)
             animateCameraToShowUserAndStation(highlightedStation)
         }
     }
@@ -593,7 +597,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     private fun setupDirectionsLocToAFab() {
         directionsLocToAFab.setOnClickListener {
-            val curSelectedStation = getContentListPagerAdapter().getHighlightedStationForPage(StationListPagerAdapter.BIKE_STATIONS)
+            val curSelectedStation = getContentListPagerAdapter().getHighlightedStationForPage(StationPagerAdapter.BIKE_STATIONS)
 
             // Seen NullPointerException in crash report.
             if (null != curSelectedStation) {
@@ -635,8 +639,8 @@ class FindMyBikesActivity : AppCompatActivity(),
         }
     }
 
-    private fun getContentListPagerAdapter(): StationListPagerAdapter {
-        return stationListViewPager.adapter as StationListPagerAdapter
+    private fun getContentListPagerAdapter(): StationPagerAdapter {
+        return stationListViewPager.adapter as StationPagerAdapter
     }
 
     //TODO: Onboarding fragment

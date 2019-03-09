@@ -17,7 +17,6 @@ import android.widget.TextView
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.StationMapGfx
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
