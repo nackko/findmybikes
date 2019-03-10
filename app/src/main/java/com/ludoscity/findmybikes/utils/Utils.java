@@ -28,7 +28,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.activities.WebViewActivity;
-import com.ludoscity.findmybikes.ui.page.StationPageRecyclerViewAdapter;
+import com.ludoscity.findmybikes.ui.table.StationTableRecyclerViewAdapter;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -44,8 +44,8 @@ public class Utils {
 
     public static String extractClosestAvailableStationIdFromProcessedString(String _processedString){
 
-        //int debug0 = _processedString.indexOf(StationPageRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX);
-        //int debug1 = StationPageRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length();
+        //int debug0 = _processedString.indexOf(StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX);
+        //int debug1 = StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length();
         //int debug2 = _processedString.length();
 
 
@@ -66,18 +66,18 @@ public class Utils {
 
 
         //everything went AOK
-        /*if (_processedString.indexOf(StationPageRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX) != -1 &&
-                _processedString.indexOf(StationPageRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX) + StationPageRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length() ==
+        /*if (_processedString.indexOf(StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX) != -1 &&
+                _processedString.indexOf(StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX) + StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length() ==
                         _processedString.length()){
 
-            return _processedString.substring(0, _processedString.length() - StationPageRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length() );
+            return _processedString.substring(0, _processedString.length() - StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length() );
 
         }
         else {
-            int debug3 = _processedString.lastIndexOf(StationPageRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE);
+            int debug3 = _processedString.lastIndexOf(StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE);
 
             //some availability troubles, let's just trim the end
-            return _processedString.substring(0, _processedString.lastIndexOf(StationPageRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE));
+            return _processedString.substring(0, _processedString.lastIndexOf(StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE));
         }*/
     }
 
@@ -92,25 +92,25 @@ public class Utils {
             return toReturn;
         }
 
-        //int startSequenceIdx = _processedString.lastIndexOf(StationPageRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE);
+        //int startSequenceIdx = _processedString.lastIndexOf(StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE);
 
-        /*int subStringStarIdxDebug = _processedString.lastIndexOf(StationPageRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE)
-                + StationPageRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE.length();*/
+        /*int subStringStarIdxDebug = _processedString.lastIndexOf(StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE)
+                + StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE.length();*/
 
-        /*String subStringDebug = _processedString.substring(_processedString.lastIndexOf(StationPageRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE)
-                + StationPageRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE.length());*/
+        /*String subStringDebug = _processedString.substring(_processedString.lastIndexOf(StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE)
+                + StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE.length());*/
 
 
         //TODO: something is fishy here, couldn't figure out how to get the same result without intermediary debug labelled variable
-        String debugSplit = _processedString.substring(_processedString.indexOf(StationPageRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE)
-                + StationPageRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length());
+        String debugSplit = _processedString.substring(_processedString.indexOf(StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE)
+                + StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length());
 
-        //String[] debugSplitResult = debugSplit.split(String.format("(?<=\\G.{%d})", StationPageRecyclerViewAdapter.CRITICAL_AVAILABILITY_POSTFIX.length() + 32));
+        //String[] debugSplitResult = debugSplit.split(String.format("(?<=\\G.{%d})", StationTableRecyclerViewAdapter.CRITICAL_AVAILABILITY_POSTFIX.length() + 32));
 
         List<String> toReturn = new ArrayList<>();
-        toReturn.add(_processedString.substring(0, 32 + StationPageRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length()));
+        toReturn.add(_processedString.substring(0, 32 + StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length()));
 
-        toReturn.addAll(splitEqually(debugSplit, StationPageRecyclerViewAdapter.CRITICAL_AVAILABILITY_POSTFIX.length() + 32));
+        toReturn.addAll(splitEqually(debugSplit, StationTableRecyclerViewAdapter.CRITICAL_AVAILABILITY_POSTFIX.length() + 32));
 
         return toReturn;
     }

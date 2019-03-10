@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.ui.page;
+package com.ludoscity.findmybikes.ui.table;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -37,7 +37,7 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  *
  * Adapter used to show the datas of every stationItem
  */
-public class StationPageRecyclerViewAdapter extends RecyclerView.Adapter<StationPageRecyclerViewAdapter.BikeStationListItemViewHolder> {
+public class StationTableRecyclerViewAdapter extends RecyclerView.Adapter<StationTableRecyclerViewAdapter.BikeStationListItemViewHolder> {
 
     public static final String AVAILABILITY_POSTFIX_START_SEQUENCE = "_AVAILABILITY_";
     public static final String AOK_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "AOK";
@@ -250,8 +250,8 @@ public class StationPageRecyclerViewAdapter extends RecyclerView.Adapter<Station
         void onStationListItemClick(String _path);
     }
 
-    public StationPageRecyclerViewAdapter(OnStationListItemClickListener listener,
-                                          Context _ctx, FavoriteListViewModel favListViewModel) {
+    public StationTableRecyclerViewAdapter(OnStationListItemClickListener listener,
+                                           Context _ctx, FavoriteListViewModel favListViewModel) {
         super();
         mListener = listener;
         mCtx = _ctx;
@@ -491,13 +491,13 @@ public class StationPageRecyclerViewAdapter extends RecyclerView.Adapter<Station
 
                 if (availabilityValue != -1 && availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(mCtx)) {
                     if (selected) {
-                        itemView.setBackgroundResource(R.color.stationlist_item_selected_background_red);
+                        itemView.setBackgroundResource(R.color.stationtable_item_selected_background_red);
                         mProximity.setAlpha(1.f);
                         mName.setAlpha(1.f);
                         mAvailability.setAlpha(1.f);
                     }
                     else {
-                        itemView.setBackgroundResource(R.color.stationlist_item_background_red);
+                        itemView.setBackgroundResource(R.color.stationtable_item_background_red);
                         float alpha = mCtx.getResources().getFraction(R.fraction.station_item_critical_availability_alpha, 1, 1);
                         mProximity.setAlpha(alpha);
                         mName.setAlpha(alpha);
@@ -505,20 +505,20 @@ public class StationPageRecyclerViewAdapter extends RecyclerView.Adapter<Station
                     }
                 } else if (availabilityValue != -1 && availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(mCtx)) {
                     if (selected) {
-                        itemView.setBackgroundResource(R.color.stationlist_item_selected_background_yellow);
+                        itemView.setBackgroundResource(R.color.stationtable_item_selected_background_yellow);
                         mProximity.setAlpha(1.f);
                         mName.setAlpha(1.f);
                         mAvailability.setAlpha(1.f);
                     }
                     else {
-                        itemView.setBackgroundResource(R.color.stationlist_item_background_yellow);
+                        itemView.setBackgroundResource(R.color.stationtable_item_background_yellow);
                         mName.setAlpha(mCtx.getResources().getFraction(R.fraction.station_item_name_bad_availability_alpha, 1, 1));
                         mAvailability.setAlpha(mCtx.getResources().getFraction(R.fraction.station_item_availability_bad_availability_alpha, 1, 1));
                         mProximity.setAlpha(1.f);
                     }
                 } else {
                     if (selected)
-                        itemView.setBackgroundResource(R.color.stationlist_item_selected_background_green);
+                        itemView.setBackgroundResource(R.color.stationtable_item_selected_background_green);
                     else
                         itemView.setBackgroundResource(android.R.color.transparent);
 
@@ -547,16 +547,16 @@ public class StationPageRecyclerViewAdapter extends RecyclerView.Adapter<Station
                 case R.id.list_item_root:
 
                     if (!mRespondToClick){
-                        mListener.onStationListItemClick(StationPageFragment.Companion.getSTATION_LIST_INACTIVE_ITEM_CLICK_PATH());
+                        mListener.onStationListItemClick(StationTableFragment.Companion.getSTATION_LIST_INACTIVE_ITEM_CLICK_PATH());
                     } else {
 
                         int oldSelectedPos = mSelectedPos;
 
-                        StationPageRecyclerViewAdapter.this.setSelection(mStationId, false);
+                        StationTableRecyclerViewAdapter.this.setSelection(mStationId, false);
 
                         if (oldSelectedPos != mSelectedPos) {
 
-                            mListener.onStationListItemClick(StationPageFragment.Companion.getSTATION_LIST_ITEM_CLICK_PATH());
+                            mListener.onStationListItemClick(StationTableFragment.Companion.getSTATION_LIST_ITEM_CLICK_PATH());
                             requestFabAnimation();
                         }
                     }
@@ -565,7 +565,7 @@ public class StationPageRecyclerViewAdapter extends RecyclerView.Adapter<Station
                 case R.id.favorite_fab:
                     //must redo binding for favorite name display
                     notifyItemChanged(getStationItemPositionInList(getSelected().getLocationHash()));
-                    mListener.onStationListItemClick(StationPageFragment.Companion.getSTATION_LIST_FAVORITE_FAB_CLICK_PATH());
+                    mListener.onStationListItemClick(StationTableFragment.Companion.getSTATION_LIST_FAVORITE_FAB_CLICK_PATH());
                     //ordering matters
                     if (mFavoriteListViewModel.isFavorite(getSelected().getLocationHash()))
                         mFavoriteFab.setImageResource(R.drawable.ic_action_favorite_24dp);

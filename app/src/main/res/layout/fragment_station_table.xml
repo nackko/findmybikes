@@ -4,8 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ludoscity.findmybikes.ui.page.StationPageFragment"
-    android:id="@+id/station_page_layout">
+    tools:context="com.ludoscity.findmybikes.ui.table.StationTableFragment"
+    android:id="@+id/station_table_layout">
 
 
     <!-- COLUMN HEADERS -->
@@ -13,7 +13,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/station_page_headers"
+        android:id="@+id/station_table_headers"
         android:background="@color/background_dark"
         android:paddingTop="3dp"
         android:paddingBottom="3dp">
@@ -90,10 +90,11 @@
             android:textColor="@color/primary_text_default_material_dark"
             />
     </android.support.percent.PercentRelativeLayout>
-    <!-- EMPTY PAGE TEXT -->
+    <!-- EMPTY TABLE TEXT -->
+    <!-- TODO: paging data will make this obsolete (default data for display in view when unloaded) !-->
     <TextView
         android:visibility="gone"
-        android:id="@+id/empty_page_text"
+        android:id="@+id/empty_table_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
@@ -104,8 +105,8 @@
 
     <!-- PULL TO REFRESH -->
     <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/station_page_swipe_refresh_layout"
-        android:layout_below="@+id/station_page_headers"
+        android:id="@+id/station_table_swipe_refresh_layout"
+        android:layout_below="@+id/station_table_headers"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
@@ -113,7 +114,7 @@
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/station_page_recyclerview" />
+            android:id="@+id/station_table_recyclerview" />
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <android.support.percent.PercentRelativeLayout

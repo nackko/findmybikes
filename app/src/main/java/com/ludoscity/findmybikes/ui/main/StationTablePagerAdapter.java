@@ -1,10 +1,12 @@
-package com.ludoscity.findmybikes.ui.page;
+package com.ludoscity.findmybikes.ui.main;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
+import com.ludoscity.findmybikes.ui.table.StationTableFragment;
+import com.ludoscity.findmybikes.ui.table.StationTableRecyclerViewAdapter;
 import com.ludoscity.findmybikes.utils.SmartFragmentPagerAdapter;
 
 import java.util.Comparator;
@@ -14,7 +16,7 @@ import java.util.List;
  * Created by F8Full on 2015-10-19.
  * Adapter for view pager displaying station lists
  */
-public class StationPagerAdapter extends SmartFragmentPagerAdapter {
+public class StationTablePagerAdapter extends SmartFragmentPagerAdapter {
 
     @SuppressWarnings("FieldCanBeLocal")
     private static int NUM_ITEMS = 2;
@@ -22,7 +24,7 @@ public class StationPagerAdapter extends SmartFragmentPagerAdapter {
     public static int BIKE_STATIONS = 0;
     public static int DOCK_STATIONS = 1;
 
-    public StationPagerAdapter(FragmentManager fm) {
+    public StationTablePagerAdapter(FragmentManager fm) {
         super(fm);
     }
 
@@ -30,15 +32,15 @@ public class StationPagerAdapter extends SmartFragmentPagerAdapter {
     public Fragment getItem(int position) {
         /*Fragment toReturn;
         if (position == BIKE_STATIONS)
-            toReturn = new StationPageFragment();
+            toReturn = new StationTableFragment();
         else {
-            toReturn = new StationPageFragment();
+            toReturn = new StationTableFragment();
             Bundle args = new Bundle();
-            args.putInt(StationPageFragment.STATION_LIST_ARG_BACKGROUND_RES_ID, R.drawable.ic_favorites_background);
+            args.putInt(StationTableFragment.STATION_LIST_ARG_BACKGROUND_RES_ID, R.drawable.ic_favorites_background);
             toReturn.setArguments(args);
         }*/
 
-        return new StationPageFragment();
+        return new StationTableFragment();
     }
 
     @Override
@@ -68,11 +70,11 @@ public class StationPagerAdapter extends SmartFragmentPagerAdapter {
         retrieveListFragment(DOCK_STATIONS).setRefreshEnable(toSet);
     }
 
-    private StationPageFragment retrieveListFragment(int position) {
-        return ((StationPageFragment) getRegisteredFragment(position));
+    private StationTableFragment retrieveListFragment(int position) {
+        return ((StationTableFragment) getRegisteredFragment(position));
     }
 
-    public BikeStation getHighlightedStationForPage(int position) {
+    public BikeStation getHighlightedStationForTable(int position) {
         BikeStation toReturn = null;
 
         if (isViewPagerReady())
@@ -87,7 +89,7 @@ public class StationPagerAdapter extends SmartFragmentPagerAdapter {
 
     public void setCurrentUserLatLng(LatLng currentUserLatLng) {
         if (isViewPagerReady()) {
-            retrieveListFragment(BIKE_STATIONS).setSortComparatorAndSort(new StationPageRecyclerViewAdapter.DistanceComparator(currentUserLatLng));
+            retrieveListFragment(BIKE_STATIONS).setSortComparatorAndSort(new StationTableRecyclerViewAdapter.DistanceComparator(currentUserLatLng));
             retrieveListFragment(DOCK_STATIONS).updateTotalTripSortComparator(currentUserLatLng, null);
         }
     }
@@ -120,16 +122,16 @@ public class StationPagerAdapter extends SmartFragmentPagerAdapter {
         }
     }
 
-    public boolean isRecyclerViewReadyForItemSelection(int pageID){
-        return retrieveListFragment(pageID).isRecyclerViewReadyForItemSelection();
+    public boolean isRecyclerViewReadyForItemSelection(int tableID) {
+        return retrieveListFragment(tableID).isRecyclerViewReadyForItemSelection();
     }
 
-    public boolean highlightStationForPage(String _stationId, int _pagePosition) {
-        return retrieveListFragment(_pagePosition).highlightStation(_stationId);
+    public boolean highlightStationForTable(String _stationId, int _tableId) {
+        return retrieveListFragment(_tableId).highlightStation(_stationId);
     }
 
-    public void removeStationHighlightForPage(int position) {
-        retrieveListFragment(position).removeStationHighlight();
+    public void removeStationHighlightForTable(int tableId) {
+        retrieveListFragment(tableId).removeStationHighlight();
     }
 
     public void setRefreshingAll(boolean toSet) {
@@ -141,8 +143,8 @@ public class StationPagerAdapter extends SmartFragmentPagerAdapter {
         retrieveListFragment(DOCK_STATIONS).updateTotalTripSortComparator(_userLatLng, _newALatLng);
     }
 
-    public void smoothScrollHighlightedInViewForPage(int _pageID, boolean _appBarExpanded) {
-        retrieveListFragment(_pageID).smoothScrollSelectionInView(_appBarExpanded);
+    public void smoothScrollHighlightedInViewForTable(int _tableId, boolean _appBarExpanded) {
+        retrieveListFragment(_tableId).smoothScrollSelectionInView(_appBarExpanded);
     }
 
     public boolean isHighlightedVisibleInRecyclerView() {
@@ -153,8 +155,8 @@ public class StationPagerAdapter extends SmartFragmentPagerAdapter {
         return retrieveListFragment(DOCK_STATIONS).setupStationRecap(_stationA, _outdated);
     }
 
-    public void setClickResponsivenessForPage(int _pageID, boolean _toSet) {
-        retrieveListFragment(_pageID).setResponsivenessToClick(_toSet);
+    public void setClickResponsivenessForTable(int _tableId, boolean _toSet) {
+        retrieveListFragment(_tableId).setResponsivenessToClick(_toSet);
     }
 
     public void setOutdatedDataAll(boolean _isDataOutdated){

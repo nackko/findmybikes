@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.ui.page
+package com.ludoscity.findmybikes.ui.table
 
 import android.arch.lifecycle.ViewModelProviders
 import android.graphics.Typeface
@@ -28,11 +28,11 @@ import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
 import java.util.*
 
-class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStationListItemClickListener {
+class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStationListItemClickListener {
 
     private var mStationRecyclerView: RecyclerView? = null
     private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
-    private var mRecyclerViewScrollingState = SCROLL_STATE_IDLE
+    private var mRecyclerViewScrollingState = SCROLL_STATE_IDLE //TODO: in model ??
     private var mEmptyListTextView: TextView? = null
     private var mProximityHeader: View? = null
     private var mStationRecap: View? = null
@@ -42,26 +42,28 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
     private var mProximityHeaderToImageView: ImageView? = null
     private var mAvailabilityTextView: TextView? = null
 
+    //TODO: make favorite list model hokked on fav repo and provided through InjectorUtils
     private var mFavoriteListModelView: FavoriteListViewModel? = null
 
+    //TODO: this disappears (communication through model)
     private var mListener: OnStationListFragmentInteractionListener? = null
 
-    private val stationPageRecyclerViewAdapter: StationPageRecyclerViewAdapter
-        get() = mStationRecyclerView!!.adapter as StationPageRecyclerViewAdapter
+    private val stationTableRecyclerViewAdapter: StationTableRecyclerViewAdapter
+        get() = mStationRecyclerView!!.adapter as StationTableRecyclerViewAdapter
 
     val isRecyclerViewReadyForItemSelection: Boolean
-        get() = mStationRecyclerView != null && stationPageRecyclerViewAdapter.sortComparator != null &&
+        get() = mStationRecyclerView != null && stationTableRecyclerViewAdapter.sortComparator != null &&
                 (mStationRecyclerView!!.layoutManager as ScrollingLinearLayoutManager).findFirstVisibleItemPosition() != NO_POSITION
 
     val highlightedFavoriteFabViewTarget: ViewTarget?
-        get() = stationPageRecyclerViewAdapter.getSelectedItemFavoriteFabViewTarget(mStationRecyclerView)
+        get() = stationTableRecyclerViewAdapter.getSelectedItemFavoriteFabViewTarget(mStationRecyclerView)
 
     val highlightedStation: BikeStation?
-        get() = stationPageRecyclerViewAdapter.selected
+        get() = stationTableRecyclerViewAdapter.selected
 
     //Minus 1 is for appbar
     val isHighlightedVisibleInRecyclerView: Boolean
-        get() = stationPageRecyclerViewAdapter.selectedPos < (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() - 1 && stationPageRecyclerViewAdapter.selectedPos >= (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+        get() = stationTableRecyclerViewAdapter.selectedPos < (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() - 1 && stationTableRecyclerViewAdapter.selectedPos >= (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -69,16 +71,16 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
         mFavoriteListModelView = ViewModelProviders.of(this).get(FavoriteListViewModel::class.java)
 
         // Inflate the layout for this fragment
-        val inflatedView = inflater.inflate(R.layout.fragment_station_page, container, false)
-        mEmptyListTextView = inflatedView.findViewById(R.id.empty_page_text)
+        val inflatedView = inflater.inflate(R.layout.fragment_station_table, container, false)
+        mEmptyListTextView = inflatedView.findViewById(R.id.empty_table_text)
         mStationRecap = inflatedView.findViewById(R.id.station_recap)
         mStationRecapName = inflatedView.findViewById(R.id.station_recap_name)
         mStationRecapAvailability = inflatedView.findViewById(R.id.station_recap_availability)
-        mStationRecyclerView = inflatedView.findViewById(R.id.station_page_recyclerview)
+        mStationRecyclerView = inflatedView.findViewById(R.id.station_table_recyclerview)
         mStationRecyclerView!!.addItemDecoration(DividerItemDecoration(activity!!, DividerItemDecoration.VERTICAL_LIST))
         //mStationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mStationRecyclerView!!.layoutManager = ScrollingLinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false, 300)
-        mStationRecyclerView!!.adapter = StationPageRecyclerViewAdapter(this, context, mFavoriteListModelView)
+        mStationRecyclerView!!.adapter = StationTableRecyclerViewAdapter(this, context, mFavoriteListModelView)
         mStationRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
                 mRecyclerViewScrollingState = newState
@@ -86,7 +88,7 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
             }
         })
 
-        mSwipeRefreshLayout = inflatedView.findViewById(R.id.station_page_swipe_refresh_layout)
+        mSwipeRefreshLayout = inflatedView.findViewById(R.id.station_table_swipe_refresh_layout)
         mSwipeRefreshLayout!!.setOnRefreshListener(activity as SwipeRefreshLayout.OnRefreshListener?)
         mSwipeRefreshLayout!!.setColorSchemeResources(R.color.stationlist_refresh_spinner_red,
                 R.color.stationlist_refresh_spinner_yellow,
@@ -127,12 +129,12 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putInt("selected_pos", stationPageRecyclerViewAdapter.selectedPos)
-        val comparator = stationPageRecyclerViewAdapter.sortComparator
-        if (comparator is StationPageRecyclerViewAdapter.DistanceComparator)
+        outState.putInt("selected_pos", stationTableRecyclerViewAdapter.selectedPos)
+        val comparator = stationTableRecyclerViewAdapter.sortComparator
+        if (comparator is StationTableRecyclerViewAdapter.DistanceComparator)
             outState.putParcelable("sort_comparator", comparator)
         else
-            outState.putParcelable("sort_comparator", comparator as StationPageRecyclerViewAdapter.TotalTripTimeComparator)
+            outState.putParcelable("sort_comparator", comparator as StationTableRecyclerViewAdapter.TotalTripTimeComparator)
         outState.putString("string_if_empty", mEmptyListTextView!!.text.toString())
         outState.putString("station_recap_name", mStationRecapName!!.text.toString())
         outState.putString("station_recap_availability_string", mStationRecapAvailability!!.text.toString())
@@ -142,8 +144,8 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
         outState.putInt("proximity_header_from_icon_resid", if (mProximityHeaderFromImageView!!.tag == null) -1 else mProximityHeaderFromImageView!!.tag as Int)
         outState.putInt("proximity_header_to_icon_resid", if (mProximityHeaderToImageView!!.tag == null) -1 else mProximityHeaderToImageView!!.tag as Int)
 
-        stationPageRecyclerViewAdapter.saveLookingForBike(outState)
-        stationPageRecyclerViewAdapter.saveIsAvailabilityOutdated(outState)
+        stationTableRecyclerViewAdapter.saveLookingForBike(outState)
+        stationTableRecyclerViewAdapter.saveIsAvailabilityOutdated(outState)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -154,11 +156,11 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
             val comparator: Comparator<BikeStation> = savedInstanceState.getParcelable<Parcelable>("sort_comparator") as Comparator<BikeStation>
 
             if (savedInstanceState.getBoolean("availability_outdated")) {
-                stationPageRecyclerViewAdapter.setAvailabilityOutdated(true)
+                stationTableRecyclerViewAdapter.setAvailabilityOutdated(true)
                 mStationRecapAvailability!!.paint.isStrikeThruText = true
                 mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT
             } else {
-                stationPageRecyclerViewAdapter.setAvailabilityOutdated(false)
+                stationTableRecyclerViewAdapter.setAvailabilityOutdated(false)
                 mStationRecapAvailability!!.paint.isStrikeThruText = false
                 mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT_BOLD
             }
@@ -173,7 +175,7 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
             val selectedPos = savedInstanceState.getInt("selected_pos")
 
             if (selectedPos != NO_POSITION)
-                stationPageRecyclerViewAdapter.setSelectedPos(selectedPos, false)
+                stationTableRecyclerViewAdapter.setSelectedPos(selectedPos, false)
 
             mStationRecapName!!.text = savedInstanceState.getString("station_recap_name")
             mStationRecapAvailability!!.text = savedInstanceState.getString("station_recap_availability_string")
@@ -209,8 +211,8 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
             mStationRecap!!.visibility = View.VISIBLE
         }
 
-        stationPageRecyclerViewAdapter.setupStationList(_stationsNetwork, _sortComparator)
-        stationPageRecyclerViewAdapter.setShowProximity(_showProximity)
+        stationTableRecyclerViewAdapter.setupStationList(_stationsNetwork, _sortComparator)
+        stationTableRecyclerViewAdapter.setShowProximity(_showProximity)
         setupHeaders(_lookingForBike, _showProximity, _headerFromIconResId, _headerToIconResId)
     }
 
@@ -260,41 +262,41 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
 
         if (mRecyclerViewScrollingState == SCROLL_STATE_IDLE) {
 
-            stationPageRecyclerViewAdapter.setStationSortComparatorAndSort(_toSet)
+            stationTableRecyclerViewAdapter.setStationSortComparatorAndSort(_toSet)
         }
     }
 
     //_stationALatLng can be null
     fun updateTotalTripSortComparator(_userLatLng: LatLng, _stationALatLng: LatLng) {
-        stationPageRecyclerViewAdapter.updateTotalTripSortComparator(_userLatLng, _stationALatLng)
+        stationTableRecyclerViewAdapter.updateTotalTripSortComparator(_userLatLng, _stationALatLng)
     }
 
     fun retrieveClosestRawIdAndAvailability(_lookingForBike: Boolean): String {
 
-        return stationPageRecyclerViewAdapter.retrieveClosestRawIdAndAvailability(_lookingForBike)
+        return stationTableRecyclerViewAdapter.retrieveClosestRawIdAndAvailability(_lookingForBike)
 
     }
 
     fun getClosestAvailabilityLatLng(_lookingForBike: Boolean): LatLng? {
-        return stationPageRecyclerViewAdapter.getClosestAvailabilityLatLng(_lookingForBike)
+        return stationTableRecyclerViewAdapter.getClosestAvailabilityLatLng(_lookingForBike)
     }
 
     fun highlightStation(_stationId: String): Boolean {
 
-        val selectedPos = stationPageRecyclerViewAdapter.setSelection(_stationId, false)
+        val selectedPos = stationTableRecyclerViewAdapter.setSelection(_stationId, false)
 
-        (mStationRecyclerView!!.adapter as StationPageRecyclerViewAdapter).requestFabAnimation()
+        (mStationRecyclerView!!.adapter as StationTableRecyclerViewAdapter).requestFabAnimation()
 
         return selectedPos != NO_POSITION
     }
 
     fun removeStationHighlight() {
-        stationPageRecyclerViewAdapter.clearSelection()
+        stationTableRecyclerViewAdapter.clearSelection()
     }
 
     fun setupHeaders(lookingForBike: Boolean, _showProximityHeader: Boolean, _headerFromIconResId: Int?, _headerToIconResId: Int?) {
 
-        stationPageRecyclerViewAdapter.lookingForBikesNotify(lookingForBike)
+        stationTableRecyclerViewAdapter.lookingForBikesNotify(lookingForBike)
 
         if (lookingForBike) {
 
@@ -351,20 +353,20 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
 
     fun smoothScrollSelectionInView(_appBarExpanded: Boolean) {
         //Not very proud of the defensive coding but some code path which are required do call this in invalid contexts
-        if (stationPageRecyclerViewAdapter.selectedPos != NO_POSITION) {
-            if (_appBarExpanded && stationPageRecyclerViewAdapter.selectedPos >= (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()) {
-                mStationRecyclerView!!.smoothScrollToPosition(stationPageRecyclerViewAdapter.selectedPos + 1)
+        if (stationTableRecyclerViewAdapter.selectedPos != NO_POSITION) {
+            if (_appBarExpanded && stationTableRecyclerViewAdapter.selectedPos >= (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()) {
+                mStationRecyclerView!!.smoothScrollToPosition(stationTableRecyclerViewAdapter.selectedPos + 1)
             } else
-                mStationRecyclerView!!.smoothScrollToPosition(stationPageRecyclerViewAdapter.selectedPos)
+                mStationRecyclerView!!.smoothScrollToPosition(stationTableRecyclerViewAdapter.selectedPos)
         }
     }
 
     fun setResponsivenessToClick(_toSet: Boolean) {
-        stationPageRecyclerViewAdapter.setClickResponsiveness(_toSet)
+        stationTableRecyclerViewAdapter.setClickResponsiveness(_toSet)
     }
 
     fun notifyStationChanged(_stationId: String) {
-        stationPageRecyclerViewAdapter.notifyStationChanged(_stationId)
+        stationTableRecyclerViewAdapter.notifyStationChanged(_stationId)
     }
 
     fun setOutdatedData(_availabilityOutdated: Boolean) {
@@ -374,7 +376,7 @@ class StationPageFragment : Fragment(), StationPageRecyclerViewAdapter.OnStation
             mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT
             mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.theme_accent))
         }
-        stationPageRecyclerViewAdapter.setAvailabilityOutdated(_availabilityOutdated)
+        stationTableRecyclerViewAdapter.setAvailabilityOutdated(_availabilityOutdated)
     }
 
     fun showFavoriteHeader() {
