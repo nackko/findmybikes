@@ -533,7 +533,7 @@ public class NearbyActivity extends AppCompatActivity
                 mDownloadWebTask = new DownloadWebTask();
                 mDownloadWebTask.execute();
 
-                Log.i("nearbyActivity", "No stationList data in RootApplication but bike network id available in DBHelper- launching first download");
+                Log.i("nearbyActivity", "No sortedStationList data in RootApplication but bike network id available in DBHelper- launching first download");
             }
             else{
 
@@ -1580,7 +1580,7 @@ public class NearbyActivity extends AppCompatActivity
 
                         //Requesting raw string with availability
                         String rawClosest = getTablePagerAdapter().retrieveClosestRawIdAndAvailability(true);
-                        getTablePagerAdapter().highlightStationforId(true, Utils.extractClosestAvailableStationIdFromProcessedString(rawClosest));
+                        getTablePagerAdapter().highlightStationforId(true, Utils.extractNearestAvailableStationIdFromDataString(rawClosest));
 
                         getTablePagerAdapter().smoothScrollHighlightedInViewForTable(StationTablePagerAdapter.BIKE_STATIONS, isAppBarExpanded());
                         final BikeStation closestBikeStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.BIKE_STATIONS);
@@ -1673,8 +1673,8 @@ public class NearbyActivity extends AppCompatActivity
                         //launch twitter task if not already running, pass it the raw String
                         if ( Utils.Connectivity.isConnected(getApplicationContext()) && //data network available
                                 mUpdateTwitterTask == null &&   //not already tweeting
-                                rawClosest.length() > 32 + StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length() && //validate format - 32 is station ID length
-                                (rawClosest.contains(StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX) || rawClosest.contains(StationTableRecyclerViewAdapter.BAD_AVAILABILITY_POSTFIX)) && //validate content
+                                rawClosest.length() > 32 + StationTableRecyclerViewAdapter.Companion.getAOK_AVAILABILITY_POSTFIX().length() && //validate format - 32 is station ID length
+                                (rawClosest.contains(StationTableRecyclerViewAdapter.Companion.getAOK_AVAILABILITY_POSTFIX()) || rawClosest.contains(StationTableRecyclerViewAdapter.Companion.getBAD_AVAILABILITY_POSTFIX())) && //validate content
                                 !mDataOutdated){
 
                             mUpdateTwitterTask = new UpdateTwitterStatusTask();
@@ -1986,7 +1986,7 @@ public class NearbyActivity extends AppCompatActivity
                     //highlight B station in list
 
                     //the following is why the handler is required (to let time for things to settle after calling getTablePagerAdapter().setupUI)
-                    String stationId = Utils.extractClosestAvailableStationIdFromProcessedString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(false));
+                    String stationId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(false));
 
                     getTablePagerAdapter().hideStationRecap();
                     mStationMapFragment.setPinOnStation(false, stationId);//set B pin on closest station with available dock
@@ -2074,7 +2074,7 @@ public class NearbyActivity extends AppCompatActivity
                     //highlight B station in list
 
                     //the following is why the handler is required (to let time for things to settle after calling getTablePagerAdapter().setupUI)
-                    String stationId = Utils.extractClosestAvailableStationIdFromProcessedString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(false));
+                    String stationId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(false));
 
                     getTablePagerAdapter().hideStationRecap();
                     mStationMapFragment.setPinOnStation(false, stationId);//set B pin on closest station with available dock
@@ -2932,7 +2932,7 @@ public class NearbyActivity extends AppCompatActivity
     private boolean isStationAClosestBike(){
 
         String stationAId = mStationMapFragment.getMarkerAStationId();
-        String closestBikeId = Utils.extractClosestAvailableStationIdFromProcessedString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(true));
+        String closestBikeId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(true));
 
         return stationAId.equalsIgnoreCase(closestBikeId);
     }
@@ -3386,8 +3386,8 @@ public class NearbyActivity extends AppCompatActivity
                     //359f354466083c962d243bc238c95245_AVAILABILITY_AOK
 
                     selectedStationId = e.substring(0,STATION_ID_LENGTH);
-                    selectedBadorAok = e.substring(STATION_ID_LENGTH + StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE.length(),
-                            STATION_ID_LENGTH + StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE.length() + 3); //'BAD' or 'AOK'
+                    selectedBadorAok = e.substring(STATION_ID_LENGTH + StationTableRecyclerViewAdapter.Companion.getAVAILABILITY_POSTFIX_START_SEQUENCE().length(),
+                            STATION_ID_LENGTH + StationTableRecyclerViewAdapter.Companion.getAVAILABILITY_POSTFIX_START_SEQUENCE().length() + 3); //'BAD' or 'AOK'
 
                     selectedStation = networkStationMap.get(selectedStationId);
 
@@ -3417,8 +3417,8 @@ public class NearbyActivity extends AppCompatActivity
                 else { //3c3bf5e74cb938e7d57641edaf909d24_AVAILABILITY_CRI
 
                     Pair<String, String> discarded = new Pair<>(e.substring(0,STATION_ID_LENGTH), e.substring(
-                            STATION_ID_LENGTH + StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE.length(),
-                            STATION_ID_LENGTH + StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE.length() + 3
+                            STATION_ID_LENGTH + StationTableRecyclerViewAdapter.Companion.getAVAILABILITY_POSTFIX_START_SEQUENCE().length(),
+                            STATION_ID_LENGTH + StationTableRecyclerViewAdapter.Companion.getAVAILABILITY_POSTFIX_START_SEQUENCE().length() + 3
                     ));
 
                     discardedStations.add(discarded);

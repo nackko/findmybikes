@@ -51,12 +51,12 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
     private val stationTableRecyclerViewAdapter: StationTableRecyclerViewAdapter
         get() = mStationRecyclerView!!.adapter as StationTableRecyclerViewAdapter
 
-    val isRecyclerViewReadyForItemSelection: Boolean
-        get() = mStationRecyclerView != null && stationTableRecyclerViewAdapter.sortComparator != null &&
+    val isRecyclerViewReadyForItemSelection: Boolean    //TODO: sortComparator is now in model
+        get() = mStationRecyclerView != null && true /*stationTableRecyclerViewAdapter.sortComparator != null*/ &&
                 (mStationRecyclerView!!.layoutManager as ScrollingLinearLayoutManager).findFirstVisibleItemPosition() != NO_POSITION
 
     val highlightedFavoriteFabViewTarget: ViewTarget?
-        get() = stationTableRecyclerViewAdapter.getSelectedItemFavoriteFabViewTarget(mStationRecyclerView)
+        get() = null//stationTableRecyclerViewAdapter.getSelectedItemFavoriteFabViewTarget(mStationRecyclerView!!)
 
     val highlightedStation: BikeStation?
         get() = stationTableRecyclerViewAdapter.selected
@@ -80,7 +80,7 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
         mStationRecyclerView!!.addItemDecoration(DividerItemDecoration(activity!!, DividerItemDecoration.VERTICAL_LIST))
         //mStationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mStationRecyclerView!!.layoutManager = ScrollingLinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false, 300)
-        mStationRecyclerView!!.adapter = StationTableRecyclerViewAdapter(this, context, mFavoriteListModelView)
+        mStationRecyclerView!!.adapter = StationTableRecyclerViewAdapter(this, context!!, mFavoriteListModelView!!)
         mStationRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
                 mRecyclerViewScrollingState = newState
@@ -106,6 +106,13 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
             mStationRecyclerView!!.background = ContextCompat.getDrawable(this.context!!, args.getInt(STATION_LIST_ARG_BACKGROUND_RES_ID))
             mProximityHeader!!.visibility = View.GONE
         }
+
+        //TODO: use model
+        //viewmodel.tableItemDataList
+        /*viewModel.notes.observe(this, Observer {
+            adapter.loadItems(it ?: emptyList())
+            adapter.notifyDataSetChanged()
+        })*/
 
         return inflatedView
     }
@@ -211,8 +218,8 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
             mStationRecap!!.visibility = View.VISIBLE
         }
 
-        stationTableRecyclerViewAdapter.setupStationList(_stationsNetwork, _sortComparator)
-        stationTableRecyclerViewAdapter.setShowProximity(_showProximity)
+        //stationTableRecyclerViewAdapter.setupStationList(_stationsNetwork, _sortComparator!!)
+        //stationTableRecyclerViewAdapter.setShowProximity(_showProximity)
         setupHeaders(_lookingForBike, _showProximity, _headerFromIconResId, _headerToIconResId)
     }
 
@@ -262,30 +269,36 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
 
         if (mRecyclerViewScrollingState == SCROLL_STATE_IDLE) {
 
-            stationTableRecyclerViewAdapter.setStationSortComparatorAndSort(_toSet)
+            //TODO: rewire this code path and understand if model makes it obsolete
+            //Comparator is in model now anyway
+            //stationTableRecyclerViewAdapter.setStationSortComparatorAndSort(_toSet)
         }
     }
 
     //_stationALatLng can be null
     fun updateTotalTripSortComparator(_userLatLng: LatLng, _stationALatLng: LatLng) {
-        stationTableRecyclerViewAdapter.updateTotalTripSortComparator(_userLatLng, _stationALatLng)
+        //TODO: comparator is in model now
+        //stationTableRecyclerViewAdapter.updateTotalTripSortComparator(_userLatLng, _stationALatLng)
     }
 
     fun retrieveClosestRawIdAndAvailability(_lookingForBike: Boolean): String {
 
-        return stationTableRecyclerViewAdapter.retrieveClosestRawIdAndAvailability(_lookingForBike)
+        //TODO: this data is available in TableFragment model as sortedAvailabilityDataString
+        return ""//stationTableRecyclerViewAdapter.retrieveClosestRawIdAndAvailability(_lookingForBike)
 
     }
 
     fun getClosestAvailabilityLatLng(_lookingForBike: Boolean): LatLng? {
-        return stationTableRecyclerViewAdapter.getClosestAvailabilityLatLng(_lookingForBike)
+        //TODO: this data is available in TableFragment model as nearestAvailabilityLatLng
+        return LatLng(0.0, 0.0)//stationTableRecyclerViewAdapter.getClosestAvailabilityLatLng(_lookingForBike)
     }
 
     fun highlightStation(_stationId: String): Boolean {
 
         val selectedPos = stationTableRecyclerViewAdapter.setSelection(_stationId, false)
 
-        (mStationRecyclerView!!.adapter as StationTableRecyclerViewAdapter).requestFabAnimation()
+        //TODO: replug fab in table list row
+        //(mStationRecyclerView!!.adapter as StationTableRecyclerViewAdapter).requestFabAnimation()
 
         return selectedPos != NO_POSITION
     }
@@ -296,7 +309,8 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
 
     fun setupHeaders(lookingForBike: Boolean, _showProximityHeader: Boolean, _headerFromIconResId: Int?, _headerToIconResId: Int?) {
 
-        stationTableRecyclerViewAdapter.lookingForBikesNotify(lookingForBike)
+        //TODO: model takes care of prepping the data and tracking lookingforbike status
+        //stationTableRecyclerViewAdapter.lookingForBikesNotify(lookingForBike)
 
         if (lookingForBike) {
 
@@ -366,7 +380,8 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
     }
 
     fun notifyStationChanged(_stationId: String) {
-        stationTableRecyclerViewAdapter.notifyStationChanged(_stationId)
+        //TODO: this will be handled by updating model, no need to notify directly anymore
+        //stationTableRecyclerViewAdapter.notifyStationChanged(_stationId)
     }
 
     fun setOutdatedData(_availabilityOutdated: Boolean) {

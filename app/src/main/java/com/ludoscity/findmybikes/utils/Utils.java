@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class Utils {
 
-    public static String extractClosestAvailableStationIdFromProcessedString(String _processedString){
+    public static String extractNearestAvailableStationIdFromDataString(String _processedString) {
 
         //int debug0 = _processedString.indexOf(StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX);
         //int debug1 = StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length();
@@ -102,15 +102,15 @@ public class Utils {
 
 
         //TODO: something is fishy here, couldn't figure out how to get the same result without intermediary debug labelled variable
-        String debugSplit = _processedString.substring(_processedString.indexOf(StationTableRecyclerViewAdapter.AVAILABILITY_POSTFIX_START_SEQUENCE)
-                + StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length());
+        String debugSplit = _processedString.substring(_processedString.indexOf(StationTableRecyclerViewAdapter.Companion.getAVAILABILITY_POSTFIX_START_SEQUENCE())
+                + StationTableRecyclerViewAdapter.Companion.getAOK_AVAILABILITY_POSTFIX().length());
 
         //String[] debugSplitResult = debugSplit.split(String.format("(?<=\\G.{%d})", StationTableRecyclerViewAdapter.CRITICAL_AVAILABILITY_POSTFIX.length() + 32));
 
         List<String> toReturn = new ArrayList<>();
-        toReturn.add(_processedString.substring(0, 32 + StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX.length()));
+        toReturn.add(_processedString.substring(0, 32 + StationTableRecyclerViewAdapter.Companion.getAOK_AVAILABILITY_POSTFIX().length()));
 
-        toReturn.addAll(splitEqually(debugSplit, StationTableRecyclerViewAdapter.CRITICAL_AVAILABILITY_POSTFIX.length() + 32));
+        toReturn.addAll(splitEqually(debugSplit, StationTableRecyclerViewAdapter.Companion.getCRITICAL_AVAILABILITY_POSTFIX().length() + 32));
 
         return toReturn;
     }

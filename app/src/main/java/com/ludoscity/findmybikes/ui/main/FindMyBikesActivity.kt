@@ -378,7 +378,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                 val downloadWebTask = NearbyActivity.DownloadWebTask()
                 mDownloadWebTask.execute()
 
-                Log.i("nearbyActivity", "No stationList data in RootApplication but bike network id available in DBHelper- launching first download")
+                Log.i("nearbyActivity", "No sortedStationList data in RootApplication but bike network id available in DBHelper- launching first download")
             } else {
 
                 mFindNetworkTask = FindNetworkTask(DBHelper.getInstance().getBikeNetworkName(this))
