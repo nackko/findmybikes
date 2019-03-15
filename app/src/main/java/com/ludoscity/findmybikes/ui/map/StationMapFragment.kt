@@ -222,7 +222,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     override fun onDestroyView() {
         super.onDestroyView()
         val f = activity!!.fragmentManager
-                .findFragmentById(R.id.mapNearby) as MapFragment
+                .findFragmentById(R.id.mapNearby)
         if (f != null) {
             activity!!.fragmentManager.beginTransaction().remove(f).commit()
             mGoogleMap = null

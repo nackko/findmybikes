@@ -28,7 +28,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.activities.WebViewActivity;
-import com.ludoscity.findmybikes.ui.table.StationTableRecyclerViewAdapter;
+import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -102,15 +102,15 @@ public class Utils {
 
 
         //TODO: something is fishy here, couldn't figure out how to get the same result without intermediary debug labelled variable
-        String debugSplit = _processedString.substring(_processedString.indexOf(StationTableRecyclerViewAdapter.Companion.getAVAILABILITY_POSTFIX_START_SEQUENCE())
-                + StationTableRecyclerViewAdapter.Companion.getAOK_AVAILABILITY_POSTFIX().length());
+        String debugSplit = _processedString.substring(_processedString.indexOf(TableFragmentViewModel.Companion.getAVAILABILITY_POSTFIX_START_SEQUENCE())
+                + TableFragmentViewModel.Companion.getAOK_AVAILABILITY_POSTFIX().length());
 
         //String[] debugSplitResult = debugSplit.split(String.format("(?<=\\G.{%d})", StationTableRecyclerViewAdapter.CRITICAL_AVAILABILITY_POSTFIX.length() + 32));
 
         List<String> toReturn = new ArrayList<>();
-        toReturn.add(_processedString.substring(0, 32 + StationTableRecyclerViewAdapter.Companion.getAOK_AVAILABILITY_POSTFIX().length()));
+        toReturn.add(_processedString.substring(0, 32 + TableFragmentViewModel.Companion.getAOK_AVAILABILITY_POSTFIX().length()));
 
-        toReturn.addAll(splitEqually(debugSplit, StationTableRecyclerViewAdapter.Companion.getCRITICAL_AVAILABILITY_POSTFIX().length() + 32));
+        toReturn.addAll(splitEqually(debugSplit, TableFragmentViewModel.Companion.getCRITICAL_AVAILABILITY_POSTFIX().length() + 32));
 
         return toReturn;
     }

@@ -51,6 +51,10 @@ class FindMyBikesRepository private constructor(private val stationDao: BikeStat
                 Log.d(TAG, "Processing done")
                 //TODO: smarter update algorithm that purges obsolete stations from DB without dropping the whole table
                 //deleteOldData
+                //TODO: in relation to previous : do that only when switching from a bike network to an other one
+                //BUT, even when updating in place, some strategy should be in place to detect 'orphans' and purge them
+                //especially if they are a user's favourite.
+                //For now, live with the visual glitch on launch where the UI table empties itself and refills
                 stationDao.deleteAllBikeStation()
                 Log.d(TAG, "Old station data deleted")
                 //Insert new data into database

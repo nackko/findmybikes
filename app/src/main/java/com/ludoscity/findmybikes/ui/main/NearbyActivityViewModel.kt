@@ -32,6 +32,8 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
     private val stationB = MutableLiveData<BikeStation>()
     private val pickedFavorite = MutableLiveData<FavoriteEntityBase>()
 
+    private val appBarExpanded = MutableLiveData<Boolean>()
+
     //TODO: should that be maintained in repository or should repo update activity model ?
     private val dataOutOfDate = MutableLiveData<Boolean>()
 
@@ -68,6 +70,14 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
     val isDataOutOfDate : LiveData<Boolean>
         get() = dataOutOfDate
 
+    fun setDataOutOfDate(toSet: Boolean) {
+        dataOutOfDate.value = toSet
+    }
+
+    fun setAppBarExpanded(toSet: Boolean) {
+        appBarExpanded.value = toSet
+    }
+
     fun setNearestBikeAutoselected(toSet: Boolean){
         nearestBikeAutoSelected.value = toSet
     }
@@ -91,6 +101,17 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
         return currentBikeSytemId
     }
 
+    fun setStationA(toSet: BikeStation?) {
+        stationA.value = toSet
+    }
+
+    fun getStationA(): LiveData<BikeStation> {
+        return stationA
+    }
+
+    fun setStationB(toSet: BikeStation?) {
+        stationB.value = toSet
+    }
     fun getStationB(): LiveData<BikeStation>{
         return stationB
     }
@@ -133,6 +154,10 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
 
     fun hideFavoriteSheetEditFab() {
         favoriteSheetEditFabShown.value = false
+    }
+
+    fun isAppBarExpanded(): LiveData<Boolean> {
+        return appBarExpanded
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////

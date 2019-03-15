@@ -2,15 +2,12 @@ package com.ludoscity.findmybikes.ui.table
 
 import android.arch.lifecycle.ViewModelProviders
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.RecyclerView.NO_POSITION
 import android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE
 import android.view.LayoutInflater
 import android.view.View
@@ -20,16 +17,18 @@ import android.widget.TextView
 import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.RootApplication
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
-import com.ludoscity.findmybikes.helpers.DBHelper
+import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
 import com.ludoscity.findmybikes.utils.DividerItemDecoration
+import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
+import java.text.NumberFormat
 import java.util.*
 
-class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStationListItemClickListener {
+class StationTableFragment : Fragment() {
 
+    private lateinit var tableFragmentModel: TableFragmentViewModel
     private var mStationRecyclerView: RecyclerView? = null
     private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
     private var mRecyclerViewScrollingState = SCROLL_STATE_IDLE //TODO: in model ??
@@ -40,30 +39,16 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
     private var mStationRecapAvailability: TextView? = null
     private var mProximityHeaderFromImageView: ImageView? = null
     private var mProximityHeaderToImageView: ImageView? = null
-    private var mAvailabilityTextView: TextView? = null
+    private var headerAvailabilityTextView: TextView? = null
 
     //TODO: make favorite list model hokked on fav repo and provided through InjectorUtils
     private var mFavoriteListModelView: FavoriteListViewModel? = null
 
-    //TODO: this disappears (communication through model)
-    private var mListener: OnStationListFragmentInteractionListener? = null
-
     private val stationTableRecyclerViewAdapter: StationTableRecyclerViewAdapter
         get() = mStationRecyclerView!!.adapter as StationTableRecyclerViewAdapter
 
-    val isRecyclerViewReadyForItemSelection: Boolean    //TODO: sortComparator is now in model
-        get() = mStationRecyclerView != null && true /*stationTableRecyclerViewAdapter.sortComparator != null*/ &&
-                (mStationRecyclerView!!.layoutManager as ScrollingLinearLayoutManager).findFirstVisibleItemPosition() != NO_POSITION
-
     val highlightedFavoriteFabViewTarget: ViewTarget?
         get() = null//stationTableRecyclerViewAdapter.getSelectedItemFavoriteFabViewTarget(mStationRecyclerView!!)
-
-    val highlightedStation: BikeStation?
-        get() = stationTableRecyclerViewAdapter.selected
-
-    //Minus 1 is for appbar
-    val isHighlightedVisibleInRecyclerView: Boolean
-        get() = stationTableRecyclerViewAdapter.selectedPos < (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() - 1 && stationTableRecyclerViewAdapter.selectedPos >= (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -76,15 +61,29 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
         mStationRecap = inflatedView.findViewById(R.id.station_recap)
         mStationRecapName = inflatedView.findViewById(R.id.station_recap_name)
         mStationRecapAvailability = inflatedView.findViewById(R.id.station_recap_availability)
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!)
+        val nearbyActivityViewModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+
+        val isDockTable = arguments?.getBoolean("isDockTable") ?: true
+        val modelFactory = InjectorUtils.provideTableFragmentViewModelFactory(activity!!.application,
+                arguments?.getBoolean("isDockTable") ?: true,
+                nearbyActivityViewModel.isAppBarExpanded(),
+                nearbyActivityViewModel.isDataOutOfDate,
+                nearbyActivityViewModel.getStationA(),
+                if (!isDockTable) nearbyActivityViewModel.getStationA() else nearbyActivityViewModel.getStationB(),
+                arguments?.getSerializable("numFormat") as NumberFormat
+        )
+
+        tableFragmentModel = ViewModelProviders.of(this, modelFactory).get(TableFragmentViewModel::class.java)
+
         mStationRecyclerView = inflatedView.findViewById(R.id.station_table_recyclerview)
         mStationRecyclerView!!.addItemDecoration(DividerItemDecoration(activity!!, DividerItemDecoration.VERTICAL_LIST))
         //mStationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mStationRecyclerView!!.layoutManager = ScrollingLinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false, 300)
-        mStationRecyclerView!!.adapter = StationTableRecyclerViewAdapter(this, context!!, mFavoriteListModelView!!)
+        mStationRecyclerView!!.adapter = StationTableRecyclerViewAdapter(tableFragmentModel, mFavoriteListModelView!!)
         mStationRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
                 mRecyclerViewScrollingState = newState
-
             }
         })
 
@@ -95,24 +94,28 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
                 R.color.stationlist_refresh_spinner_grey,
                 R.color.stationlist_refresh_spinner_green)
 
-        mAvailabilityTextView = inflatedView.findViewById(R.id.availability_header)
+        tableFragmentModel.isRefreshEnabled.observe(this, android.arch.lifecycle.Observer {
+            if (it == null)
+                mSwipeRefreshLayout!!.isEnabled = true
+            else mSwipeRefreshLayout!!.isEnabled = it == true
+        })
+
+        tableFragmentModel.isRefreshLayoutVisible.observe(this, android.arch.lifecycle.Observer {
+            if (it != mSwipeRefreshLayout!!.isRefreshing)
+                mSwipeRefreshLayout!!.isRefreshing = it ?: false
+        })
+
+        headerAvailabilityTextView = inflatedView.findViewById(R.id.availability_header)
         mProximityHeader = inflatedView.findViewById(R.id.proximity_header)
         mProximityHeaderFromImageView = inflatedView.findViewById(R.id.proximity_header_from)
         mProximityHeaderToImageView = inflatedView.findViewById(R.id.proximity_header_to)
 
-        val args = arguments
+        /*val args = arguments
         if (args != null) {
 
             mStationRecyclerView!!.background = ContextCompat.getDrawable(this.context!!, args.getInt(STATION_LIST_ARG_BACKGROUND_RES_ID))
             mProximityHeader!!.visibility = View.GONE
-        }
-
-        //TODO: use model
-        //viewmodel.tableItemDataList
-        /*viewModel.notes.observe(this, Observer {
-            adapter.loadItems(it ?: emptyList())
-            adapter.notifyDataSetChanged()
-        })*/
+        }*/
 
         return inflatedView
     }
@@ -120,76 +123,31 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        try {
-            mListener = activity as OnStationListFragmentInteractionListener?
-        } catch (e: ClassCastException) {
-            throw ClassCastException(activity!!.toString() + " must implement OnFragmentInteractionListener")
-        }
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!)
+        val nearbyActivityViewModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
 
-    }
+        val isDockTable = arguments?.getBoolean("isDockTable") ?: true
 
-    override fun onDetach() {
-        super.onDetach()
-        mListener = null
-    }
+        tableFragmentModel.lastClickedStation.observe(this, android.arch.lifecycle.Observer {
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
+            if (isDockTable)
+                nearbyActivityViewModel.setStationB(it)
+            else
+                nearbyActivityViewModel.setStationA(it)
+        })
 
-        outState.putInt("selected_pos", stationTableRecyclerViewAdapter.selectedPos)
-        val comparator = stationTableRecyclerViewAdapter.sortComparator
-        if (comparator is StationTableRecyclerViewAdapter.DistanceComparator)
-            outState.putParcelable("sort_comparator", comparator)
-        else
-            outState.putParcelable("sort_comparator", comparator as StationTableRecyclerViewAdapter.TotalTripTimeComparator)
-        outState.putString("string_if_empty", mEmptyListTextView!!.text.toString())
-        outState.putString("station_recap_name", mStationRecapName!!.text.toString())
-        outState.putString("station_recap_availability_string", mStationRecapAvailability!!.text.toString())
-        outState.putInt("station_recap_availability_color", mStationRecapAvailability!!.currentTextColor)
-        outState.putBoolean("station_recap_visible", mStationRecap!!.visibility == View.VISIBLE)
-        outState.putBoolean("proximity_header_visible", mProximityHeader!!.visibility == View.VISIBLE)
-        outState.putInt("proximity_header_from_icon_resid", if (mProximityHeaderFromImageView!!.tag == null) -1 else mProximityHeaderFromImageView!!.tag as Int)
-        outState.putInt("proximity_header_to_icon_resid", if (mProximityHeaderToImageView!!.tag == null) -1 else mProximityHeaderToImageView!!.tag as Int)
+        tableFragmentModel.tableItemDataList.observe(this, android.arch.lifecycle.Observer {
+            stationTableRecyclerViewAdapter.loadItems(it ?: emptyList())
 
-        stationTableRecyclerViewAdapter.saveLookingForBike(outState)
-        stationTableRecyclerViewAdapter.saveIsAvailabilityOutdated(outState)
-    }
+            if (it?.size ?: 0 != stationTableRecyclerViewAdapter.itemCount)
+                stationTableRecyclerViewAdapter.notifyDataSetChanged()
+            else
+                stationTableRecyclerViewAdapter.notifyItemRangeChanged(0, it?.size ?: 0)
+        })
 
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
+        tableFragmentModel.stationRecapVisibility.observe(this, android.arch.lifecycle.Observer { visible ->
 
-        if (savedInstanceState != null) {
-
-            val comparator: Comparator<BikeStation> = savedInstanceState.getParcelable<Parcelable>("sort_comparator") as Comparator<BikeStation>
-
-            if (savedInstanceState.getBoolean("availability_outdated")) {
-                stationTableRecyclerViewAdapter.setAvailabilityOutdated(true)
-                mStationRecapAvailability!!.paint.isStrikeThruText = true
-                mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT
-            } else {
-                stationTableRecyclerViewAdapter.setAvailabilityOutdated(false)
-                mStationRecapAvailability!!.paint.isStrikeThruText = false
-                mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT_BOLD
-            }
-
-            setupUI(RootApplication.bikeNetworkStationList, savedInstanceState.getBoolean("looking_for_bike"),
-                    savedInstanceState.getBoolean("proximity_header_visible"),
-                    if (savedInstanceState.getInt("proximity_header_from_icon_resid") == -1) null else savedInstanceState.getInt("proximity_header_from_icon_resid"),
-                    if (savedInstanceState.getInt("proximity_header_to_icon_resid") == -1) null else savedInstanceState.getInt("proximity_header_to_icon_resid"),
-                    savedInstanceState.getString("string_if_empty"),
-                    comparator)
-
-            val selectedPos = savedInstanceState.getInt("selected_pos")
-
-            if (selectedPos != NO_POSITION)
-                stationTableRecyclerViewAdapter.setSelectedPos(selectedPos, false)
-
-            mStationRecapName!!.text = savedInstanceState.getString("station_recap_name")
-            mStationRecapAvailability!!.text = savedInstanceState.getString("station_recap_availability_string")
-
-            mStationRecapAvailability!!.setTextColor(savedInstanceState.getInt("station_recap_availability_color"))
-
-            if (savedInstanceState.getBoolean("station_recap_visible")) {
+            if (visible == true) {
                 mStationRecyclerView!!.visibility = View.GONE
                 mEmptyListTextView!!.visibility = View.VISIBLE
                 mStationRecap!!.visibility = View.VISIBLE
@@ -198,73 +156,63 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
                 mEmptyListTextView!!.visibility = View.GONE
                 mStationRecap!!.visibility = View.GONE
             }
-        }
+        })
+
+        tableFragmentModel.stringIfEmpty.observe(this, android.arch.lifecycle.Observer {
+            mEmptyListTextView!!.text = it ?: ""
+        })
+
+        tableFragmentModel.headerAvailabilityText.observe(this, android.arch.lifecycle.Observer {
+            headerAvailabilityTextView!!.text = it ?: ""
+        })
+
+        tableFragmentModel.tableRecapData.observe(this, android.arch.lifecycle.Observer {
+            mStationRecapName!!.text = it?.name ?: "[[[STATION NAME]]]"
+            mStationRecapAvailability!!.text = it?.availabilityText ?: "XX"
+            mStationRecapAvailability!!.paint.isStrikeThruText = it?.isAvailabilityPaintStrikeThru
+                    ?: false
+            mStationRecapAvailability!!.paint.typeface = it?.availabilityPaintTypeface
+                    ?: Typeface.DEFAULT
+            mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(activity!!, it?.availabilityTextColorResId
+                    ?: android.R.color.transparent))
+
+        })
+
+        tableFragmentModel.showProximity.observe(this, android.arch.lifecycle.Observer {
+            //TODO : column width adaptation
+            if (it == true) {
+                mProximityHeader!!.visibility = View.VISIBLE
+            } else {
+                mProximityHeader!!.visibility = View.INVISIBLE
+            }
+        })
+
+        tableFragmentModel.headerFromIconResId.observe(this, android.arch.lifecycle.Observer {
+            if (it != null) {
+                mProximityHeaderFromImageView!!.setImageResource(it)
+            }
+        })
+
+        tableFragmentModel.headerToIconResId.observe(this, android.arch.lifecycle.Observer {
+            if (it != null) {
+                mProximityHeaderToImageView!!.setImageResource(it)
+            }
+        })
+
+        tableFragmentModel.recyclerViewAdapterPosToSmoothScollInView.observe(this, android.arch.lifecycle.Observer {
+            if (it != null) {
+                val appBarExpanded = tableFragmentModel.appBarExpanded.value ?: true
+
+                if (appBarExpanded && it >= (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()) {
+                    mStationRecyclerView!!.smoothScrollToPosition(it + 1)
+                } else
+                    mStationRecyclerView!!.smoothScrollToPosition(it)
+            }
+        })
     }
 
-    fun setupUI(_stationsNetwork: List<BikeStation>, _lookingForBike: Boolean, _showProximity: Boolean,
-                _headerFromIconResId: Int?, _headerToIconResId: Int?,
-                _stringIfEmpty: String?,
-                _sortComparator: Comparator<BikeStation>?) {
-
-        //TODO: fix glitch when coming back from place widget (Note to past self : describe glitch)
-        mEmptyListTextView!!.text = _stringIfEmpty
-        if (!_stationsNetwork.isEmpty()) {
-            mStationRecyclerView!!.visibility = View.VISIBLE
-            mEmptyListTextView!!.visibility = View.GONE
-            mStationRecap!!.visibility = View.GONE
-        } else {
-            mStationRecyclerView!!.visibility = View.GONE
-            mEmptyListTextView!!.visibility = View.VISIBLE
-            mStationRecap!!.visibility = View.VISIBLE
-        }
-
-        //stationTableRecyclerViewAdapter.setupStationList(_stationsNetwork, _sortComparator!!)
-        //stationTableRecyclerViewAdapter.setShowProximity(_showProximity)
-        setupHeaders(_lookingForBike, _showProximity, _headerFromIconResId, _headerToIconResId)
-    }
-
-    fun hideStationRecap() {
-        mStationRecap!!.visibility = View.GONE
-    }
-
-    fun showStationRecap() {
-        mStationRecap!!.visibility = View.VISIBLE
-    }
-
-    fun setupStationRecap(_station: BikeStation, _outdated: Boolean): Boolean {
-
-        if (context == null)
-            return false
-
-        if (mFavoriteListModelView!!.isFavorite(_station.locationHash)) {
-            mStationRecapName!!.text = mFavoriteListModelView!!.getFavoriteEntityForId(_station.locationHash)!!.getSpannedDisplayName(context, true)
-        } else {
-            mStationRecapName!!.text = _station.name
-        }
-
-        mStationRecapAvailability!!.text = String.format(resources.getString(R.string.station_recap_bikes), _station.freeBikes)
-
-        if (_outdated) {
-            mStationRecapAvailability!!.paint.isStrikeThruText = true
-            mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT
-            mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.theme_accent))
-        } else {
-
-            mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT_BOLD
-            mStationRecapAvailability!!.paint.isStrikeThruText = false
-
-            if (_station.freeBikes <= DBHelper.getInstance().getCriticalAvailabilityMax(context))
-                mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.station_recap_red))
-            else if (_station.freeBikes <= DBHelper.getInstance().getBadAvailabilityMax(context))
-                mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.station_recap_yellow))
-            else
-                mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.station_recap_green))
-
-        }
-
-        return true
-    }
-
+    //TODO: this should happen in model, resorting list and posting it to tableItemDataList
+    //This was called through setupUi with a comparator parameter. It should now be set on the model
     fun setSortComparatorAndSort(_toSet: Comparator<BikeStation>) {
 
         if (mRecyclerViewScrollingState == SCROLL_STATE_IDLE) {
@@ -279,138 +227,6 @@ class StationTableFragment : Fragment(), StationTableRecyclerViewAdapter.OnStati
     fun updateTotalTripSortComparator(_userLatLng: LatLng, _stationALatLng: LatLng) {
         //TODO: comparator is in model now
         //stationTableRecyclerViewAdapter.updateTotalTripSortComparator(_userLatLng, _stationALatLng)
-    }
-
-    fun retrieveClosestRawIdAndAvailability(_lookingForBike: Boolean): String {
-
-        //TODO: this data is available in TableFragment model as sortedAvailabilityDataString
-        return ""//stationTableRecyclerViewAdapter.retrieveClosestRawIdAndAvailability(_lookingForBike)
-
-    }
-
-    fun getClosestAvailabilityLatLng(_lookingForBike: Boolean): LatLng? {
-        //TODO: this data is available in TableFragment model as nearestAvailabilityLatLng
-        return LatLng(0.0, 0.0)//stationTableRecyclerViewAdapter.getClosestAvailabilityLatLng(_lookingForBike)
-    }
-
-    fun highlightStation(_stationId: String): Boolean {
-
-        val selectedPos = stationTableRecyclerViewAdapter.setSelection(_stationId, false)
-
-        //TODO: replug fab in table list row
-        //(mStationRecyclerView!!.adapter as StationTableRecyclerViewAdapter).requestFabAnimation()
-
-        return selectedPos != NO_POSITION
-    }
-
-    fun removeStationHighlight() {
-        stationTableRecyclerViewAdapter.clearSelection()
-    }
-
-    fun setupHeaders(lookingForBike: Boolean, _showProximityHeader: Boolean, _headerFromIconResId: Int?, _headerToIconResId: Int?) {
-
-        //TODO: model takes care of prepping the data and tracking lookingforbike status
-        //stationTableRecyclerViewAdapter.lookingForBikesNotify(lookingForBike)
-
-        if (lookingForBike) {
-
-            mAvailabilityTextView!!.text = getString(R.string.bikes)
-
-            if (arguments != null) {
-                mProximityHeader!!.visibility = View.GONE
-            } else {
-
-                mProximityHeaderFromImageView!!.visibility = View.GONE
-                mProximityHeaderFromImageView!!.tag = -1
-                mProximityHeaderToImageView!!.tag = _headerToIconResId
-                mProximityHeaderToImageView!!.setImageResource(_headerToIconResId!!)
-
-                mProximityHeader!!.visibility = View.VISIBLE
-            }
-        } else {
-
-            mAvailabilityTextView!!.text = getString(R.string.docks)
-
-            if (arguments != null || !_showProximityHeader) {
-                mProximityHeader!!.visibility = View.INVISIBLE
-            } else {
-
-                mProximityHeaderFromImageView!!.visibility = View.VISIBLE
-                mProximityHeaderFromImageView!!.setImageResource(_headerFromIconResId!!)
-                mProximityHeaderToImageView!!.setImageResource(_headerToIconResId!!)
-                mProximityHeaderFromImageView!!.tag = _headerFromIconResId
-                mProximityHeaderToImageView!!.tag = _headerToIconResId
-
-                mProximityHeader!!.visibility = View.VISIBLE
-            }
-        }
-    }
-
-    override fun onStationListItemClick(_path: String) {
-        val builder = Uri.Builder()
-
-        builder.appendPath(_path)
-
-        if (mListener != null) {
-            mListener!!.onStationListFragmentInteraction(builder.build())
-        }
-    }
-
-    fun setRefreshing(toSet: Boolean) {
-        if (toSet != mSwipeRefreshLayout!!.isRefreshing)
-            mSwipeRefreshLayout!!.isRefreshing = toSet
-    }
-
-    fun setRefreshEnable(toSet: Boolean) {
-        mSwipeRefreshLayout!!.isEnabled = toSet
-    }
-
-    fun smoothScrollSelectionInView(_appBarExpanded: Boolean) {
-        //Not very proud of the defensive coding but some code path which are required do call this in invalid contexts
-        if (stationTableRecyclerViewAdapter.selectedPos != NO_POSITION) {
-            if (_appBarExpanded && stationTableRecyclerViewAdapter.selectedPos >= (mStationRecyclerView!!.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()) {
-                mStationRecyclerView!!.smoothScrollToPosition(stationTableRecyclerViewAdapter.selectedPos + 1)
-            } else
-                mStationRecyclerView!!.smoothScrollToPosition(stationTableRecyclerViewAdapter.selectedPos)
-        }
-    }
-
-    fun setResponsivenessToClick(_toSet: Boolean) {
-        stationTableRecyclerViewAdapter.setClickResponsiveness(_toSet)
-    }
-
-    fun notifyStationChanged(_stationId: String) {
-        //TODO: this will be handled by updating model, no need to notify directly anymore
-        //stationTableRecyclerViewAdapter.notifyStationChanged(_stationId)
-    }
-
-    fun setOutdatedData(_availabilityOutdated: Boolean) {
-        //TODO: refactor with MVC in mind. Outdated status is model
-        if (_availabilityOutdated) {
-            mStationRecapAvailability!!.paint.isStrikeThruText = true
-            mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT
-            mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.theme_accent))
-        }
-        stationTableRecyclerViewAdapter.setAvailabilityOutdated(_availabilityOutdated)
-    }
-
-    fun showFavoriteHeader() {
-
-        mProximityHeaderToImageView!!.setImageResource(R.drawable.ic_pin_favorite_24dp_white)
-    }
-
-    interface OnStationListFragmentInteractionListener {
-
-        fun onStationListFragmentInteraction(uri: Uri)
-    }
-
-    companion object {
-
-        val STATION_LIST_ITEM_CLICK_PATH = "station_list_item_click"
-        val STATION_LIST_INACTIVE_ITEM_CLICK_PATH = "station_list_inactive_item_click"
-        val STATION_LIST_FAVORITE_FAB_CLICK_PATH = "station_list_fav_fab_click"
-        val STATION_LIST_DIRECTIONS_FAB_CLICK_PATH = "station_list_dir_fab_click"
-        val STATION_LIST_ARG_BACKGROUND_RES_ID = "station_list_arg_background_res_id"
     }
 
 }

@@ -215,6 +215,8 @@
 
         </io.codetail.widget.RevealLinearLayout>
     </android.support.design.widget.CoordinatorLayout>
+
+    <!--TODO: re add splash screen
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -222,5 +224,5 @@
 
         android:name="com.ludoscity.findmybikes.ui.splash.SplashScreenFragment"
         android:id="@+id/fragment_splash_screen"
-        />
+        /> -->
 </android.support.percent.PercentRelativeLayout>

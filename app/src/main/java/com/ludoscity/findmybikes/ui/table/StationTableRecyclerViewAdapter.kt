@@ -1,6 +1,5 @@
 package com.ludoscity.findmybikes.ui.table
 
-import android.content.Context
 import android.os.Handler
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.RecyclerView
@@ -9,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-
 import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
@@ -19,8 +17,8 @@ import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
  *
  * Adapter used to show the datas of every stationItem
  */
-class StationTableRecyclerViewAdapter(private val mListener: OnStationListItemClickListener,
-                                      private val mCtx: Context, favListViewModel: FavoriteListViewModel) : RecyclerView.Adapter<StationTableRecyclerViewAdapter.BikeStationListItemViewHolder>() {
+class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragmentViewModel,
+                                      favListViewModel: FavoriteListViewModel) : RecyclerView.Adapter<StationTableRecyclerViewAdapter.BikeStationListItemViewHolder>() {
 
     var items: List<StationTableItemData> = emptyList()
 
@@ -36,14 +34,11 @@ class StationTableRecyclerViewAdapter(private val mListener: OnStationListItemCl
         items = newItems
     }
 
-    /*fun notifyStationChanged(_stationId: String) {
+    fun notifyStationChanged(_stationId: String) {
         TODO("not implemented")
-        notifyItemChanged(getStationItemPositionInList(_stationId))
-    }*/
-
-    interface OnStationListItemClickListener {
-        fun onStationListItemClick(_path: String)
+        //notifyItemChanged(getStationItemPositionInList(_stationId))
     }
+
 
     init {
         //TODO: should be favorite repo
@@ -68,17 +63,17 @@ class StationTableRecyclerViewAdapter(private val mListener: OnStationListItemCl
 
     inner class BikeStationListItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
-        var mProximity: TextView
-        var mName: TextView
-        var mAvailability: TextView
+        var mProximity: TextView = itemView.findViewById(R.id.station_proximity)
+        var mName: TextView = itemView.findViewById(R.id.station_name)
+        var mAvailability: TextView = itemView.findViewById(R.id.station_availability)
 
-        var mFavoriteFab: FloatingActionButton
+        var mFavoriteFab: FloatingActionButton = itemView.findViewById(R.id.favorite_fab)
 
         //This View is gone by default. It becomes visible when a row in the recycler View is tapped
         //It's used in two ways
         //-clear the space underneath fabs final positions
         //-anchor fabs to their final position
-        var mFabsAnchor: FrameLayout
+        var mFabsAnchor: FrameLayout = itemView.findViewById(R.id.fabs_anchor)
 
         private val mFabAnimHandler: Handler? = null
         private var mStationId: String? = null
@@ -88,12 +83,6 @@ class StationTableRecyclerViewAdapter(private val mListener: OnStationListItemCl
 
         init {
 
-            mProximity = itemView.findViewById(R.id.station_proximity)
-            mName = itemView.findViewById(R.id.station_name)
-            mAvailability = itemView.findViewById(R.id.station_availability)
-
-            mFavoriteFab = itemView.findViewById(R.id.favorite_fab)
-            mFabsAnchor = itemView.findViewById(R.id.fabs_anchor)
             itemView.setOnClickListener(this)
 
             mFavoriteFab.setOnClickListener(this)
@@ -103,9 +92,9 @@ class StationTableRecyclerViewAdapter(private val mListener: OnStationListItemCl
 
             mStationId = item.locationHash
 
-            if (item.proximity != null) {
+            if (item.proximityText != null) {
                 mProximity.visibility = View.VISIBLE
-                mProximity.text = item.proximity
+                mProximity.text = item.proximityText
             } else {
                 mProximity.visibility = View.GONE
             }
@@ -116,13 +105,16 @@ class StationTableRecyclerViewAdapter(private val mListener: OnStationListItemCl
 
             mName.alpha = item.nameAlpha
 
+            mAvailability.paint.isStrikeThruText = item.isAvailabilityPaintStrikeThru
+            mAvailability.paint.typeface = item.availabilityPaintTypeface
+
 
             //TODO: replug fab in item view
             /////////////////////////////////////////////////////////////////////
             //Remove this code to display a fab on selected station
             //val nameWidthPercent: Float
 
-            //TODO: on observinf, is proximity string is null or not
+            //TODO: on observinf, is proximityText string is null or not
             /*if (mShowProximity) {
                 nameWidthPercent = Utils.getPercentResource(mCtx, R.dimen.name_column_width_default_percent, true)
             } else {
@@ -146,24 +138,40 @@ class StationTableRecyclerViewAdapter(private val mListener: OnStationListItemCl
         //state and react accordingly (business logic)
         override fun onClick(view: View) {
 
+            //TODO: rework BikeStation identification
+            //I'm on the ViewHolder, I have the bike station location hash/"id"
+            tableFragmentModel.setLastClickedStationById(mStationId)
+
+            //TODO: see stationTableRecyclerViewAdapter.notifyItemRangeChanged(0, it?.size ?: 0) in tableFragment
+            //JAVA CODE ! (Converted in Kotlin)
+            /*fun setSelectedPos(pos: Int, unselectedOnTwice: Boolean): Int {
+
+                var toReturn = NO_POSITION
+
+                if (mSelectedPos == pos)
+                    if (unselectedOnTwice)
+                        clearSelection()
+                    else
+                        toReturn = mSelectedPos
+                else {
+                    notifyItemChanged(mSelectedPos)
+                    mSelectedPos = pos
+                    notifyItemChanged(pos)
+                    toReturn = mSelectedPos
+                }
+
+                return toReturn
+            }*/
+
+
+
+
+
             /*when (view.id) {
 
-                R.id.list_item_root ->
+                R.id.list_item_root ->{ }
 
-                    if (!mRespondToClick) {
-                        mListener.onStationListItemClick(StationTableFragment.STATION_LIST_INACTIVE_ITEM_CLICK_PATH)
-                    } else {
 
-                        val oldSelectedPos = selectedPos
-
-                        this@StationTableRecyclerViewAdapter.setSelection(mStationId, false)
-
-                        if (oldSelectedPos != selectedPos) {
-
-                            mListener.onStationListItemClick(StationTableFragment.STATION_LIST_ITEM_CLICK_PATH)
-                            requestFabAnimation()
-                        }
-                    }
 
                 R.id.favorite_fab -> {
                     //must redo binding for favorite name display

@@ -1,12 +1,16 @@
 package com.ludoscity.findmybikes.utils
 
 import android.app.Application
+import android.arch.lifecycle.LiveData
 import android.content.Context
+import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.network.BikeSystemNetworkDataSource
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
+import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
+import java.text.NumberFormat
 
 /**
  * Created by F8Full on 2019-02-15. This file is part of #findmybikes
@@ -37,6 +41,21 @@ class InjectorUtils {
         fun provideMapFragmentViewModelFactory(app: Application): MapFragmentModelFactory {
             val repository = provideRepository()
             return MapFragmentModelFactory(repository, app)
+        }
+
+        fun provideTableFragmentViewModelFactory(app: Application,
+                                                 isDockTable: Boolean,
+                                                 appBarExpanded: LiveData<Boolean>,
+                                                 dataOutOfDate: LiveData<Boolean>,
+                                                 stationRecapDatasource: LiveData<BikeStation>,
+                                                 stationSelectionDatasource: LiveData<BikeStation>,
+                                                 numFormat: NumberFormat): TableFragmentModelFactory {
+            val repository = provideRepository()
+            return TableFragmentModelFactory(repository, app, isDockTable,
+                    appBarExpanded,
+                    stationRecapDatasource,
+                    stationSelectionDatasource,
+                    dataOutOfDate, numFormat)
         }
     }
 
