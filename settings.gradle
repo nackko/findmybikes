@@ -1,1 +1,2 @@
-include ':app', ':backend'
+//include ':app', ':backend'
+include ':app'
