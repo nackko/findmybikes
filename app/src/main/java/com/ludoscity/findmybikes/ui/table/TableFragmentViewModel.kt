@@ -8,7 +8,6 @@ import android.content.Context
 import android.graphics.Typeface
 import android.os.Parcel
 import android.os.Parcelable
-import android.support.v7.widget.RecyclerView.NO_POSITION
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
@@ -33,7 +32,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                              val appBarExpanded: LiveData<Boolean>,
                              private val stationRecapDataSource: LiveData<BikeStation>,
                              private val stationSelectionDataSource: LiveData<BikeStation>,
-                             private val dataOutdated: LiveData<Boolean>,
+                             private val isDataOutOfDate: LiveData<Boolean>,
                              numFormat: NumberFormat) : AndroidViewModel(app) {
 
     //TODO: header setup should happen by observing app state instead of being explicitly called on the model ?
@@ -44,9 +43,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         get() = tableItemList
     val tableRecapData: LiveData<StationTableRecapData>
         get() = tableRecapMutableData
-
-    private var selectedPos: Int = NO_POSITION
-    //TODO: expose selected BikeStation data in activity model
 
     val sortedAvailabilityDataString: LiveData<String>
         get() = sortedAvailabilityDataStr
@@ -247,7 +243,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         private val mTimeUserToAMinutes: Int
 
         constructor(_walkingSpeedKmh: Float, _bikingSpeedKmh: Float, _userLatLng: LatLng,
-                    _stationALatLng: LatLng, _destinationLatLng: LatLng, numFormat: NumberFormat) {
+                    _stationALatLng: LatLng, _destinationLatLng: LatLng) {
 
             mWalkingSpeedKmh = _walkingSpeedKmh
             mBikingSpeedKmh = _bikingSpeedKmh
@@ -276,7 +272,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         internal fun getUpdatedComparatorFor(_userLatLng: LatLng, _stationALatLng: LatLng?,
                                              numFormat: NumberFormat): TotalTripTimeComparator {
             return TotalTripTimeComparator(mWalkingSpeedKmh, mBikingSpeedKmh, _userLatLng,
-                    _stationALatLng ?: mStationALatLng, mDestinationLatLng!!, numFormat)
+                    _stationALatLng ?: mStationALatLng, mDestinationLatLng!!)
         }
 
         override fun compare(lhs: BikeStation, rhs: BikeStation): Int {
@@ -340,7 +336,9 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
     init {
 
-        comparator = DistanceComparator(LatLng(-73.567256, 45.5016889))
+        //TODO: add user location livedata as constructor parameter and observe it to update comparator
+        //comparator = DistanceComparator(LatLng(-73.567256, 45.5016889)) //mtl
+        comparator = DistanceComparator(LatLng(45.76404, 4.83566)) //lyon
 
 
 
@@ -362,9 +360,9 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         //recyclerView
         bikeSystemAvailabilityDataObserver = android.arch.lifecycle.Observer { newData ->
 
-            computeAndEmitStationRecapDisplayData(stationRecapDataSource.value, dataOutdated.value != false)
+            computeAndEmitStationRecapDisplayData(stationRecapDataSource.value, isDataOutOfDate.value != false)
 
-            computeAndEmitTableDisplayData(newData, dataOutdated.value != false,
+            computeAndEmitTableDisplayData(newData, isDataOutOfDate.value != false,
                     numFormat, isDockTable)
 
         }
@@ -373,7 +371,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
             recapVisibility.value = stationSelectionDataSource.value == null
 
             computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
-                    dataOutdated.value != false, numFormat, isDockTable)
+                    isDataOutOfDate.value != false, numFormat, isDockTable)
+            //smoothScrollSelectionInView()
         }
 
         stationSelectionDataSource.observeForever(stationSelectionDataSourceObserver)
@@ -383,7 +382,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         stationRecapDataSourceObserver = android.arch.lifecycle.Observer {
 
-            computeAndEmitStationRecapDisplayData(it, dataOutdated.value != false)
+            computeAndEmitStationRecapDisplayData(it, isDataOutOfDate.value != false)
             //TODO: re emit on new data available
             //TODO: replug favorite name
             /*if (mFavoriteListModelView!!.isFavorite(_station.locationHash)) {
@@ -394,11 +393,11 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
             /*tableRecapMutableData.value = StationTableRecapData(
                     it?.name ?: "[[[STATION_NAME]]]",
                     String.format(app.getString(R.string.station_recap_bikes), it?.freeBikes ?: -1),
-                    dataOutdated.value != false,
-                    if (dataOutdated.value != false) Typeface.DEFAULT
+                    isDataOutOfDate.value != false,
+                    if (isDataOutOfDate.value != false) Typeface.DEFAULT
                     else Typeface.DEFAULT_BOLD,
                     when {
-                        dataOutdated.value != false -> R.color.theme_accent
+                        isDataOutOfDate.value != false -> R.color.theme_accent
                         it?.freeBikes ?: -1 <= DBHelper.getInstance().getCriticalAvailabilityMax(app) -> R.color.station_recap_red
                         it?.freeBikes ?: -1 <= DBHelper.getInstance().getBadAvailabilityMax(app) -> R.color.station_recap_yellow
                         else -> R.color.station_recap_green
@@ -417,7 +416,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         }
 
-        dataOutdated.observeForever(dataOutdatedObserver)
+        isDataOutOfDate.observeForever(dataOutdatedObserver)
 
         //TODO: observe data being out of date, if it happens, rebuild tableItemDataList and StationTableRecapData
         //TODO: observe new user location available, requiring resorting and reprocessing of sorted list
@@ -426,7 +425,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     override fun onCleared() {
 
         stationRecapDataSource.removeObserver(stationRecapDataSourceObserver)
-        dataOutdated.removeObserver(dataOutdatedObserver)
+        isDataOutOfDate.removeObserver(dataOutdatedObserver)
         bikeSystemAvailabilityDataSource.removeObserver(bikeSystemAvailabilityDataObserver)
         stationSelectionDataSource.removeObserver(stationSelectionDataSourceObserver)
 
@@ -547,7 +546,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
             }*/
 
             //TODO: emit a new list also when outdated data status changes
-            //TODO: observe constructor parameter private val dataOutdated: LiveData<Boolean>
+            //TODO: observe constructor parameter private val isDataOutOfDate: LiveData<Boolean>
             newDisplayData.add(StationTableItemData(
                     backgroundResId, //TODO: replug background color - includes item selection tracking
                     proximityText,

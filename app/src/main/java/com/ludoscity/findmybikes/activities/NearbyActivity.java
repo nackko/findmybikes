@@ -66,7 +66,6 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -1403,7 +1402,7 @@ public class NearbyActivity extends AppCompatActivity
                 }
 
                 if (null != mSavedInstanceCameraPosition){
-                    mStationMapFragment.doInitialCameraSetup(CameraUpdateFactory.newCameraPosition(mSavedInstanceCameraPosition), false);
+                    //mStationMapFragment.doInitialCameraSetup(CameraUpdateFactory.newCameraPosition(mSavedInstanceCameraPosition), false);
                     mSavedInstanceCameraPosition = null;
                 }
             }
@@ -1433,7 +1432,7 @@ public class NearbyActivity extends AppCompatActivity
             BikeStation highlighthedDockStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getDOCK_STATIONS());
 
             if (highlighthedDockStation != null) {
-                setupBTabSelection(highlighthedDockStation.getLocationHash(), isLookingForBike());
+                setupBTableSelection(highlighthedDockStation.getLocationHash(), isLookingForBike());
 
                 FavoriteEntityBase newFavForStation = new FavoriteEntityStation(highlighthedDockStation.getLocationHash(),
                         highlighthedDockStation.getName(),
@@ -1928,7 +1927,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     //B Tab, looking for dock
                     final String clickedStationId = uri.getQueryParameter(StationMapFragment.Companion.getMARKER_CLICK_TITLE_PARAM());
-                    setupBTabSelection(clickedStationId, false);
+                    setupBTableSelection(clickedStationId, false);
 
                     boolean showFavoriteAddFab = false;
 
@@ -2116,7 +2115,7 @@ public class NearbyActivity extends AppCompatActivity
                     else    //trip to a favorite station that has docks
                     {
                         mStationMapFragment.setPinForPickedFavorite(favorite.getDisplayName(), favorite.getLocation() != null ? favorite.getLocation() : getLatLngForStation(favorite.getId()), favorite.getAttributions());
-                        mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerBVisibleLatLng(), 15));
+                        //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerBVisibleLatLng(), 15));
                     }
 
                     getTablePagerAdapter().smoothScrollHighlightedInViewForTable(StationTablePagerAdapter.Companion.getDOCK_STATIONS(), isAppBarExpanded());
@@ -2145,7 +2144,7 @@ public class NearbyActivity extends AppCompatActivity
         }, 10);
     }
 
-    private void setupBTabSelection(final String _selectedStationId, final boolean _silent){
+    private void setupBTableSelection(final String _selectedStationId, final boolean _silent) {
 
         dismissOnboardingHint();
 
@@ -2179,10 +2178,12 @@ public class NearbyActivity extends AppCompatActivity
             else
                 locationToShow = mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng();
 
+            //TODO: looks like removing and readding observer on a LiveData
             if (!_silent) {
                 if (locationToShow.latitude != selectedStation.getLocation().latitude ||
                         locationToShow.longitude != selectedStation.getLocation().longitude)
                 {
+                    //TODO: Padding in mapFragmentModel
                     mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
                     animateCameraToShow((int) getResources().getDimension(R.dimen.camera_search_infowindow_padding),
                             selectedStation.getLocation(),//getLatLngForStation(_selectedStationId),
@@ -2190,7 +2191,7 @@ public class NearbyActivity extends AppCompatActivity
                             null);
                 }
                 else{
-                    mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(selectedStation.getLocation(), 15));
+                    //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(selectedStation.getLocation(), 15));
                 }
             }
 
@@ -2231,7 +2232,7 @@ public class NearbyActivity extends AppCompatActivity
 
                         getTablePagerAdapter().highlightStationForTable(_selectedStationId, StationTablePagerAdapter.Companion.getDOCK_STATIONS());
                         if (!_silent && mStationMapFragment.getMarkerBVisibleLatLng() != null)
-                            mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerBVisibleLatLng(), 15));
+                            //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerBVisibleLatLng(), 15));
 
                         getTablePagerAdapter().smoothScrollHighlightedInViewForTable(StationTablePagerAdapter.Companion.getDOCK_STATIONS(), isAppBarExpanded());
 
@@ -2483,7 +2484,7 @@ public class NearbyActivity extends AppCompatActivity
         getTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), false);
 
         if (!isLookingForBike()) {
-            mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerALatLng(), 13));
+            //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerALatLng(), 13));
             //mFavoritesSheetFab.showFab();
             mNearbyActivityViewModel.showFavoriteFab();
             //mFavoriteListViewModel.showFab();
@@ -2578,7 +2579,7 @@ public class NearbyActivity extends AppCompatActivity
                         }
                     }
 
-                    setupBTabSelection(clickedStation.getLocationHash(), false);
+                    setupBTableSelection(clickedStation.getLocationHash(), false);
 
                     FavoriteEntityStation newFavForStation = new FavoriteEntityStation(clickedStation.getLocationHash(),
                             clickedStation.getName(),
@@ -2688,6 +2689,7 @@ public class NearbyActivity extends AppCompatActivity
     private void animateCameraToShowUserAndStation(BikeStation station) {
 
         if (mCurrentUserLatLng != null) {
+            //TODO: activity model should track TripDetailFragment visibility
             if (mTripDetailsWidget.getVisibility() != View.VISIBLE) //Directions to A fab is visible
                 animateCameraToShow((int)getResources().getDimension(R.dimen.camera_fab_padding), station.getLocation(), mCurrentUserLatLng, null);
             else    //Map id padded on the left and interface is clear on the right
@@ -2695,7 +2697,7 @@ public class NearbyActivity extends AppCompatActivity
 
         }
         else{
-            mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(station.getLocation(), 15));
+            //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(station.getLocation(), 15));
         }
     }
 
@@ -2710,7 +2712,7 @@ public class NearbyActivity extends AppCompatActivity
         if (_latLng2 != null)
             boundsBuilder.include(_latLng2);
 
-        mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), _cameraPaddingPx)); //Pin icon is 36 dp
+        //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), _cameraPaddingPx)); //Pin icon is 36 dp
     }
 
     //Callback from pull-to-refresh
@@ -2800,7 +2802,7 @@ public class NearbyActivity extends AppCompatActivity
                     //if mDataOutdated is true, a Download task will be launched if auto update is also true and a connection is available
                     //That's because autoupdate max interval is SMALLER than outdating one
                     if (!(mDataOutdated && DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.isConnected(this)))
-                        mStationMapFragment.lookingForBikes(mDataOutdated, true);
+                        ;//mStationMapFragment.lookingForBikes(mDataOutdated, true);
                 }
             } else { //B TAB
 
@@ -2818,7 +2820,7 @@ public class NearbyActivity extends AppCompatActivity
                     if(!checkOnboarding(eONBOARDING_LEVEL.ONBOARDING_LEVEL_FULL, eONBOARDING_STEP.ONBOARDING_STEP_SEARCH_SHOWCASE))
                         checkOnboarding(eONBOARDING_LEVEL.ONBOARDING_LEVEL_LIGHT, eONBOARDING_STEP.ONBOARDING_STEP_MAIN_CHOICE_HINT);
 
-                    mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerALatLng(), 13.75f));
+                    //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerALatLng(), 13.75f));
 
                     if (mPlaceAutocompleteLoadingProgressBar.getVisibility() != View.GONE){
                         mSearchFAB.show();
@@ -2867,15 +2869,15 @@ public class NearbyActivity extends AppCompatActivity
                                 locationToShow,
                                 null);
                     }
-                    else
-                        mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerBVisibleLatLng(), 15));
+                    //else
+                    //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerBVisibleLatLng(), 15));
                 }
 
                 //Log.d("NearbyActivity", "onPageSelected - about to update markers with mDataOutdated : " + mDataOutdated, new Exception());
                 //if mDataOutdated is true, a Download task will be launched if auto update is also true and a connection is available
                 //That's because autoupdate max interval is SMALLER than outdating one
                 if (!(mDataOutdated && DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.isConnected(this)))
-                    mStationMapFragment.lookingForBikes(mDataOutdated, false);
+                    ;//mStationMapFragment.lookingForBikes(mDataOutdated, false);
             }
         }
     }
@@ -3025,7 +3027,7 @@ public class NearbyActivity extends AppCompatActivity
 
             mStatusTextView.setText(getString(R.string.refreshing_map));
             mSplashScreenTextBottom.setText(getString(R.string.refreshing_map));
-            mStationMapFragment.hideAllStations();
+            //mStationMapFragment.hideAllStations();
         }
 
         @Override
@@ -3041,7 +3043,7 @@ public class NearbyActivity extends AppCompatActivity
             //Log.d("NearbyActivity", "redraw markers doInBackground, outdated : " + bools[0], new Exception());
 
 
-            mStationMapFragment.clearMarkerGfxData();
+            //mStationMapFragment.clearMarkerGfxData();
             //SETUP MARKERS DATA
             List<BikeStation> networkStationList = RootApplication.Companion.getBikeNetworkStationList();
             for (BikeStation item : networkStationList){
@@ -3060,7 +3062,7 @@ public class NearbyActivity extends AppCompatActivity
             mRefreshMarkers = true;
 
             mRedrawMarkersTask = null;
-            mStationMapFragment.showAllStations();
+            //mStationMapFragment.showAllStations();
         }
 
         @Override
@@ -3077,7 +3079,7 @@ public class NearbyActivity extends AppCompatActivity
             }
 
             mRedrawMarkersTask = null;
-            mStationMapFragment.showAllStations();
+            //mStationMapFragment.showAllStations();
         }
     }
 
@@ -3297,7 +3299,7 @@ public class NearbyActivity extends AppCompatActivity
                 Message toPass = null; //To resolve ambiguous call
                 //noinspection ConstantConditions
                 alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(R.string.ok), toPass);
-                mStationMapFragment.doInitialCameraSetup(CameraUpdateFactory.newLatLngZoom(mCurrentUserLatLng, 15), true);
+                //mStationMapFragment.doInitialCameraSetup(CameraUpdateFactory.newLatLngZoom(mCurrentUserLatLng, 15), true);
             }
 
             alertDialog.show();

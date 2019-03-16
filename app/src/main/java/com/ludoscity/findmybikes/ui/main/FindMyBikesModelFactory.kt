@@ -1,15 +1,15 @@
 package com.ludoscity.findmybikes.ui.main
 
+import android.app.Application
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
-import android.content.Context
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 
 class FindMyBikesModelFactory(private val repository: FindMyBikesRepository,
-                           private val ctx: Context) : ViewModelProvider.NewInstanceFactory() {
+                              private val app: Application) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
-        return NearbyActivityViewModel(repository, ctx) as T
+        return NearbyActivityViewModel(repository, app) as T
     }
 }

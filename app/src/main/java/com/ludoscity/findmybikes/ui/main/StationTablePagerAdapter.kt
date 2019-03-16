@@ -185,8 +185,7 @@ class StationTablePagerAdapter(
             tableModel = ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
         }
 
-        //Test DEBUG
-        //tableModel.smoothScrollSelectionInView()
+        tableModel.smoothScrollSelectionInView()
 
         //retrieveListFragment(_tableId).smoothScrollSelectionInView(_appBarExpanded)
     }

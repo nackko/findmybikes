@@ -12,6 +12,7 @@ import android.os.Parcelable
 import android.support.design.widget.*
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
+import android.support.v4.view.ViewPager.SCROLL_STATE_IDLE
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
@@ -26,7 +27,6 @@ import android.widget.TextView
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.location.places.ui.PlaceAutocomplete
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -40,6 +40,7 @@ import com.ludoscity.findmybikes.activities.WebViewActivity
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment
 import com.ludoscity.findmybikes.helpers.DBHelper
+import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
@@ -51,8 +52,16 @@ class FindMyBikesActivity : AppCompatActivity(),
         FavoriteListFragment.OnFavoriteListFragmentInteractionListener,
         ViewPager.OnPageChangeListener,
         SwipeRefreshLayout.OnRefreshListener {
+    //TODO: use this to do the animated bike feature
     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+        //Log.d(TAG, "onPageScrolled : position:$position, positionOffset:$positionOffset")
+        if (positionOffset == 0.0f) {
 
+            //TODO: wire this in so that it doesn't crash on screen rotation
+            //Have smooth scroll request boolean live data in model that is set to false when no aciton is required
+            //setting it to true would provoke correpsonding fragment to scroll when ready ?
+            //getTablePagerAdapter().smoothScrollHighlightedInViewForTable(position, true)
+        }
     }
 
     override fun onPageSelected(position: Int) {
@@ -60,6 +69,13 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     override fun onPageScrollStateChanged(state: Int) {
+        if (state == SCROLL_STATE_IDLE)
+            nearbyActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
+        else {
+            //TODO: hide map items when pager is moving
+        }
+
+
 
 
 
@@ -194,7 +210,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
         setupActionBarStrings()
 
-        val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this)
+        val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
 
         nearbyActivityViewModel.stationData.observe(this, Observer {
@@ -498,8 +514,8 @@ class FindMyBikesActivity : AppCompatActivity(),
         //A TAB
         getContentTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.BIKE_STATIONS, false)
 
-        if (nearbyActivityViewModel.isLookingForBikes.value == null || nearbyActivityViewModel.isLookingForBikes.value == false) {
-            stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(stationMapFragment.markerALatLng, 13f))
+        if (nearbyActivityViewModel.isLookingForBike.value == null || nearbyActivityViewModel.isLookingForBike.value == false) {
+            //stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(stationMapFragment.markerALatLng, 13f))
             //mFavoritesSheetFab.showFab();
             nearbyActivityViewModel.showFavoriteFab()
             //mFavoriteListViewModel.showFab();
@@ -524,7 +540,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                 animateCameraToShow(resources.getDimension(R.dimen.camera_ab_pin_padding).toInt(), station!!.location, DEBUG_FAKE_USER_CUR_LOC, null)
 
         } else {
-            stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(station!!.location, 15f))
+            //stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(station!!.location, 15f))
         }
     }
 
@@ -539,7 +555,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         if (_latLng2 != null)
             boundsBuilder.include(_latLng2)
 
-        stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), _cameraPaddingPx)) //Pin icon is 36 dp
+        //stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), _cameraPaddingPx)) //Pin icon is 36 dp
     }
 
     private fun hideTripDetailsWidget() {
@@ -643,9 +659,9 @@ class FindMyBikesActivity : AppCompatActivity(),
             // Seen NullPointerException in crash report.
             if (null != curSelectedStation) {
 
-                val tripLegOrigin = if (nearbyActivityViewModel.isLookingForBikes.value == true) DEBUG_FAKE_USER_CUR_LOC else stationMapFragment.markerALatLng
+                val tripLegOrigin = if (nearbyActivityViewModel.isLookingForBike.value == true) DEBUG_FAKE_USER_CUR_LOC else stationMapFragment.markerALatLng
                 val tripLegDestination = curSelectedStation.location
-                val walkMode = nearbyActivityViewModel.isLookingForBikes.value
+                val walkMode = nearbyActivityViewModel.isLookingForBike.value
 
                 if (walkMode != null) {
                     launchGoogleMapsForDirections(tripLegOrigin!!, tripLegDestination, walkMode)
@@ -726,7 +742,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             override fun onSheetHidden() {
 
                 //if (!isLookingForBike() && stationMapFragment.markerBVisibleLatLng == null) {
-                if (nearbyActivityViewModel.isLookingForBikes.value == false &&
+                if (nearbyActivityViewModel.isLookingForBike.value == false &&
                         nearbyActivityViewModel.getStationB().value == null) {
                     //B tab with no selection
                     if (Utils.Connectivity.isConnected(this@FindMyBikesActivity))
@@ -739,7 +755,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     override fun onRefresh() {
-        val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this)
+        val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
 
         nearbyActivityViewModel.setDataOutOfDate(!(nearbyActivityViewModel.isDataOutOfDate.value

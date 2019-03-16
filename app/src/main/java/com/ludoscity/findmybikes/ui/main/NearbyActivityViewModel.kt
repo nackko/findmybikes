@@ -1,9 +1,15 @@
 package com.ludoscity.findmybikes.ui.main
 
+import android.app.Application
+import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
 import android.content.Context
+import android.util.Log
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
@@ -16,7 +22,7 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
  */
 
 //TODO: use AndroidViewModel instead of passing context
-class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewModel() {
+class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
     private val favoriteFabShown = MutableLiveData<Boolean>()
     private val favoriteSheetShown = MutableLiveData<Boolean>()
     private val favoriteItemNameEditInProgress = MutableLiveData<Boolean>()
@@ -24,7 +30,6 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
     private val favoriteSheetEditFabShown = MutableLiveData<Boolean>()
     private val currentBikeSytemId = MutableLiveData<String>()
 
-    private val lookingForBikes = MutableLiveData<Boolean>()
     private val nearestBikeAutoSelected = MutableLiveData<Boolean>()
     private val lastDataUpdateEpochTimestamp = MutableLiveData<Long>()
     private val currentUserLatLng = MutableLiveData<LatLng>()
@@ -32,14 +37,24 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
     private val stationB = MutableLiveData<BikeStation>()
     private val pickedFavorite = MutableLiveData<FavoriteEntityBase>()
 
+    private val userLoc = MutableLiveData<LatLng>()
+
     private val appBarExpanded = MutableLiveData<Boolean>()
 
     //TODO: should that be maintained in repository or should repo update activity model ?
     private val dataOutOfDate = MutableLiveData<Boolean>()
 
+    val userLocation: LiveData<LatLng>
+        get() = userLoc
 
-    //TODO: declare enum type
-    private val selectedTab = MutableLiveData<Int>()
+    private val lookingForBike = MutableLiveData<Boolean>()
+
+    val isLookingForBike: LiveData<Boolean>
+        get() = lookingForBike
+
+    fun setSelectedTable(toSet: Boolean) {
+        lookingForBike.value = toSet
+    }
 
     private val isConnectivityAvailable = MutableLiveData<Boolean>()
     private val isLocationServiceAvailable = MutableLiveData<Boolean>()
@@ -51,9 +66,6 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
 
             return favoriteSheetShown
         }
-
-    val isLookingForBikes: LiveData<Boolean>
-        get() = lookingForBikes
 
     val isFavoriteSheetEditfabShown: LiveData<Boolean>
         get() {
@@ -162,11 +174,53 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, ctx: Context) : ViewM
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     //findMyBikesActivityViewModel
+    private var locationCallback: LocationCallback
     private val repository : FindMyBikesRepository = repo
     val stationData: LiveData<List<BikeStation>>
 
     init {
-        stationData = repo.getBikeSystemStationData(ctx)
+        stationData = repo.getBikeSystemStationData(getApplication())
+
+        //userLoc.value = LatLng(45.75725, 4.84974)//Lyon
+
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication() as Context)
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+
+                var toEmit: LatLng? = null
+                val userLat = locationResult?.locations?.getOrNull(0)?.latitude
+                val userLng = locationResult?.locations?.getOrNull(0)?.longitude
+
+                if (userLat != null && userLng != null) {
+                    toEmit = LatLng(userLat, userLng)
+                }
+
+                Log.d(this::class.java.simpleName, "Emitting new Location !! : $toEmit")
+                userLoc.value = toEmit
+            }
+        }
+
+        val locationRequest = LocationRequest()
+        locationRequest.interval = 2000 //TODO: make that flexible
+        locationRequest.fastestInterval = 5000 //TODO: make that flexible
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+        try {
+            fusedLocationClient.requestLocationUpdates(locationRequest,
+                    locationCallback, null)
+        } catch (e: SecurityException) {
+            Log.e(this::class.java.simpleName, "You need location permission !!")
+        }
+
+    }
+
+    override fun onCleared() {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication() as Context)
+
+        //TODO: activity lifecycle methods should remove and re request to save battery
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        super.onCleared()
     }
 
     //TODO: added for status display. Revisit when usage is clearer (splash screen and status bar)

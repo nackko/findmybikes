@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.ui.map
 
 import android.Manifest
+import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.pm.PackageManager
@@ -14,10 +15,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.google.android.gms.maps.*
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapFragment
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.*
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
+import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
 import java.util.*
@@ -43,6 +47,8 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     //TODO: this comes from model and is observed
     private val mMapMarkersGfxData = ArrayList<StationMapGfx>()
+
+    private var gfxData: List<StationMapGfx> = emptyList()
 
     private var mListener: OnStationMapFragmentInteractionListener? = null
 
@@ -172,14 +178,14 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     //Used to buffer markers update requests (avoids glitchy anim)
     private inner class CustomCancellableCallback : GoogleMap.CancelableCallback {
 
-        internal var mLookingForBikeWhenFinished: Boolean? = null
-        internal var mOutdatedWhenFinished: Boolean? = null
         override fun onFinish() {
 
-            if (mLookingForBikeWhenFinished != null)
-                updateMarkerAll(mOutdatedWhenFinished!!, mLookingForBikeWhenFinished!!)
+            gfxData.forEach {
+                it.updateMarker(mapFragmentModel.isDataOutOfDate.value == true,
+                        mapFragmentModel.isLookingForBike.value == true, context!!)
+            }
 
-            showAllStations()
+            mapFragmentModel.showMapItems()
 
             mAnimCallback = null
 
@@ -187,11 +193,12 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         override fun onCancel() {
 
-            if (mLookingForBikeWhenFinished != null)
-                updateMarkerAll(mOutdatedWhenFinished!!, mLookingForBikeWhenFinished!!)
+            gfxData.forEach {
+                it.updateMarker(mapFragmentModel.isDataOutOfDate.value == true,
+                        mapFragmentModel.isLookingForBike.value == true, context!!)
+            }
 
-
-            showAllStations()
+            mapFragmentModel.showMapItems()
 
             mAnimCallback = null
 
@@ -286,7 +293,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         mInitialCameraSetupDone = false
         mGoogleMap = googleMap
         enableMyLocationCheckingPermission()
-        mGoogleMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(45.5086699, -73.5539925), 13f))
         mGoogleMap!!.setOnMarkerClickListener(this)
         mGoogleMap!!.setOnInfoWindowClickListener(this)
         //mGoogleMap.setOnCameraChangeListener(this);
@@ -297,28 +303,72 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         mGoogleMap!!.uiSettings.isIndoorLevelPickerEnabled = false
         mGoogleMap!!.uiSettings.isTiltGesturesEnabled = false
 
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-        val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application)
+        val activityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+
+
+        val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                activityModel.isLookingForBike,
+                activityModel.isDataOutOfDate,
+                activityModel.userLocation,
+                activityModel.getStationA(),
+                activityModel.getStationB(),
+                MutableLiveData<LatLng>(),
+                MutableLiveData<Boolean>())
 
         mapFragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
 
 
+        mapFragmentModel.showMapItems.observe(this, Observer {
+            Log.d(TAG, "map item new visibility : $it")
+            if (it == true) {
+                gfxData.forEach { mapGfx ->
+                    mapGfx.show(mGoogleMap!!.cameraPosition.zoom)
+                }
+            } else {
+                gfxData.forEach { mapGfx ->
+                    mapGfx.hide()
+                }
+            }
+        })
         mapFragmentModel.mapGfxLiveData.observe(this, Observer { newGfxData ->
 
-            redrawMarkers(newGfxData)
 
-            Log.d(TAG, "Markers redrawned, size :" + newGfxData?.size)
+            //TODO: should local gfxData list be cleared ?
+            gfxData = newGfxData ?: emptyList()
 
-            showAllStations(newGfxData)
+            redrawMarkers(gfxData)
 
+            Log.d(TAG, "Markers redrawned, size :" + gfxData.size)
+
+            if (mAnimCallback == null) {
+                mapFragmentModel.showMapItems()
+            }
+        })
+
+        mapFragmentModel.cameraAnimationTarget.observe(this, Observer {
+            if (it != null) {
+                mAnimCallback = CustomCancellableCallback()
+                mGoogleMap!!.animateCamera(it, resources.getInteger(R.integer.camera_animation_duration), mAnimCallback)
+            }
+        })
+
+        mapFragmentModel.lastClickedWhileLookingForBike.observe(this, Observer {
+            activityModel.setStationA(it)
+        })
+        mapFragmentModel.lastClickedWhileLookingForDock.observe(this, Observer {
+            activityModel.setStationB(it)
         })
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
+        //TODO: in model
         if (isPickedFavoriteMarkerVisible)
             mMarkerPickedFavorite!!.showInfoWindow()
 
+        //TODO: in model
         if (isPickedPlaceMarkerVisible)
             mMarkerPickedPlace!!.showInfoWindow()
 
@@ -348,21 +398,23 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         builder.appendQueryParameter(MARKER_CLICK_TITLE_PARAM, marker.title)
 
-        if (mListener != null) {
-            mListener!!.onStationMapFragmentInteraction(builder.build())
-        }
+        //TODO: this is the beginning of going full model
+        mapFragmentModel.setLastClickedStationById(marker.title)
+        //if (mListener != null) {
+        //    mListener!!.onStationMapFragmentInteraction(builder.build())
+        //}
 
         //So that info window will not be showed
         return true
     }
 
     fun onUserLocationChange(location: Location?) {
-        if (location != null) {
+        /*if (location != null) {
             //Log.d("onMyLocationChange", "new location " + location.toString());
             if (!mInitialCameraSetupDone && mGoogleMap != null) {
                 doInitialCameraSetup(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 15f), false)
             }
-        }
+        }*/
     }
 
     fun enableMyLocationCheckingPermission() {
@@ -373,14 +425,14 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         }
     }
 
-    fun doInitialCameraSetup(cameraUpdate: CameraUpdate, animate: Boolean) {
+    /*fun doInitialCameraSetup(cameraUpdate: CameraUpdate, animate: Boolean) {
         if (animate)
-            animateCamera(cameraUpdate)
+            //animateCamera(cameraUpdate)
         else
             mGoogleMap!!.moveCamera(cameraUpdate)
 
         mInitialCameraSetupDone = true
-    }
+    }*/
 
     fun setMapPaddingLeft(_paddingPx: Int) {
         CURRENT_MAP_PADDING_LEFT = _paddingPx
@@ -416,10 +468,10 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         if (context == null)
             return
 
-        mMapMarkersGfxData.add(StationMapGfx(_outdated, item, lookingForBike, context))
+        mMapMarkersGfxData.add(StationMapGfx(_outdated, item, lookingForBike, context!!))
     }
 
-    fun redrawMarkers(gfxData: List<StationMapGfx>?) {
+    private fun redrawMarkers(gfxData: List<StationMapGfx>?) {
 
         val pinAVisible: Boolean
         val pinAStationId: String?
@@ -496,7 +548,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mMarkerPickedFavorite!!.showInfoWindow()
 
         gfxData?.forEach {
-            it.addMarkerToMap(mGoogleMap)
+            it.addMarkerToMap(mGoogleMap!!)
         }
     }
 
@@ -577,94 +629,8 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mMarkerPickedFavorite!!.showInfoWindow()
 
         for (markerData in mMapMarkersGfxData) {
-            markerData.addMarkerToMap(mGoogleMap)
+            markerData.addMarkerToMap(mGoogleMap!!)
         }
-    }
-
-    fun clearMarkerGfxData() {
-        mMapMarkersGfxData.clear()
-    }
-
-    fun animateCamera(cameraUpdate: CameraUpdate) {
-
-        if (context != null) {
-
-            mAnimCallback = CustomCancellableCallback()
-
-            hideAllStations()
-
-            mGoogleMap!!.animateCamera(cameraUpdate, resources.getInteger(R.integer.camera_animation_duration), mAnimCallback)
-        } else {
-            mGoogleMap!!.animateCamera(cameraUpdate)
-        }
-    }
-
-    fun hideAllStations() {
-
-        try {
-            for (markerData in mMapMarkersGfxData) {
-                markerData.hide()
-            }
-        } catch (e: ConcurrentModificationException) {
-            //Can happen on screen orientation change. Simply retry
-            hideAllStations()
-        }
-
-    }
-
-    fun showAllStations(gfxData: List<StationMapGfx>?) {
-
-        try {
-
-            gfxData?.forEach {
-                it.show(mGoogleMap!!.cameraPosition.zoom)
-            }
-
-
-        } catch (e: ConcurrentModificationException) {
-            //Can happen on screen orientation change. Simply retry
-            showAllStations()
-        }
-
-    }
-
-    fun showAllStations() {
-
-        try {
-            for (markerData in mMapMarkersGfxData) {
-                markerData.show(mGoogleMap!!.cameraPosition.zoom)
-            }
-        } catch (e: ConcurrentModificationException) {
-            //Can happen on screen orientation change. Simply retry
-            showAllStations()
-        }
-
-    }
-
-    fun lookingForBikes(_outdated: Boolean, _lookingForBike: Boolean) {
-
-        if (mAnimCallback != null) {
-            mAnimCallback!!.mLookingForBikeWhenFinished = _lookingForBike
-            mAnimCallback!!.mOutdatedWhenFinished = _outdated
-        } else
-            updateMarkerAll(_outdated, _lookingForBike)
-    }
-
-    private fun updateMarkerAll(_outdated: Boolean, _lookingForBike: Boolean) {
-
-        if (context == null)
-            return
-
-        //Log.d("StaitonMapFragment", "updateMarkerAll - about to update markers with _outdated : " + _outdated, new Exception());
-
-        try {
-            for (markerData in mMapMarkersGfxData) {
-                markerData.updateMarker(_outdated, _lookingForBike, context)
-            }
-        } catch (e: ConcurrentModificationException) {
-            updateMarkerAll(_outdated, _lookingForBike)
-        }
-
     }
 
     //TODO: if clients have a stationname, maybe they have the station LatLng on hand

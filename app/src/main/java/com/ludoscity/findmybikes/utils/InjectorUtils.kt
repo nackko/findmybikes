@@ -2,7 +2,7 @@ package com.ludoscity.findmybikes.utils
 
 import android.app.Application
 import android.arch.lifecycle.LiveData
-import android.content.Context
+import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.network.BikeSystemNetworkDataSource
@@ -33,14 +33,32 @@ class InjectorUtils {
             return FindMyBikesRepository.getInstance(DBHelper.getInstance().database.bikeStationDao(), networkDataSource)
         }
 
-        fun provideMainActivityViewModelFactory(context: Context): FindMyBikesModelFactory {
+        fun provideMainActivityViewModelFactory(app: Application): FindMyBikesModelFactory {
             val repository = provideRepository()
-            return FindMyBikesModelFactory(repository, context.applicationContext)
+            return FindMyBikesModelFactory(repository, app)
         }
 
-        fun provideMapFragmentViewModelFactory(app: Application): MapFragmentModelFactory {
+        fun provideMapFragmentViewModelFactory(app: Application,
+                                               isLookingForBike: LiveData<Boolean>,
+                                               isdataOutOfDate: LiveData<Boolean>,
+                                               userLoc: LiveData<LatLng>,
+                                               stationA: LiveData<BikeStation>,
+                                               stationB: LiveData<BikeStation>,
+                                               destinationLoc: LiveData<LatLng>,
+                                               tripDetailFragmentVisibility: LiveData<Boolean>
+        ): MapFragmentModelFactory {
             val repository = provideRepository()
-            return MapFragmentModelFactory(repository, app)
+            return MapFragmentModelFactory(
+                    repository,
+                    app,
+                    isLookingForBike,
+                    isdataOutOfDate,
+                    userLoc,
+                    stationA,
+                    stationB,
+                    destinationLoc,
+                    tripDetailFragmentVisibility
+            )
         }
 
         fun provideTableFragmentViewModelFactory(app: Application,

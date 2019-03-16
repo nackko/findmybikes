@@ -61,7 +61,7 @@ class StationTableFragment : Fragment() {
         mStationRecap = inflatedView.findViewById(R.id.station_recap)
         mStationRecapName = inflatedView.findViewById(R.id.station_recap_name)
         mStationRecapAvailability = inflatedView.findViewById(R.id.station_recap_availability)
-        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!)
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
         val nearbyActivityViewModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
 
         val isDockTable = arguments?.getBoolean("isDockTable") ?: true
@@ -123,7 +123,7 @@ class StationTableFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!)
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
         val nearbyActivityViewModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
 
         val isDockTable = arguments?.getBoolean("isDockTable") ?: true
