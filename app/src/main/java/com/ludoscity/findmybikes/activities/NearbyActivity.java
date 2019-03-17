@@ -1208,8 +1208,8 @@ public class NearbyActivity extends AppCompatActivity
 
     private void clearBSelection() {
         mFavoritePicked = false;
-        mStationMapFragment.setMapPaddingLeft(0);
-        mStationMapFragment.setMapPaddingRight(0);
+        //mStationMapFragment.setMapPaddingLeft(0);
+        //mStationMapFragment.setMapPaddingRight(0);
         hideTripDetailsWidget();
         clearBTab();
 
@@ -1970,7 +1970,7 @@ public class NearbyActivity extends AppCompatActivity
         getTablePagerAdapter().removeStationHighlightForTable(StationTablePagerAdapter.Companion.getDOCK_STATIONS());
 
         if (mTripDetailsWidget.getVisibility() == View.INVISIBLE){
-            mStationMapFragment.setMapPaddingLeft((int) getResources().getDimension(R.dimen.trip_details_widget_width));
+            //mStationMapFragment.setMapPaddingLeft((int) getResources().getDimension(R.dimen.trip_details_widget_width));
             setupTripDetailsWidget();
             showTripDetailsWidget();
         }

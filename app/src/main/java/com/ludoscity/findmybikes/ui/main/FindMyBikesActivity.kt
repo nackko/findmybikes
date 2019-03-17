@@ -494,8 +494,6 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     private fun clearBSelection() {
         nearbyActivityViewModel.clearPickedFavorite()
-        stationMapFragment.setMapPaddingLeft(0)
-        stationMapFragment.setMapPaddingRight(0)
         hideTripDetailsWidget()
         clearBTab()
     }

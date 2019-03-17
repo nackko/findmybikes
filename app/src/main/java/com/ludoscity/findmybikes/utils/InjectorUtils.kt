@@ -44,8 +44,7 @@ class InjectorUtils {
                                                userLoc: LiveData<LatLng>,
                                                stationA: LiveData<BikeStation>,
                                                stationB: LiveData<BikeStation>,
-                                               destinationLoc: LiveData<LatLng>,
-                                               tripDetailFragmentVisibility: LiveData<Boolean>
+                                               destinationLoc: LiveData<LatLng>
         ): MapFragmentModelFactory {
             val repository = provideRepository()
             return MapFragmentModelFactory(
@@ -56,8 +55,7 @@ class InjectorUtils {
                     userLoc,
                     stationA,
                     stationB,
-                    destinationLoc,
-                    tripDetailFragmentVisibility
+                    destinationLoc
             )
         }
 

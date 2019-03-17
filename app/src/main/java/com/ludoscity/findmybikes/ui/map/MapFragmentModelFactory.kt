@@ -19,8 +19,7 @@ class MapFragmentModelFactory(private val repository: FindMyBikesRepository,
                               private val userLoc: LiveData<LatLng>,
                               private val stationA: LiveData<BikeStation>,
                               private val stationB: LiveData<BikeStation>,
-                              private val destinationLoc: LiveData<LatLng>,
-                              private val tripDetailFragmentVisibility: LiveData<Boolean>
+                              private val destinationLoc: LiveData<LatLng>
 ) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -33,8 +32,7 @@ class MapFragmentModelFactory(private val repository: FindMyBikesRepository,
                 userLoc,
                 stationA,
                 stationB,
-                destinationLoc,
-                tripDetailFragmentVisibility
+                destinationLoc
         ) as T
     }
 }

@@ -298,11 +298,17 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 activityModel.userLocation,
                 activityModel.getStationA(),
                 activityModel.getStationB(),
-                MutableLiveData<LatLng>(),
-                MutableLiveData<Boolean>())
+                MutableLiveData<LatLng>())
 
         mapFragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
 
+        mapFragmentModel.mapPaddingLeftPx.observe(this, Observer {
+            mGoogleMap!!.setPadding(it ?: 0, 0, mapFragmentModel.mapPaddingRightPx.value ?: 0, 0)
+        })
+
+        mapFragmentModel.mapPaddingRightPx.observe(this, Observer {
+            mGoogleMap!!.setPadding(mapFragmentModel.mapPaddingLeftPx.value ?: 0, 0, it ?: 0, 0)
+        })
 
         mapFragmentModel.showMapItems.observe(this, Observer {
             Log.d(TAG, "map item new visibility : $it")
@@ -311,6 +317,14 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                     mapGfx.show(mGoogleMap!!.cameraPosition.zoom)
                 }
             } else {
+                //TODO: tab switching performance
+                //Commenting this, map marker overlyas still disappear, because the
+                //mGoogleMapp!!.clear() call and then re-adding all markers happens during the
+                //camera animation, leading to jerky behavior.
+                //See how to make these events happen in the right timing
+                //-map clear (can it happen in the background ?)
+                //-overlays visibility switch (very fast, that is what this hide call does)
+                //-map markers and their overlays re-adding (addMarker calss)
                 gfxData.forEach { mapGfx ->
                     mapGfx.hide()
                 }

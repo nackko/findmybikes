@@ -28,10 +28,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                            private val userLoc: LiveData<LatLng>,
                            private val stationA: LiveData<BikeStation>,
                            private val stationB: LiveData<BikeStation>,
-                           private val destinationLoc: LiveData<LatLng>,
-
-        //TODO: the following to prep padding for map fragment
-                           private val tripDetailFragmentVisibility: LiveData<Boolean>
+                           private val destinationLoc: LiveData<LatLng>
 ) : AndroidViewModel(application) {
 
     val cameraAnimationTarget: LiveData<CameraUpdate>
@@ -48,11 +45,20 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
         mapItemsVisible.value = false
     }
 
+    val mapPaddingLeftPx: LiveData<Int>
+        get() = mapPaddingLeft
+
+    val mapPaddingRightPx: LiveData<Int>
+        get() = mapPaddingRight
+
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     private val camAnimTarget: MutableLiveData<CameraUpdate> = MutableLiveData()
 
     private val mapItemsVisible: MutableLiveData<Boolean> = MutableLiveData()
+
+    private val mapPaddingLeft: MutableLiveData<Int> = MutableLiveData()
+    private val mapPaddingRight: MutableLiveData<Int> = MutableLiveData()
 
     private val repository: FindMyBikesRepository = repo
     private val mapGfxData: MutableLiveData<List<StationMapGfx>>
@@ -160,6 +166,12 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                 if (stationB != null)
                     camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(
                             LatLng(stationB.latitude, stationB.longitude), 15.0f)
+                else {
+                    val stationA = stationA.value
+                    if (stationA != null)
+                        camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(
+                                LatLng(stationA.latitude, stationA.longitude), 13.75f)
+                }
 
             }
 
@@ -207,6 +219,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
         stationAObserver = android.arch.lifecycle.Observer {
 
+            //looking for bike
             if (isLookingForBike.value != false) {
                 val userLocation = userLoc.value
 
@@ -239,13 +252,37 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
         stationBObserver = android.arch.lifecycle.Observer {
 
-            if (it != null)
+            if (it != null) {
+
                 if (isLookingForBike.value == false) {
+                    //looking for a dock, center zoom on B station
                     hideMapItems()
 
                     camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(
                             LatLng(it.latitude, it.longitude), 15.0f)
+
+                    mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
+                            R.dimen.trip_details_widget_width).toInt()
+                    mapPaddingRight.value = getApplication<Application>().resources.getDimension(
+                            R.dimen.camera_fab_padding).toInt()
+                } else {
+                    mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
+                            R.dimen.trip_details_widget_width).toInt()
+                    mapPaddingRight.value = 0
+
                 }
+            } else {
+                if (isLookingForBike.value == false) {
+                    mapPaddingLeft.value = 0
+                    mapPaddingRight.value = getApplication<Application>().resources.getDimension(
+                            R.dimen.camera_fab_padding).toInt()
+
+                } else {
+                    mapPaddingLeft.value = 0
+                    mapPaddingRight.value = 0
+
+                }
+            }
 
         }
 
