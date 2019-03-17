@@ -5,7 +5,6 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.pm.PackageManager
-import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -18,13 +17,14 @@ import android.widget.TextView
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapFragment
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
-import java.util.*
 
 /**
  * Created by F8Full on 2019-03-09. This file is part of #findmybikes
@@ -163,15 +163,9 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             return toReturn
         }
 
-    //Used to buffer markers update requests (avoids glitchy anim)
     private inner class CustomCancellableCallback : GoogleMap.CancelableCallback {
 
         override fun onFinish() {
-
-            gfxData.forEach {
-                it.updateMarker(mapFragmentModel.isDataOutOfDate.value == true,
-                        mapFragmentModel.isLookingForBike.value == true, context!!)
-            }
 
             mapFragmentModel.showMapItems()
 
@@ -180,11 +174,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         }
 
         override fun onCancel() {
-
-            gfxData.forEach {
-                it.updateMarker(mapFragmentModel.isDataOutOfDate.value == true,
-                        mapFragmentModel.isLookingForBike.value == true, context!!)
-            }
 
             mapFragmentModel.showMapItems()
 
