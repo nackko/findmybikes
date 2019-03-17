@@ -317,19 +317,26 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                     mapGfx.show(mGoogleMap!!.cameraPosition.zoom)
                 }
             } else {
-                //TODO: tab switching performance
-                //Commenting this, map marker overlyas still disappear, because the
-                //mGoogleMapp!!.clear() call and then re-adding all markers happens during the
-                //camera animation, leading to jerky behavior.
-                //See how to make these events happen in the right timing
-                //-map clear (can it happen in the background ?)
-                //-overlays visibility switch (very fast, that is what this hide call does)
-                //-map markers and their overlays re-adding (addMarker calss)
                 gfxData.forEach { mapGfx ->
                     mapGfx.hide()
                 }
             }
         })
+
+        mapFragmentModel.isDataOutOfDate.observe(this, Observer { dataIsOutOfDate ->
+            gfxData.forEach {
+                it.updateMarker(dataIsOutOfDate != false, mapFragmentModel.isLookingForBike.value == true,
+                        context!!)
+            }
+        })
+
+        mapFragmentModel.isLookingForBike.observe(this, Observer { isLookingForBike ->
+            gfxData.forEach {
+                it.updateMarker(mapFragmentModel.isDataOutOfDate.value == true,
+                        isLookingForBike == true, context!!)
+            }
+        })
+
         mapFragmentModel.mapGfxLiveData.observe(this, Observer { newGfxData ->
 
 
@@ -373,7 +380,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 mMarkerPickedFavorite!!.showInfoWindow()*/
 
             gfxData.forEach {
-                it.addMarkerToMap(mGoogleMap!!)
+                it.addToMap(mGoogleMap!!)
             }
 
             Log.d(TAG, "Markers redrawned, size :" + gfxData.size)
@@ -598,7 +605,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mMarkerPickedFavorite!!.showInfoWindow()
 
         gfxData?.forEach {
-            it.addMarkerToMap(mGoogleMap!!)
+            it.addToMap(mGoogleMap!!)
         }*/
     }
 
@@ -663,7 +670,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mMarkerPickedFavorite!!.showInfoWindow()*/
 
         for (markerData in mMapMarkersGfxData) {
-            markerData.addMarkerToMap(mGoogleMap!!)
+            markerData.addToMap(mGoogleMap!!)
         }
     }
 

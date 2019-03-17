@@ -69,7 +69,7 @@ class StationMapGfx(_outdated: Boolean, private val mItem: BikeStation //corresp
         }
     }
 
-    fun addMarkerToMap(map: GoogleMap) {
+    fun addToMap(map: GoogleMap) {
         marker = map.addMarker(markerOptions)
         groundOverlay = map.addGroundOverlay(groundOverlayOptions)
     }

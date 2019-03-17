@@ -100,7 +100,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
     init {
 
-        mapGfxData = MutableLiveData<List<StationMapGfx>>()
+        mapGfxData = MutableLiveData()
 
 
         bikeSystemAvailabilityDataSource = repo.getBikeSystemStationData(getApplication())
@@ -108,24 +108,20 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
         bikeSystemAvailabilityDataObserver = android.arch.lifecycle.Observer { newData ->
 
             //TODO: set background state as map refresh for UI display. Shall we have a common service for all background processing ?
-            computeAndEmitMarkerData(newData, isDataOutOfDate.value == true, isLookingForBike.value == true)
+            coroutineScopeIO.launch {
+                val mapMarkersGfxData = ArrayList<StationMapGfx>()
 
+                //Do this in background, then post result to LiveData so map fragment can refresh itself
+                newData?.forEach { item ->
+                    mapMarkersGfxData.add(StationMapGfx(isDataOutOfDate.value == true, item, isLookingForBike.value == true, getApplication()))
+                }
+
+                mapGfxData.postValue(mapMarkersGfxData)
+            }
         }
         bikeSystemAvailabilityDataSource.observeForever(bikeSystemAvailabilityDataObserver)
 
         isDataOutOfDateObserver = android.arch.lifecycle.Observer {
-
-            coroutineScopeIO.launch {
-                val mapMarkersGfxData = ArrayList<StationMapGfx>()
-
-                //Do this in backgournd, then post result to LiveData so map fragment can refresh itself
-                bikeSystemAvailabilityDataSource.value?.forEach { item ->
-                    mapMarkersGfxData.add(StationMapGfx(it == true, item, isLookingForBike.value == true, getApplication()))
-                }
-
-                mapGfxData.postValue(mapMarkersGfxData)
-
-            }
         }
 
         isDataOutOfDate.observeForever(isDataOutOfDateObserver)
@@ -163,30 +159,21 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
             } else {
                 //B table selected
                 val stationB = stationB.value
-                if (stationB != null)
+                if (stationB != null) {
+                    hideMapItems()
+
                     camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(
                             LatLng(stationB.latitude, stationB.longitude), 15.0f)
+                }
                 else {
                     val stationA = stationA.value
                     if (stationA != null)
+
+                        hideMapItems()
+
                         camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(
-                                LatLng(stationA.latitude, stationA.longitude), 13.75f)
+                                LatLng(stationA!!.latitude, stationA.longitude), 13.75f)
                 }
-
-            }
-
-
-
-            coroutineScopeIO.launch {
-                val mapMarkersGfxData = ArrayList<StationMapGfx>()
-
-                //Do this in backgournd, then post result to LiveData so map fragment can refresh itself
-                bikeSystemAvailabilityDataSource.value?.forEach { item ->
-                    mapMarkersGfxData.add(StationMapGfx(isDataOutOfDate.value == true, item, it == true, getApplication()))
-                }
-
-                mapGfxData.postValue(mapMarkersGfxData)
-
             }
         }
 
@@ -287,21 +274,6 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
         }
 
         stationB.observeForever(stationBObserver)
-    }
-
-    private fun computeAndEmitMarkerData(toCompute: List<BikeStation>?,
-                                         isDataOutOfDate: Boolean,
-                                         isLookingForBike: Boolean) {
-        coroutineScopeIO.launch {
-            val mapMarkersGfxData = ArrayList<StationMapGfx>()
-
-            //Do this in backgournd, then post result to LiveData so map fragment can refresh itself
-            toCompute?.forEach { item ->
-                mapMarkersGfxData.add(StationMapGfx(isDataOutOfDate, item, isLookingForBike, getApplication()))
-            }
-
-            mapGfxData.postValue(mapMarkersGfxData)
-        }
     }
 
     override fun onCleared() {
