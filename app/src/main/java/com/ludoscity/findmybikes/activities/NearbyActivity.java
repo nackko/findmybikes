@@ -117,8 +117,7 @@ import twitter4j.TwitterException;
  * Activity used to display the nearby section
  */
 public class NearbyActivity extends AppCompatActivity
-        implements StationMapFragment.OnStationMapFragmentInteractionListener,
-        FavoriteListFragment.OnFavoriteListFragmentInteractionListener,
+        implements FavoriteListFragment.OnFavoriteListFragmentInteractionListener,
         SwipeRefreshLayout.OnRefreshListener,
         ViewPager.OnPageChangeListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -916,7 +915,7 @@ public class NearbyActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelable("saved_camera_pos", mStationMapFragment.getCameraPosition());
+        //outState.putParcelable("saved_camera_pos", mStationMapFragment.getCameraPosition());
         outState.putBoolean("requesting_location_updates", mRequestingLocationUpdates);
         outState.putParcelable("user_location_latlng", mCurrentUserLatLng);
         outState.putBoolean("closest_bike_auto_selected", mClosestBikeAutoSelected);
@@ -1394,20 +1393,6 @@ public class NearbyActivity extends AppCompatActivity
 
         if (DBHelper.getInstance().isBikeNetworkIdAvailable(this)){
 
-            if(mStationMapFragment.isMapReady()) {
-                if (mRefreshMarkers && mRedrawMarkersTask == null) {
-
-                    mRedrawMarkersTask = new RedrawMarkersTask();
-                    mRedrawMarkersTask.execute(mDataOutdated, isLookingForBike());
-
-                    mRefreshMarkers = false;
-                }
-
-                if (null != mSavedInstanceCameraPosition){
-                    //mStationMapFragment.doInitialCameraSetup(CameraUpdateFactory.newCameraPosition(mSavedInstanceCameraPosition), false);
-                    mSavedInstanceCameraPosition = null;
-                }
-            }
         }
     }
 
@@ -1479,13 +1464,6 @@ public class NearbyActivity extends AppCompatActivity
 
                 if (mRedrawMarkersTask == null && getTablePagerAdapter().isViewPagerReady() &&
                         (!mPagerReady || mRefreshTabs ) ){
-                    //When restoring, we don't need to setup everything from here
-                    if (!mStationMapFragment.isRestoring()) { //TODO figure out how to properly determine restoration
-                        setupTabPages();
-                        if(isLookingForBike())  //onPageSelected is called by framework on B tab restoration
-                            onPageSelected(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
-                    }
-
                     mPagerReady = true;
                 }
 
@@ -1593,8 +1571,7 @@ public class NearbyActivity extends AppCompatActivity
                     //pulling the trigger on auto select
                     if (mDownloadWebTask == null && mRedrawMarkersTask == null && mFindNetworkTask == null &&
                             !mClosestBikeAutoSelected &&
-                            getTablePagerAdapter().isRecyclerViewReadyForItemSelection(StationTablePagerAdapter.Companion.getBIKE_STATIONS()) &&
-                            mStationMapFragment.isMapReady()){
+                            getTablePagerAdapter().isRecyclerViewReadyForItemSelection(StationTablePagerAdapter.Companion.getBIKE_STATIONS())) {
 
                         //Requesting raw string with availability
                         String rawClosest = getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
@@ -1602,7 +1579,8 @@ public class NearbyActivity extends AppCompatActivity
 
                         getTablePagerAdapter().smoothScrollHighlightedInViewForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), isAppBarExpanded());
                         final BikeStation closestBikeStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
-                        mStationMapFragment.setPinOnStation(true, closestBikeStation.getLocationHash());
+                        //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
+                        //mStationMapFragment.setPinOnStation(true, closestBikeStation.getLocationHash());
                         getTablePagerAdapter().notifyStationAUpdate(closestBikeStation.getLocation(), mCurrentUserLatLng);
                         hideSetupShowTripDetailsWidget();
                         mNearbyActivityViewModel.setStationA(closestBikeStation);
@@ -1613,7 +1591,7 @@ public class NearbyActivity extends AppCompatActivity
                             }
 
                             mAutoSelectBikeFab.hide();
-                            mStationMapFragment.setMapPaddingRight(0);
+                            //mStationMapFragment.setMapPaddingRight(0);
 
                             if (mStationMapFragment.getMarkerBVisibleLatLng() == null) {
                                 mStationTableViewPager.setCurrentItem(StationTablePagerAdapter.Companion.getDOCK_STATIONS(), true);
@@ -1702,14 +1680,14 @@ public class NearbyActivity extends AppCompatActivity
                     }
 
                     //Checking if station is closest bike
-                    if (mDownloadWebTask == null && mRedrawMarkersTask == null && mFindNetworkTask == null && mStationMapFragment.isMapReady()){
+                    if (mDownloadWebTask == null && mRedrawMarkersTask == null && mFindNetworkTask == null) {
 
                         if (!isStationAClosestBike()){
                             if (mStationMapFragment.getMarkerBVisibleLatLng() == null){
                                 mClosestBikeAutoSelected = false;
                             }
                             else if (isLookingForBike() && !mClosestBikeAutoSelected) {
-                                mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
+                                //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
                                 mAutoSelectBikeFab.show();
                                 animateCameraToShowUserAndStation(getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS()));
                             }
@@ -1876,7 +1854,7 @@ public class NearbyActivity extends AppCompatActivity
         }
     }
 
-    @Override
+    /*@Override
     public void onStationMapFragmentInteraction(final Uri uri) {
         //Will be warned of station details click, will make info fragment to replace list fragment
 
@@ -1903,8 +1881,9 @@ public class NearbyActivity extends AppCompatActivity
 
                         getTablePagerAdapter().smoothScrollHighlightedInViewForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), isAppBarExpanded());
 
-                        mStationMapFragment.setPinOnStation(true,
-                                uri.getQueryParameter(StationMapFragment.Companion.getMARKER_CLICK_TITLE_PARAM()));
+                        //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
+                        //mStationMapFragment.setPinOnStation(true,
+                        //        uri.getQueryParameter(StationMapFragment.Companion.getMARKER_CLICK_TITLE_PARAM()));
                         mNearbyActivityViewModel.setStationA(getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS()));
 
                         if (mStationMapFragment.getMarkerBVisibleLatLng() != null) {
@@ -1915,7 +1894,7 @@ public class NearbyActivity extends AppCompatActivity
                             if ((getTablePagerAdapter().getClosestBikeLatLng().latitude != newALatLng.latitude) &&
                                     (getTablePagerAdapter().getClosestBikeLatLng().longitude != newALatLng.longitude)) {
 
-                                mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
+                                //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
                                 mAutoSelectBikeFab.show();
                                 animateCameraToShowUserAndStation(getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS()));
 
@@ -1955,7 +1934,7 @@ public class NearbyActivity extends AppCompatActivity
                 mStationTableViewPager.setCurrentItem(StationTablePagerAdapter.Companion.getDOCK_STATIONS(), true);
             }
         }
-    }
+    }*/
 
     //TODO: explore refactoring with the following considerations
     //-stop relying on mapfragment markers visibility to branch code
@@ -1989,7 +1968,7 @@ public class NearbyActivity extends AppCompatActivity
                         mCurrentUserLatLng, mStationMapFragment.getMarkerALatLng(), _from.getLatLng()));*/
 
 
-        mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
+        //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
         mClearFAB.show();
         mNearbyActivityViewModel.hideFavoriteFab();
         mSearchFAB.hide();
@@ -2007,7 +1986,8 @@ public class NearbyActivity extends AppCompatActivity
                     String stationId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getDOCK_STATIONS()));
 
                     getTablePagerAdapter().hideStationRecap();
-                    mStationMapFragment.setPinOnStation(false, stationId);//set B pin on closest station with available dock
+                    //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
+                    //mStationMapFragment.setPinOnStation(false, stationId);//set B pin on closest station with available dock
                     getTablePagerAdapter().highlightStationForTable(stationId, StationTablePagerAdapter.Companion.getDOCK_STATIONS());
                     getTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), true);
 
@@ -2057,7 +2037,7 @@ public class NearbyActivity extends AppCompatActivity
         //TODO: find a more elegant solution than this damn _silent boolean, which is a hackfix - probably a refactor by splitting method in pieces
         //and call them independently as required from client
         if (mTripDetailsWidget.getVisibility() == View.INVISIBLE){
-            mStationMapFragment.setMapPaddingLeft((int) getResources().getDimension(R.dimen.trip_details_widget_width));
+            //mStationMapFragment.setMapPaddingLeft((int) getResources().getDimension(R.dimen.trip_details_widget_width));
             setupTripDetailsWidget();
             showTripDetailsWidget();
         }
@@ -2078,7 +2058,7 @@ public class NearbyActivity extends AppCompatActivity
                         mCurrentUserLatLng, mStationMapFragment.getMarkerALatLng(), favorite.getLocation() != null ? favorite.getLocation() : getLatLngForStation(favorite.getId())));*/
 
 
-        mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
+        //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
         mClearFAB.show();
         mNearbyActivityViewModel.hideFavoriteFab();
         mSearchFAB.hide();
@@ -2095,7 +2075,8 @@ public class NearbyActivity extends AppCompatActivity
                     String stationId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getDOCK_STATIONS()));
 
                     getTablePagerAdapter().hideStationRecap();
-                    mStationMapFragment.setPinOnStation(false, stationId);//set B pin on closest station with available dock
+                    //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
+                    //mStationMapFragment.setPinOnStation(false, stationId);//set B pin on closest station with available dock
                     getTablePagerAdapter().highlightStationForTable(stationId, StationTablePagerAdapter.Companion.getDOCK_STATIONS());
                     getTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), true);
 
@@ -2154,7 +2135,7 @@ public class NearbyActivity extends AppCompatActivity
         getTablePagerAdapter().removeStationHighlightForTable(StationTablePagerAdapter.Companion.getDOCK_STATIONS());
 
         if (mTripDetailsWidget.getVisibility() == View.INVISIBLE){
-            mStationMapFragment.setMapPaddingLeft((int) getResources().getDimension(R.dimen.trip_details_widget_width));
+            //mStationMapFragment.setMapPaddingLeft((int) getResources().getDimension(R.dimen.trip_details_widget_width));
             setupTripDetailsWidget();
             showTripDetailsWidget();
         }
@@ -2165,7 +2146,8 @@ public class NearbyActivity extends AppCompatActivity
         final BikeStation selectedStation = getStation(_selectedStationId);
 
         getTablePagerAdapter().hideStationRecap();
-        mStationMapFragment.setPinOnStation(false, _selectedStationId);
+        //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
+        //mStationMapFragment.setPinOnStation(false, _selectedStationId);
         getTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), true);
 
         if (!mFavoritePicked)
@@ -2218,7 +2200,7 @@ public class NearbyActivity extends AppCompatActivity
             }
 
             if (!_silent) {
-                mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
+                //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
                 mClearFAB.show();
                 mNearbyActivityViewModel.hideFavoriteFab();
                 mSearchFAB.hide();
@@ -2478,7 +2460,7 @@ public class NearbyActivity extends AppCompatActivity
                 false, null, null,
                 getString(R.string.b_tab_question));
 
-        mStationMapFragment.clearMarkerB();
+        //mStationMapFragment.clearMarkerB();
         mStationMapFragment.clearMarkerPickedPlace();
         mStationMapFragment.clearMarkerPickedFavorite();
 
@@ -2750,8 +2732,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //Happens on screen orientation change
         if (mStationMapFragment == null ||
-                (mStationMapFragment.getMarkerBVisibleLatLng() != null && getTablePagerAdapter().getHighlightedStationForTable(position) == null) ||
-                !mStationMapFragment.isMapReady()){
+                (mStationMapFragment.getMarkerBVisibleLatLng() != null && getTablePagerAdapter().getHighlightedStationForTable(position) == null)) {
             Handler handler = new Handler();
 
             handler.postDelayed(new Runnable() {
@@ -2774,7 +2755,7 @@ public class NearbyActivity extends AppCompatActivity
                 mStationMapFragment.setScrollGesturesEnabled(false);
 
                 if (mStationMapFragment.getMarkerBVisibleLatLng() == null) {
-                    mStationMapFragment.setMapPaddingLeft(0);
+                    //mStationMapFragment.setMapPaddingLeft(0);
                     hideTripDetailsWidget();
                     mDirectionsLocToAFab.show();
                 }
@@ -2786,17 +2767,18 @@ public class NearbyActivity extends AppCompatActivity
                 mAddFavoriteFAB.hide();
                 mNearbyActivityViewModel.hideFavoriteFab();
                 mClearFAB.hide();
-                mStationMapFragment.setMapPaddingRight(0);
+                //mStationMapFragment.setMapPaddingRight(0);
 
                 if (!isStationAClosestBike()){
-                    mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
+                    //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
                     mAutoSelectBikeFab.show();
                 }
 
                 //just to be on the safe side
                 if (highlightedStation != null ) {
 
-                    mStationMapFragment.setPinOnStation(true, highlightedStation.getLocationHash());
+                    //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
+                    //mStationMapFragment.setPinOnStation(true, highlightedStation.getLocationHash());
 
 
                     animateCameraToShowUserAndStation(highlightedStation);
@@ -2809,7 +2791,7 @@ public class NearbyActivity extends AppCompatActivity
             } else { //B TAB
 
                 mAutoSelectBikeFab.hide();
-                mStationMapFragment.setMapPaddingRight(0);
+                //mStationMapFragment.setMapPaddingRight(0);
 
                 //TODO: Should I lock that for regular users ?
                 mStationMapFragment.setScrollGesturesEnabled(true);
@@ -2836,18 +2818,18 @@ public class NearbyActivity extends AppCompatActivity
                             mSearchFAB.show();
                     }
 
-                    mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
+                    //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
 
                 } else {
 
                     getTablePagerAdapter().smoothScrollHighlightedInViewForTable(position, false);
-                    mStationMapFragment.setMapPaddingLeft((int) getResources().getDimension(R.dimen.trip_details_widget_width));
+                    //mStationMapFragment.setMapPaddingLeft((int) getResources().getDimension(R.dimen.trip_details_widget_width));
 
                     if (mTripDetailsWidget.getVisibility() == View.INVISIBLE) {
                         showTripDetailsWidget();
                     }
 
-                    mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
+                    //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
                     mClearFAB.show();
 
                     LatLng locationToShow = null;
@@ -2942,7 +2924,7 @@ public class NearbyActivity extends AppCompatActivity
         getTablePagerAdapter().setCurrentUserLatLng(mCurrentUserLatLng);
 
         if (mStationMapFragment != null){
-            mStationMapFragment.onUserLocationChange(location);
+            //mStationMapFragment.onUserLocationChange(location);//GONE, model handles it by itself
             if (mStationMapFragment.getMarkerBVisibleLatLng() != null && mTripDetailsWidget.getVisibility() == View.VISIBLE)
                 setupTripDetailsWidget();
         }
@@ -3049,7 +3031,7 @@ public class NearbyActivity extends AppCompatActivity
             //SETUP MARKERS DATA
             List<BikeStation> networkStationList = RootApplication.Companion.getBikeNetworkStationList();
             for (BikeStation item : networkStationList){
-                mStationMapFragment.addMarkerForBikeStation(bools[0], item, bools[1]);
+                ;//mStationMapFragment.addMarkerForBikeStation(bools[0], item, bools[1]);
             }
 
             return null;
@@ -3071,13 +3053,14 @@ public class NearbyActivity extends AppCompatActivity
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            mStationMapFragment.redrawMarkers();
+            //mStationMapFragment.redrawMarkers();
 
             if (getTablePagerAdapter().isViewPagerReady()) {
                 BikeStation highlighted = getTablePagerAdapter().getHighlightedStationForTable(mTabLayout.getSelectedTabPosition());
 
                 if (null != highlighted)
-                    mStationMapFragment.setPinOnStation(isLookingForBike(), highlighted.getLocationHash());
+                    ;//TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
+                //mStationMapFragment.setPinOnStation(isLookingForBike(), highlighted.getLocationHash());
             }
 
             mRedrawMarkersTask = null;

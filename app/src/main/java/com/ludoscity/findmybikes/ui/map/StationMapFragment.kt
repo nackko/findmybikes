@@ -33,10 +33,10 @@ import com.ludoscity.findmybikes.utils.Utils
  */
 class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
         /*GoogleMap.OnCameraChangeListener,*/
-        GoogleMap.OnInfoWindowClickListener/*,
-        GoogleMap.OnMapClickListener*/ {
+        GoogleMap.OnInfoWindowClickListener {
 
     //models. TODO:Retrieve at construction time ?
+    //TODO: answer to question : yes, like table fragment gets availability data source through findmybikes repo
     //private val favoriteListViewModel: FavoriteListViewModel
     private lateinit var mapFragmentModel: MapFragmentViewModel
 
@@ -45,12 +45,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     private var mGoogleMap: GoogleMap? = null
     private var mAnimCallback: CustomCancellableCallback? = null
 
-    //TODO: this comes from model and is observed
-    private val mMapMarkersGfxData = ArrayList<StationMapGfx>()
-
     private var gfxData: List<StationMapGfx> = emptyList()
-
-    private var mListener: OnStationMapFragmentInteractionListener? = null
 
     private var mMarkerPickedPlace: Marker? = null
     private var mPinSearchIconBitmapDescriptor: BitmapDescriptor? = null
@@ -60,7 +55,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     private var mAttributionsText: TextView? = null
 
-    private val MONTREAL_LATLNG = LatLng(45.5087, -73.554)
+    //private val MONTREAL_LATLNG = LatLng(45.5087, -73.554)
 
     private lateinit var pinAIconBitmapDescriptor: BitmapDescriptor
     private lateinit var pinBIconBitmapDescriptor: BitmapDescriptor
@@ -72,26 +67,12 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     val markerALatLng: LatLng?
         get() {
-            var toReturn: LatLng? = null
-
-            /*if (mMarkerStationA != null)
-                toReturn = mMarkerStationA!!.position
-            else if (mBufferedBundle != null)
-                toReturn = mBufferedBundle!!.getParcelable("pin_A_latlng")*/
-
-            return toReturn
+            return null
         }
 
     val markerBVisibleLatLng: LatLng?
         get() {
-            var toReturn: LatLng? = null
-            /*if (mMarkerStationB != null) {
-                if (mMarkerStationB!!.isVisible)
-                    toReturn = mMarkerStationB!!.position
-            } else if (mBufferedBundle != null && mBufferedBundle!!.getBoolean("pin_B_visibility"))
-                toReturn = mBufferedBundle!!.getParcelable("pin_B_latlng")*/
-
-            return toReturn
+            return null
         }
 
     //TODO: refactor so that the map fragment is a simple dumb view
@@ -145,23 +126,15 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             return toReturn
         }
 
-    val cameraLatLngBounds: LatLngBounds
-        get() = mGoogleMap!!.projection.visibleRegion.latLngBounds
-
-    val isRestoring: Boolean
-        get() = mBufferedBundle != null
-
-    val isMapReady: Boolean
-        get() = mGoogleMap != null
-
-    val cameraPosition: CameraPosition?
+    //TODO: this seems related to onSaveInstanceState, see if relevant
+    /*val cameraPosition: CameraPosition?
         get() {
             var toReturn: CameraPosition? = null
             if (isMapReady)
                 toReturn = mGoogleMap!!.cameraPosition
 
             return toReturn
-        }
+        }*/
 
     private inner class CustomCancellableCallback : GoogleMap.CancelableCallback {
 
@@ -201,6 +174,17 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         pinAIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_a_36dp_black)
         pinBIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_b_36dp_black)
 
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
+
+        val activityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+
+        mapFragmentModel.lastClickedWhileLookingForBike.observe(this, Observer {
+            activityModel.setStationA(it)
+        })
+        mapFragmentModel.lastClickedWhileLookingForDock.observe(this, Observer {
+            activityModel.setStationB(it)
+        })
+
         return inflatedView
     }
 
@@ -216,31 +200,17 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     override fun onSaveInstanceState(outState: Bundle) {
 
-        outState.putBoolean("pin_picked_place_visibility", mMarkerPickedPlace != null && mMarkerPickedPlace!!.isVisible)
-        outState.putParcelable("pin_picked_place_latlng", if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.position else MONTREAL_LATLNG)
-        outState.putString("picked_place_name", if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.title else "")
+        //outState.putBoolean("pin_picked_place_visibility", mMarkerPickedPlace != null && mMarkerPickedPlace!!.isVisible)
+        //outState.putParcelable("pin_picked_place_latlng", if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.position else MONTREAL_LATLNG)
+        //outState.putString("picked_place_name", if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.title else "")
 
-        outState.putBoolean("pin_picked_favorite_visibility", mMarkerPickedFavorite != null && mMarkerPickedFavorite!!.isVisible)
-        outState.putParcelable("pin_picked_favorite_latlng", if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.position else MONTREAL_LATLNG)
-        outState.putString("picked_favorite_name", if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.title else "")
+        //outState.putBoolean("pin_picked_favorite_visibility", mMarkerPickedFavorite != null && mMarkerPickedFavorite!!.isVisible)
+        //outState.putParcelable("pin_picked_favorite_latlng", if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.position else MONTREAL_LATLNG)
+        //outState.putString("picked_favorite_name", if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.title else "")
         super.onSaveInstanceState(outState)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        try {
-            mListener = activity as OnStationMapFragmentInteractionListener?
-        } catch (e: ClassCastException) {
-            throw ClassCastException(activity!!.toString() + " must implement OnFragmentInteractionListener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        mListener = null
-    }
-
+    //This is for debug
     /*@Override
     public void onCameraChange(CameraPosition cameraPosition) {
         //Log.d("CameraZoomLevel", Float.toString(cameraPosition.zoom));
@@ -256,10 +226,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         builder.appendQueryParameter(INFOWINDOW_CLICK_MARKER_POS_LAT_PARAM, marker.position.latitude.toString())
         builder.appendQueryParameter(INFOWINDOW_CLICK_MARKER_POS_LNG_PARAM, marker.position.longitude.toString())
-
-        if (mListener != null) {
-            mListener!!.onStationMapFragmentInteraction(builder.build())
-        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -271,6 +237,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         //mGoogleMap.setOnCameraChangeListener(this);
         //mGoogleMap.setOnMapClickListener(this);
         //héhéhé, feel the power of design !!
+        //TODO: rethink gestue. Also gesture availability observed from fragment or activity model
         //mGoogleMap!!.uiSettings.isZoomGesturesEnabled = false
         mGoogleMap!!.uiSettings.isRotateGesturesEnabled = false
         mGoogleMap!!.uiSettings.isIndoorLevelPickerEnabled = false
@@ -331,9 +298,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
             //TODO: should local gfxData list be cleared ?
             gfxData = newGfxData ?: emptyList()
-
-
-            //redrawMarkers(gfxData)
 
             mGoogleMap!!.clear()
 
@@ -403,19 +367,14 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 pinBMarker?.isVisible = false
             }
         })
-
-
-        //That is not map related and may be done earlier
-        mapFragmentModel.lastClickedWhileLookingForBike.observe(this, Observer {
-            activityModel.setStationA(it)
-        })
-        mapFragmentModel.lastClickedWhileLookingForDock.observe(this, Observer {
-            activityModel.setStationB(it)
-        })
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
+        //TODO: this is the beginning of going full model
+        mapFragmentModel.setLastClickedStationById(marker.title)
+
+        //following code is "legacy"
         //TODO: in model
         if (isPickedFavoriteMarkerVisible)
             mMarkerPickedFavorite!!.showInfoWindow()
@@ -444,30 +403,11 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mMarkerPickedFavorite!!.hideInfoWindow()
         }*/
 
-        val builder = Uri.Builder()
-        builder.appendPath(MARKER_CLICK_PATH)
-
-        builder.appendQueryParameter(MARKER_CLICK_TITLE_PARAM, marker.title)
-
-        //TODO: this is the beginning of going full model
-        mapFragmentModel.setLastClickedStationById(marker.title)
-        //if (mListener != null) {
-        //    mListener!!.onStationMapFragmentInteraction(builder.build())
-        //}
-
         //So that info window will not be showed
         return true
     }
 
-    fun onUserLocationChange(location: Location?) {
-        /*if (location != null) {
-            //Log.d("onMyLocationChange", "new location " + location.toString());
-            if (!mInitialCameraSetupDone && mGoogleMap != null) {
-                doInitialCameraSetup(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 15f), false)
-            }
-        }*/
-    }
-
+    //TODO: replug location permission request (splash screen ?)
     fun enableMyLocationCheckingPermission() {
         if (ActivityCompat.checkSelfPermission(this.context!!, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this.context!!, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -476,228 +416,34 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         }
     }
 
-    /*fun doInitialCameraSetup(cameraUpdate: CameraUpdate, animate: Boolean) {
-        if (animate)
-            //animateCamera(cameraUpdate)
-        else
-            mGoogleMap!!.moveCamera(cameraUpdate)
 
-        mInitialCameraSetupDone = true
-    }*/
-
-    fun setMapPaddingLeft(_paddingPx: Int) {
-        CURRENT_MAP_PADDING_LEFT = _paddingPx
-        mGoogleMap!!.setPadding(CURRENT_MAP_PADDING_LEFT, 0, CURRENT_MAP_PADDING_RIGHT, 0)
-    }
-
+    //TODO: can't remove before re enabling
+    //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
     fun setMapPaddingRight(_paddingPx: Int) {
-        CURRENT_MAP_PADDING_RIGHT = _paddingPx
-        mGoogleMap!!.setPadding(CURRENT_MAP_PADDING_LEFT, 0, CURRENT_MAP_PADDING_RIGHT, 0)   //seen java.lang.NullPointerException on Galaxy Nexus
+        //CURRENT_MAP_PADDING_RIGHT = _paddingPx
+        //mGoogleMap!!.setPadding(CURRENT_MAP_PADDING_LEFT, 0, CURRENT_MAP_PADDING_RIGHT, 0)   //seen java.lang.NullPointerException on Galaxy Nexus
         //on rapid multiple screen orientation change
         //timing issue with Handler runnable (NearbyActivity.java:2653)
     }
 
+    //TODO: in fragment model
+    //TODO: rethink gestures
     fun setScrollGesturesEnabled(_toSet: Boolean) {
         mGoogleMap!!.uiSettings.isScrollGesturesEnabled = _toSet
     }
 
+    //TODO: in model
     fun pickedFavoriteMarkerInfoWindowShow() {
         mMarkerPickedFavorite!!.showInfoWindow()
     }
 
+    //TODO: in model
     fun pickedFavoriteMarkerInfoWindowHide() {
         mMarkerPickedFavorite!!.hideInfoWindow()
     }
 
-    fun clearMarkerB() {
-        /*if (mMarkerStationB != null)
-            mMarkerStationB!!.isVisible = false*/
-    }
 
-    fun addMarkerForBikeStation(_outdated: Boolean, item: BikeStation, lookingForBike: Boolean) {
-
-        if (context == null)
-            return
-
-        mMapMarkersGfxData.add(StationMapGfx(_outdated, item, lookingForBike, context!!))
-    }
-
-    private fun redrawMarkers(gfxData: List<StationMapGfx>?) {
-
-        val pinAVisible: Boolean
-        val pinAStationId: String?
-        val pinBVisible: Boolean
-        val pinPickedPlaceVisible: Boolean
-        val pinPickedFavoriteVisible: Boolean
-        val pinALatLng: LatLng?
-        val pinBLatLng: LatLng?
-        val pinPickedPlaceLatLng: LatLng?
-        val pinPickedFavoriteLatLng: LatLng?
-
-        val pickedPlaceName: String?
-        val pickedFavoriteName: String?
-
-        if (mBufferedBundle != null) {
-
-            pinAVisible = mBufferedBundle!!.getBoolean("pin_A_visibility")
-            pinBVisible = mBufferedBundle!!.getBoolean("pin_B_visibility")
-            pinPickedPlaceVisible = mBufferedBundle!!.getBoolean("pin_picked_place_visibility")
-            pinPickedFavoriteVisible = mBufferedBundle!!.getBoolean("pin_picked_favorite_visibility")
-
-            pinALatLng = mBufferedBundle!!.getParcelable("pin_A_latlng")
-            pinBLatLng = mBufferedBundle!!.getParcelable("pin_B_latlng")
-            pinPickedPlaceLatLng = mBufferedBundle!!.getParcelable("pin_picked_place_latlng")
-            pinPickedFavoriteLatLng = mBufferedBundle!!.getParcelable("pin_picked_favorite_latlng")
-
-            pickedPlaceName = mBufferedBundle!!.getString("picked_place_name")
-            pickedFavoriteName = mBufferedBundle!!.getString("picked_favorite_name")
-
-            pinAStationId = mBufferedBundle!!.getString("pin_a_station_id")
-
-            mBufferedBundle = null
-        } else {
-
-            pinPickedPlaceVisible = mMarkerPickedPlace != null && mMarkerPickedPlace!!.isVisible
-            pinPickedFavoriteVisible = mMarkerPickedFavorite != null && mMarkerPickedFavorite!!.isVisible
-
-            pinPickedPlaceLatLng = if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.position else MONTREAL_LATLNG
-            pinPickedFavoriteLatLng = if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.position else MONTREAL_LATLNG
-
-            pickedPlaceName = if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.title else ""
-            pickedFavoriteName = if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.title else ""
-
-        }
-
-        /*mGoogleMap!!.clear()
-
-        mMarkerStationA = mGoogleMap!!.addMarker(MarkerOptions().position(pinALatLng!!)
-                .icon(mPinAIconBitmapDescriptor)
-                .visible(pinAVisible)
-                .title(pinAStationId))
-        mMarkerStationB = mGoogleMap!!.addMarker(MarkerOptions().position(pinBLatLng!!)
-                .icon(mPinBIconBitmapDescriptor)
-                .visible(pinBVisible))
-        mMarkerPickedPlace = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedPlaceLatLng!!)
-                .icon(mPinSearchIconBitmapDescriptor)
-                .visible(pinPickedPlaceVisible)
-                .title(pickedPlaceName))
-        mMarkerPickedFavorite = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedFavoriteLatLng!!)
-                .icon(mPinFavoriteIconBitmapDescriptor)
-                .visible(pinPickedFavoriteVisible)
-                .zIndex(.5f)//so that it's on top of B pin (default Z is 0)
-                .title(pickedFavoriteName))
-
-        if (pinPickedPlaceVisible)
-            mMarkerPickedPlace!!.showInfoWindow()
-
-        if (pinPickedFavoriteVisible && (mMarkerPickedFavorite!!.position.latitude != pinBLatLng.latitude || mMarkerPickedFavorite!!.position.longitude != pinBLatLng.longitude))
-            mMarkerPickedFavorite!!.showInfoWindow()
-
-        gfxData?.forEach {
-            it.addToMap(mGoogleMap!!)
-        }*/
-    }
-
-    fun redrawMarkers() {
-
-        val pinAVisible: Boolean
-        val pinAStationId: String?
-        val pinBVisible: Boolean
-        val pinPickedPlaceVisible: Boolean
-        val pinPickedFavoriteVisible: Boolean
-        val pinALatLng: LatLng?
-        val pinBLatLng: LatLng?
-        val pinPickedPlaceLatLng: LatLng?
-        val pinPickedFavoriteLatLng: LatLng?
-
-        val pickedPlaceName: String?
-        val pickedFavoriteName: String?
-
-        if (mBufferedBundle != null) {
-
-            pinPickedPlaceVisible = mBufferedBundle!!.getBoolean("pin_picked_place_visibility")
-            pinPickedFavoriteVisible = mBufferedBundle!!.getBoolean("pin_picked_favorite_visibility")
-
-            pinPickedPlaceLatLng = mBufferedBundle!!.getParcelable("pin_picked_place_latlng")
-            pinPickedFavoriteLatLng = mBufferedBundle!!.getParcelable("pin_picked_favorite_latlng")
-
-            pickedPlaceName = mBufferedBundle!!.getString("picked_place_name")
-            pickedFavoriteName = mBufferedBundle!!.getString("picked_favorite_name")
-
-            mBufferedBundle = null
-        } else {
-
-            pinPickedPlaceVisible = mMarkerPickedPlace != null && mMarkerPickedPlace!!.isVisible
-            pinPickedFavoriteVisible = mMarkerPickedFavorite != null && mMarkerPickedFavorite!!.isVisible
-
-            pinPickedPlaceLatLng = if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.position else MONTREAL_LATLNG
-            pinPickedFavoriteLatLng = if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.position else MONTREAL_LATLNG
-
-            pickedPlaceName = if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.title else ""
-            pickedFavoriteName = if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.title else ""
-
-            //pinAStationId = if (mMarkerStationA != null) mMarkerStationA!!.title else ""
-        }
-
-        mGoogleMap!!.clear()
-
-        mMarkerPickedPlace = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedPlaceLatLng!!)
-                .icon(mPinSearchIconBitmapDescriptor)
-                .visible(pinPickedPlaceVisible)
-                .title(pickedPlaceName))
-        mMarkerPickedFavorite = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedFavoriteLatLng!!)
-                .icon(mPinFavoriteIconBitmapDescriptor)
-                .visible(pinPickedFavoriteVisible)
-                .zIndex(.5f)//so that it's on top of B pin (default Z is 0)
-                .title(pickedFavoriteName))
-
-        if (pinPickedPlaceVisible)
-            mMarkerPickedPlace!!.showInfoWindow()
-
-        //TODO: that seem kinda relevant for a use case (display info window)
-        /*if (pinPickedFavoriteVisible && (mMarkerPickedFavorite!!.position.latitude != pinBLatLng.latitude || mMarkerPickedFavorite!!.position.longitude != pinBLatLng.longitude))
-            mMarkerPickedFavorite!!.showInfoWindow()*/
-
-        for (markerData in mMapMarkersGfxData) {
-            markerData.addToMap(mGoogleMap!!)
-        }
-    }
-
-    //TODO: if clients have a stationname, maybe they have the station LatLng on hand
-    fun setPinOnStation(_lookingForBike: Boolean, _stationId: String?) {
-
-        try {
-            for (markerData in mMapMarkersGfxData) {
-                if (markerData.markerTitle.equals(_stationId!!, ignoreCase = true)) {
-                    if (_lookingForBike) {
-                        pinAMarker.position = markerData.markerLatLng
-                        pinAMarker.isVisible = true
-                        pinAMarker.title = markerData.markerTitle
-                    } else {
-                        pinBMarker!!.position = markerData.markerLatLng
-                        pinBMarker!!.isVisible = true
-
-                        if (isPickedFavoriteMarkerVisible) {
-                            if (markerPickedFavoriteVisibleLatLng!!.latitude == markerBVisibleLatLng!!.latitude && markerPickedFavoriteVisibleLatLng!!.longitude == markerBVisibleLatLng!!.longitude) {
-                                mMarkerPickedFavorite!!.setIcon(mNoPinFavoriteIconBitmapDescriptor)
-                                mMarkerPickedFavorite!!.hideInfoWindow()
-                            } else {
-                                mMarkerPickedFavorite!!.setIcon(mPinFavoriteIconBitmapDescriptor)
-                                mMarkerPickedFavorite!!.showInfoWindow()
-                            }
-                        }
-                    }
-
-                    break
-                }
-            }
-        } catch (e: ConcurrentModificationException) {
-            //Can happen on screen orientation change. Simply retry
-            setPinOnStation(_lookingForBike, _stationId)
-        }
-
-    }
-
+    //TODO: cleanup when place marker is back
     fun setPinForPickedPlace(_placeName: String, _placePosition: LatLng, _attributions: CharSequence?) {
 
         mMarkerPickedPlace!!.title = _placeName
@@ -711,6 +457,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         }
     }
 
+    //TODO: cleanup when favorite marker is backk
     fun setPinForPickedFavorite(_favoriteName: String, _favoritePosition: LatLng, _attributions: CharSequence?) {
 
         mMarkerPickedFavorite!!.title = _favoriteName
@@ -731,6 +478,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         }
     }
 
+    //TODO: cleanup when place marker is back
     fun clearMarkerPickedPlace() {
         if (mMarkerPickedPlace != null)
             mMarkerPickedPlace!!.isVisible = false
@@ -739,38 +487,19 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         mAttributionsText!!.text = ""
     }
 
+    //TODO: cleanup when favorite marker is back
     fun clearMarkerPickedFavorite() {
         if (mMarkerPickedFavorite != null)
             mMarkerPickedFavorite!!.isVisible = false
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     *
-     *
-     * See the Android Training lesson [Communicating with Other Fragments](http://developer.android.com/training/basics/fragments/communicating.html) for more information.
-     */
-    interface OnStationMapFragmentInteractionListener {
-        fun onStationMapFragmentInteraction(uri: Uri)
     }
 
     companion object {
 
         private val TAG = StationMapFragment::class.java.simpleName
         val INFOWINDOW_CLICK_PATH = "infowindow_click"
-        val MARKER_CLICK_PATH = "marker_click"
-        val MAP_READY_PATH = "map_ready"
-        val MAP_CLICK_PATH = "map_click"
 
         val INFOWINDOW_CLICK_MARKER_POS_LAT_PARAM = "infowindow_click_marker_lat"
         val INFOWINDOW_CLICK_MARKER_POS_LNG_PARAM = "infowindow_click_marker_lng"
-        val MARKER_CLICK_TITLE_PARAM = "marker_click_title"
-
-        private var CURRENT_MAP_PADDING_LEFT = 0
-        private var CURRENT_MAP_PADDING_RIGHT = 0
     }
 
 }

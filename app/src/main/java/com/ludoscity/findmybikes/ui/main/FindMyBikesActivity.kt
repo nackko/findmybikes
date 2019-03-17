@@ -47,7 +47,6 @@ import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
 import java.text.NumberFormat
 
 class FindMyBikesActivity : AppCompatActivity(),
-        StationMapFragment.OnStationMapFragmentInteractionListener,
         FavoriteListFragment.OnFavoriteListFragmentInteractionListener,
         ViewPager.OnPageChangeListener,
         SwipeRefreshLayout.OnRefreshListener {
@@ -69,10 +68,6 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     override fun onPageScrollStateChanged(state: Int) {
-    }
-
-    override fun onStationMapFragmentInteraction(uri: Uri) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onFavoriteItemEditDone(fsvoriteId: String?) {
@@ -497,7 +492,6 @@ class FindMyBikesActivity : AppCompatActivity(),
                 false, null, null,
                 getString(R.string.b_tab_question))
 
-        stationMapFragment.clearMarkerB()
         stationMapFragment.clearMarkerPickedPlace()
         stationMapFragment.clearMarkerPickedFavorite()
 
