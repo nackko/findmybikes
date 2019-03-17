@@ -12,7 +12,6 @@ import android.os.Parcelable
 import android.support.design.widget.*
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
-import android.support.v4.view.ViewPager.SCROLL_STATE_IDLE
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
@@ -60,17 +59,16 @@ class FindMyBikesActivity : AppCompatActivity(),
             //TODO: wire this in so that it doesn't crash on screen rotation
             //Have smooth scroll request boolean live data in model that is set to false when no aciton is required
             //setting it to true would provoke correpsonding fragment to scroll when ready ?
+            //an other way is to make code inside smothscroll... defensive
             //getTablePagerAdapter().smoothScrollHighlightedInViewForTable(position, true)
         }
     }
 
     override fun onPageSelected(position: Int) {
-
+        nearbyActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
     }
 
     override fun onPageScrollStateChanged(state: Int) {
-        if (state == SCROLL_STATE_IDLE)
-            nearbyActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
     }
 
     override fun onStationMapFragmentInteraction(uri: Uri) {
