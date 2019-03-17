@@ -67,14 +67,16 @@ class InjectorUtils {
                                                  dataOutOfDate: LiveData<Boolean>,
                                                  stationRecapDatasource: LiveData<BikeStation>,
                                                  stationSelectionDatasource: LiveData<BikeStation>,
+                                                 userLoc: LiveData<LatLng>,
                                                  numFormat: NumberFormat): TableFragmentModelFactory {
             val repository = provideRepository()
             return TableFragmentModelFactory(repository, app, isDockTable,
                     appBarExpanded,
                     stationRecapDatasource,
                     stationSelectionDatasource,
-                    dataOutOfDate, numFormat)
+                    dataOutOfDate,
+                    userLoc,
+                    numFormat)
         }
     }
-
 }

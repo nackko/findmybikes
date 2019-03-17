@@ -33,6 +33,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                              private val stationRecapDataSource: LiveData<BikeStation>,
                              private val stationSelectionDataSource: LiveData<BikeStation>,
                              private val isDataOutOfDate: LiveData<Boolean>,
+                             private val userloc: LiveData<LatLng>,//TODO: might be encapsulated in a comparator, we'll see
                              numFormat: NumberFormat) : AndroidViewModel(app) {
 
     //TODO: header setup should happen by observing app state instead of being explicitly called on the model ?
@@ -150,6 +151,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     private val stationRecapDataSourceObserver: android.arch.lifecycle.Observer<BikeStation>
     private val stationSelectionDataSourceObserver: android.arch.lifecycle.Observer<BikeStation>
     private val dataOutdatedObserver: android.arch.lifecycle.Observer<Boolean>
+    private val userLocObserver: android.arch.lifecycle.Observer<LatLng>
 
     private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>>
     private val bikeSystemAvailabilityDataObserver: android.arch.lifecycle.Observer<List<BikeStation>>
@@ -338,7 +340,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         //TODO: add user location livedata as constructor parameter and observe it to update comparator
         //comparator = DistanceComparator(LatLng(-73.567256, 45.5016889)) //mtl
-        comparator = DistanceComparator(LatLng(45.76404, 4.83566)) //lyon
+        //comparator = DistanceComparator(LatLng(45.76404, 4.83566)) //lyon
+        comparator = DistanceComparator(userloc.value ?: LatLng(0.0, 0.0))
 
 
 
@@ -406,6 +409,14 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         stationRecapDataSource.observeForever(stationRecapDataSourceObserver)
 
+        userLocObserver = android.arch.lifecycle.Observer {
+            comparator = DistanceComparator(userloc.value ?: LatLng(0.0, 0.0))
+
+            computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value, isDataOutOfDate.value == true, numFormat, isDockTable)
+        }
+
+        userloc.observeForever(userLocObserver)
+
         dataOutdatedObserver = android.arch.lifecycle.Observer {
 
 
@@ -428,6 +439,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         isDataOutOfDate.removeObserver(dataOutdatedObserver)
         bikeSystemAvailabilityDataSource.removeObserver(bikeSystemAvailabilityDataObserver)
         stationSelectionDataSource.removeObserver(stationSelectionDataSourceObserver)
+        userloc.removeObserver(userLocObserver)
 
         super.onCleared()
     }

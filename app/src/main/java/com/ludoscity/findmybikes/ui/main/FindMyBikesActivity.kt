@@ -287,6 +287,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                         nearbyActivityViewModel.isDataOutOfDate,
                         nearbyActivityViewModel.getStationA(),
                         nearbyActivityViewModel.getStationA(),
+                        nearbyActivityViewModel.userLocation,
                         NumberFormat.getInstance()),
                 InjectorUtils.provideTableFragmentViewModelFactory(application,
                         true,
@@ -294,6 +295,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                         nearbyActivityViewModel.isDataOutOfDate,
                         nearbyActivityViewModel.getStationA(),
                         nearbyActivityViewModel.getStationB(),
+                        nearbyActivityViewModel.userLocation,
                         NumberFormat.getInstance()
                 ))
         stationTableViewPager.addOnPageChangeListener(this)
