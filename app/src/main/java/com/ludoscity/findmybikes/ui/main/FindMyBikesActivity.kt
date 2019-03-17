@@ -71,14 +71,6 @@ class FindMyBikesActivity : AppCompatActivity(),
     override fun onPageScrollStateChanged(state: Int) {
         if (state == SCROLL_STATE_IDLE)
             nearbyActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
-        else {
-            //TODO: hide map items when pager is moving
-        }
-
-
-
-
-
     }
 
     override fun onStationMapFragmentInteraction(uri: Uri) {
