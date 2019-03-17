@@ -386,6 +386,7 @@ public class NearbyActivity extends AppCompatActivity
                         mNearbyActivityViewModel.isDataOutOfDate(),
                         mNearbyActivityViewModel.getStationA(),
                         mNearbyActivityViewModel.getStationB(),
+                        mNearbyActivityViewModel.getUserLocation(),
                         NumberFormat.getInstance()),
                 InjectorUtils.Companion.provideTableFragmentViewModelFactory(getApplication(),
                         false,
@@ -393,6 +394,7 @@ public class NearbyActivity extends AppCompatActivity
                         mNearbyActivityViewModel.isDataOutOfDate(),
                         mNearbyActivityViewModel.getStationA(),
                         mNearbyActivityViewModel.getStationA(),
+                        mNearbyActivityViewModel.getUserLocation(),
                         NumberFormat.getInstance())
 
 
@@ -2952,7 +2954,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private boolean isStationAClosestBike(){
 
-        String stationAId = mStationMapFragment.getMarkerAStationId();
+        String stationAId = "";//mStationMapFragment.getMarkerAStationId();
         String closestBikeId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getBIKE_STATIONS()));
 
         return stationAId.equalsIgnoreCase(closestBikeId);

@@ -52,10 +52,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     private var mListener: OnStationMapFragmentInteractionListener? = null
 
-    private var mMarkerStationA: Marker? = null
-    private var mPinAIconBitmapDescriptor: BitmapDescriptor? = null
-    private var mMarkerStationB: Marker? = null
-    private var mPinBIconBitmapDescriptor: BitmapDescriptor? = null
     private var mMarkerPickedPlace: Marker? = null
     private var mPinSearchIconBitmapDescriptor: BitmapDescriptor? = null
     private var mMarkerPickedFavorite: Marker? = null
@@ -66,30 +62,22 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     private val MONTREAL_LATLNG = LatLng(45.5087, -73.554)
 
+    private lateinit var pinAIconBitmapDescriptor: BitmapDescriptor
+    private lateinit var pinBIconBitmapDescriptor: BitmapDescriptor
+    private lateinit var pinAMarker: Marker
+    private var pinBMarker: Marker? = null
+
     //Pin markers can only be restored after mGoogleMap is ready
     private var mBufferedBundle: Bundle? = null
-
-    val markerAStationId: String?
-        get() {
-
-            var toReturn: String? = ""
-
-            if (mMarkerStationA != null)
-                toReturn = mMarkerStationA!!.title
-            else if (mBufferedBundle != null)
-                toReturn = mBufferedBundle!!.getString("pin_a_station_id")
-
-            return toReturn
-        }
 
     val markerALatLng: LatLng?
         get() {
             var toReturn: LatLng? = null
 
-            if (mMarkerStationA != null)
+            /*if (mMarkerStationA != null)
                 toReturn = mMarkerStationA!!.position
             else if (mBufferedBundle != null)
-                toReturn = mBufferedBundle!!.getParcelable("pin_A_latlng")
+                toReturn = mBufferedBundle!!.getParcelable("pin_A_latlng")*/
 
             return toReturn
         }
@@ -97,11 +85,11 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     val markerBVisibleLatLng: LatLng?
         get() {
             var toReturn: LatLng? = null
-            if (mMarkerStationB != null) {
+            /*if (mMarkerStationB != null) {
                 if (mMarkerStationB!!.isVisible)
                     toReturn = mMarkerStationB!!.position
             } else if (mBufferedBundle != null && mBufferedBundle!!.getBoolean("pin_B_visibility"))
-                toReturn = mBufferedBundle!!.getParcelable("pin_B_latlng")
+                toReturn = mBufferedBundle!!.getParcelable("pin_B_latlng")*/
 
             return toReturn
         }
@@ -215,13 +203,14 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         mBufferedBundle = savedInstanceState
 
-        mPinAIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_a_36dp_black)
-        mPinBIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_b_36dp_black)
         mPinSearchIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_search_24dp_black)
         mPinFavoriteIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_favorite_24dp_black)
         mNoPinFavoriteIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_nopin_favorite_24dp_white)
 
         mAttributionsText = inflatedView.findViewById<View>(R.id.attributions_text) as TextView
+
+        pinAIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_a_36dp_black)
+        pinBIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_b_36dp_black)
 
         return inflatedView
     }
@@ -237,11 +226,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean("pin_A_visibility", mMarkerStationA != null && mMarkerStationA!!.isVisible)
-        outState.putBoolean("pin_B_visibility", mMarkerStationB != null && mMarkerStationB!!.isVisible)
-        outState.putParcelable("pin_A_latlng", if (mMarkerStationA != null) mMarkerStationA!!.position else MONTREAL_LATLNG)
-        outState.putParcelable("pin_B_latlng", if (mMarkerStationB != null) mMarkerStationB!!.position else MONTREAL_LATLNG)
-        outState.putString("pin_a_station_id", if (mMarkerStationA != null) mMarkerStationA!!.title else "")
 
         outState.putBoolean("pin_picked_place_visibility", mMarkerPickedPlace != null && mMarkerPickedPlace!!.isVisible)
         outState.putParcelable("pin_picked_place_latlng", if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.position else MONTREAL_LATLNG)
@@ -338,7 +322,45 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             //TODO: should local gfxData list be cleared ?
             gfxData = newGfxData ?: emptyList()
 
-            redrawMarkers(gfxData)
+
+            //redrawMarkers(gfxData)
+
+            mGoogleMap!!.clear()
+
+            pinAMarker = mGoogleMap!!.addMarker(
+                    MarkerOptions().position(
+                            LatLng(activityModel.getStationA().value?.latitude ?: 0.0,
+                                    activityModel.getStationA().value?.longitude ?: 0.0))
+                            .icon(pinAIconBitmapDescriptor)
+                            .visible(activityModel.getStationA().value != null)
+                            .title(activityModel.getStationA().value?.locationHash))
+
+            pinBMarker = mGoogleMap!!.addMarker(
+                    MarkerOptions().position(
+                            LatLng(activityModel.getStationB().value?.latitude ?: 0.0,
+                                    activityModel.getStationB().value?.longitude ?: 0.0))
+                            .icon(pinBIconBitmapDescriptor)
+                            .visible(activityModel.getStationB().value != null)
+                            .title(activityModel.getStationB().value?.locationHash))
+            /*mMarkerPickedPlace = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedPlaceLatLng!!)
+                    .icon(mPinSearchIconBitmapDescriptor)
+                    .visible(pinPickedPlaceVisible)
+                    .title(pickedPlaceName))
+            mMarkerPickedFavorite = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedFavoriteLatLng!!)
+                    .icon(mPinFavoriteIconBitmapDescriptor)
+                    .visible(pinPickedFavoriteVisible)
+                    .zIndex(.5f)//so that it's on top of B pin (default Z is 0)
+                    .title(pickedFavoriteName))
+
+            if (pinPickedPlaceVisible)
+                mMarkerPickedPlace!!.showInfoWindow()
+
+            if (pinPickedFavoriteVisible && (mMarkerPickedFavorite!!.position.latitude != pinBLatLng.latitude || mMarkerPickedFavorite!!.position.longitude != pinBLatLng.longitude))
+                mMarkerPickedFavorite!!.showInfoWindow()*/
+
+            gfxData.forEach {
+                it.addMarkerToMap(mGoogleMap!!)
+            }
 
             Log.d(TAG, "Markers redrawned, size :" + gfxData.size)
 
@@ -354,6 +376,26 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             }
         })
 
+        activityModel.getStationA().observe(this, Observer {
+            if (it != null) {
+                //TODO: find a way to animate that
+                pinAMarker.position = LatLng(it.latitude, it.longitude)
+                pinAMarker.isVisible = true
+            } else
+                pinAMarker.isVisible = false
+        })
+
+        activityModel.getStationB().observe(this, Observer {
+            if (it != null) {
+                pinBMarker?.position = LatLng(it.latitude, it.longitude)
+                pinBMarker?.isVisible = true
+            } else {
+                pinBMarker?.isVisible = false
+            }
+        })
+
+
+        //That is not map related and may be done earlier
         mapFragmentModel.lastClickedWhileLookingForBike.observe(this, Observer {
             activityModel.setStationA(it)
         })
@@ -372,26 +414,25 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         if (isPickedPlaceMarkerVisible)
             mMarkerPickedPlace!!.showInfoWindow()
 
-        if (marker.title.equals(mMarkerPickedFavorite!!.title, ignoreCase = true) ||
-                mMarkerStationA!!.isVisible &&
-                mMarkerStationA!!.position.latitude == marker.position.latitude &&
-                mMarkerStationA!!.position.longitude == marker.position.longitude ||
-                mMarkerStationB!!.isVisible &&
-                mMarkerStationB!!.position.latitude == marker.position.latitude &&
-                mMarkerStationB!!.position.longitude == marker.position.longitude ||
-                mMarkerPickedPlace!!.isVisible && //except if picked destination is favorite
+        if (marker.title.equals(pinAMarker.title, ignoreCase = true) ||
+                pinAMarker.isVisible &&
+                pinAMarker.position.latitude == marker.position.latitude &&
+                pinAMarker.position.longitude == marker.position.longitude ||
+                pinBMarker!!.position.latitude == marker.position.latitude &&
+                pinBMarker!!.position.longitude == marker.position.longitude || false
+        /*mMarkerPickedPlace!!.isVisible && //except if picked destination is favorite
 
-                mMarkerPickedPlace!!.position.latitude == marker.position.latitude &&
-                mMarkerPickedPlace!!.position.longitude == marker.position.longitude)
+        mMarkerPickedPlace!!.position.latitude == marker.position.latitude &&
+        mMarkerPickedPlace!!.position.longitude == marker.position.longitude*/)
             return true
 
-        if (mMarkerPickedFavorite!!.isVisible &&
+        /*if (mMarkerPickedFavorite!!.isVisible &&
                 //TODO: the following seems a bit patterny, checking if B pin and Favorite one are not on the same station
                 //check connection with NearbyActivity::setupBTabSelection refactor ideas
                 mMarkerPickedFavorite!!.position.latitude == marker.position.latitude &&
                 mMarkerPickedFavorite!!.position.longitude == marker.position.longitude) {
             mMarkerPickedFavorite!!.hideInfoWindow()
-        }
+        }*/
 
         val builder = Uri.Builder()
         builder.appendPath(MARKER_CLICK_PATH)
@@ -459,8 +500,8 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     }
 
     fun clearMarkerB() {
-        if (mMarkerStationB != null)
-            mMarkerStationB!!.isVisible = false
+        /*if (mMarkerStationB != null)
+            mMarkerStationB!!.isVisible = false*/
     }
 
     fun addMarkerForBikeStation(_outdated: Boolean, item: BikeStation, lookingForBike: Boolean) {
@@ -506,23 +547,18 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mBufferedBundle = null
         } else {
 
-            pinAVisible = mMarkerStationA != null && mMarkerStationA!!.isVisible
-            pinBVisible = mMarkerStationB != null && mMarkerStationB!!.isVisible
             pinPickedPlaceVisible = mMarkerPickedPlace != null && mMarkerPickedPlace!!.isVisible
             pinPickedFavoriteVisible = mMarkerPickedFavorite != null && mMarkerPickedFavorite!!.isVisible
 
-            pinALatLng = if (mMarkerStationA != null) mMarkerStationA!!.position else MONTREAL_LATLNG
-            pinBLatLng = if (mMarkerStationB != null) mMarkerStationB!!.position else MONTREAL_LATLNG
             pinPickedPlaceLatLng = if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.position else MONTREAL_LATLNG
             pinPickedFavoriteLatLng = if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.position else MONTREAL_LATLNG
 
             pickedPlaceName = if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.title else ""
             pickedFavoriteName = if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.title else ""
 
-            pinAStationId = if (mMarkerStationA != null) mMarkerStationA!!.title else ""
         }
 
-        mGoogleMap!!.clear()
+        /*mGoogleMap!!.clear()
 
         mMarkerStationA = mGoogleMap!!.addMarker(MarkerOptions().position(pinALatLng!!)
                 .icon(mPinAIconBitmapDescriptor)
@@ -549,7 +585,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         gfxData?.forEach {
             it.addMarkerToMap(mGoogleMap!!)
-        }
+        }*/
     }
 
     fun redrawMarkers() {
@@ -569,49 +605,32 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         if (mBufferedBundle != null) {
 
-            pinAVisible = mBufferedBundle!!.getBoolean("pin_A_visibility")
-            pinBVisible = mBufferedBundle!!.getBoolean("pin_B_visibility")
             pinPickedPlaceVisible = mBufferedBundle!!.getBoolean("pin_picked_place_visibility")
             pinPickedFavoriteVisible = mBufferedBundle!!.getBoolean("pin_picked_favorite_visibility")
 
-            pinALatLng = mBufferedBundle!!.getParcelable("pin_A_latlng")
-            pinBLatLng = mBufferedBundle!!.getParcelable("pin_B_latlng")
             pinPickedPlaceLatLng = mBufferedBundle!!.getParcelable("pin_picked_place_latlng")
             pinPickedFavoriteLatLng = mBufferedBundle!!.getParcelable("pin_picked_favorite_latlng")
 
             pickedPlaceName = mBufferedBundle!!.getString("picked_place_name")
             pickedFavoriteName = mBufferedBundle!!.getString("picked_favorite_name")
 
-            pinAStationId = mBufferedBundle!!.getString("pin_a_station_id")
-
             mBufferedBundle = null
         } else {
 
-            pinAVisible = mMarkerStationA != null && mMarkerStationA!!.isVisible
-            pinBVisible = mMarkerStationB != null && mMarkerStationB!!.isVisible
             pinPickedPlaceVisible = mMarkerPickedPlace != null && mMarkerPickedPlace!!.isVisible
             pinPickedFavoriteVisible = mMarkerPickedFavorite != null && mMarkerPickedFavorite!!.isVisible
 
-            pinALatLng = if (mMarkerStationA != null) mMarkerStationA!!.position else MONTREAL_LATLNG
-            pinBLatLng = if (mMarkerStationB != null) mMarkerStationB!!.position else MONTREAL_LATLNG
             pinPickedPlaceLatLng = if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.position else MONTREAL_LATLNG
             pinPickedFavoriteLatLng = if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.position else MONTREAL_LATLNG
 
             pickedPlaceName = if (mMarkerPickedPlace != null) mMarkerPickedPlace!!.title else ""
             pickedFavoriteName = if (mMarkerPickedFavorite != null) mMarkerPickedFavorite!!.title else ""
 
-            pinAStationId = if (mMarkerStationA != null) mMarkerStationA!!.title else ""
+            //pinAStationId = if (mMarkerStationA != null) mMarkerStationA!!.title else ""
         }
 
         mGoogleMap!!.clear()
 
-        mMarkerStationA = mGoogleMap!!.addMarker(MarkerOptions().position(pinALatLng!!)
-                .icon(mPinAIconBitmapDescriptor)
-                .visible(pinAVisible)
-                .title(pinAStationId))
-        mMarkerStationB = mGoogleMap!!.addMarker(MarkerOptions().position(pinBLatLng!!)
-                .icon(mPinBIconBitmapDescriptor)
-                .visible(pinBVisible))
         mMarkerPickedPlace = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedPlaceLatLng!!)
                 .icon(mPinSearchIconBitmapDescriptor)
                 .visible(pinPickedPlaceVisible)
@@ -625,8 +644,9 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         if (pinPickedPlaceVisible)
             mMarkerPickedPlace!!.showInfoWindow()
 
-        if (pinPickedFavoriteVisible && (mMarkerPickedFavorite!!.position.latitude != pinBLatLng.latitude || mMarkerPickedFavorite!!.position.longitude != pinBLatLng.longitude))
-            mMarkerPickedFavorite!!.showInfoWindow()
+        //TODO: that seem kinda relevant for a use case (display info window)
+        /*if (pinPickedFavoriteVisible && (mMarkerPickedFavorite!!.position.latitude != pinBLatLng.latitude || mMarkerPickedFavorite!!.position.longitude != pinBLatLng.longitude))
+            mMarkerPickedFavorite!!.showInfoWindow()*/
 
         for (markerData in mMapMarkersGfxData) {
             markerData.addMarkerToMap(mGoogleMap!!)
@@ -640,12 +660,12 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             for (markerData in mMapMarkersGfxData) {
                 if (markerData.markerTitle.equals(_stationId!!, ignoreCase = true)) {
                     if (_lookingForBike) {
-                        mMarkerStationA!!.position = markerData.markerLatLng
-                        mMarkerStationA!!.isVisible = true
-                        mMarkerStationA!!.title = markerData.markerTitle
+                        pinAMarker.position = markerData.markerLatLng
+                        pinAMarker.isVisible = true
+                        pinAMarker.title = markerData.markerTitle
                     } else {
-                        mMarkerStationB!!.position = markerData.markerLatLng
-                        mMarkerStationB!!.isVisible = true
+                        pinBMarker!!.position = markerData.markerLatLng
+                        pinBMarker!!.isVisible = true
 
                         if (isPickedFavoriteMarkerVisible) {
                             if (markerPickedFavoriteVisibleLatLng!!.latitude == markerBVisibleLatLng!!.latitude && markerPickedFavoriteVisibleLatLng!!.longitude == markerBVisibleLatLng!!.longitude) {
