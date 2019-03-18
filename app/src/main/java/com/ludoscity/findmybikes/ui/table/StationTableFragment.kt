@@ -139,11 +139,6 @@ class StationTableFragment : Fragment() {
 
         tableFragmentModel.tableItemDataList.observe(this, android.arch.lifecycle.Observer {
             stationTableRecyclerViewAdapter.loadItems(it ?: emptyList())
-
-            if (it?.size ?: 0 != stationTableRecyclerViewAdapter.itemCount)
-                stationTableRecyclerViewAdapter.notifyDataSetChanged()
-            else
-                stationTableRecyclerViewAdapter.notifyItemRangeChanged(0, it?.size ?: 0)
         })
 
         tableFragmentModel.stationRecapVisibility.observe(this, android.arch.lifecycle.Observer { visible ->

@@ -2,6 +2,7 @@ package com.ludoscity.findmybikes.ui.table
 
 import android.os.Handler
 import android.support.design.widget.FloatingActionButton
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,9 @@ import android.widget.TextView
 import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Created by Gevrai on 2015-04-03.
@@ -19,6 +23,31 @@ import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
  */
 class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragmentViewModel,
                                       favListViewModel: FavoriteListViewModel) : RecyclerView.Adapter<StationTableRecyclerViewAdapter.BikeStationListItemViewHolder>() {
+
+    /**
+     * Created by F8Full on 2015-03-18.
+     *
+     * DiffCallback class to compare new items dataset and turn differences into instructions for the recyclerview
+     * see : https://developer.android.com/reference/android/support/v7/util/DiffUtil
+     */
+    private inner class TableDiffCallback(private val mOldList: List<StationTableItemData>, private val mNewList: List<StationTableItemData>) : DiffUtil.Callback() {
+
+        override fun getOldListSize(): Int {
+            return mOldList.size
+        }
+
+        override fun getNewListSize(): Int {
+            return mNewList.size
+        }
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return mNewList[newItemPosition].locationHash == mOldList[oldItemPosition].locationHash
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return mNewList[newItemPosition] == mOldList[oldItemPosition]
+        }
+    }
 
     var items: List<StationTableItemData> = emptyList()
 
@@ -29,9 +58,19 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
     //TODO: rework the fab
     //private var mFabAnimationRequested = false
 
+    private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
+    private val coroutineScopeMAIN = CoroutineScope(Dispatchers.Main)
 
     fun loadItems(newItems: List<StationTableItemData>) {
-        items = newItems
+
+        coroutineScopeIO.launch {
+            val diffResult = DiffUtil.calculateDiff(TableDiffCallback(items, newItems))
+
+            coroutineScopeMAIN.launch {
+                diffResult.dispatchUpdatesTo(this@StationTableRecyclerViewAdapter)
+                items = newItems
+            }
+        }
     }
 
     fun notifyStationChanged(_stationId: String) {
