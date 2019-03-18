@@ -40,22 +40,24 @@ class InjectorUtils {
 
         fun provideMapFragmentViewModelFactory(app: Application,
                                                isLookingForBike: LiveData<Boolean>,
-                                               isdataOutOfDate: LiveData<Boolean>,
+                                               isDataOutOfDate: LiveData<Boolean>,
                                                userLoc: LiveData<LatLng>,
                                                stationA: LiveData<BikeStation>,
                                                stationB: LiveData<BikeStation>,
-                                               destinationLoc: LiveData<LatLng>
+                                               finalDestinationLoc: LiveData<LatLng>,
+                                               isFinalDestinationFavorite: LiveData<Boolean>
         ): MapFragmentModelFactory {
             val repository = provideRepository()
             return MapFragmentModelFactory(
                     repository,
                     app,
                     isLookingForBike,
-                    isdataOutOfDate,
+                    isDataOutOfDate,
                     userLoc,
                     stationA,
                     stationB,
-                    destinationLoc
+                    finalDestinationLoc,
+                    isFinalDestinationFavorite
             )
         }
 

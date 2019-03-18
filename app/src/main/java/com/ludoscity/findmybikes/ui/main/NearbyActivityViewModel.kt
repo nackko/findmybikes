@@ -38,6 +38,8 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     private val pickedFavorite = MutableLiveData<FavoriteEntityBase>()
 
     private val userLoc = MutableLiveData<LatLng>()
+    private val finalDest = MutableLiveData<LatLng>()
+    private val isFinalDestFav = MutableLiveData<Boolean>()
 
     private val appBarExpanded = MutableLiveData<Boolean>()
 
@@ -46,6 +48,13 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     val userLocation: LiveData<LatLng>
         get() = userLoc
+
+    val finalDestinationLatLng: LiveData<LatLng>
+        get() = finalDest
+
+    //TODO: Maybe use an enum instead. eSEARCH, eFAVORITE
+    val isFinalDestinationFavorite: LiveData<Boolean>
+        get() = isFinalDestFav
 
     private val lookingForBike = MutableLiveData<Boolean>()
 
@@ -179,6 +188,9 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     val stationData: LiveData<List<BikeStation>>
 
     init {
+        ///DEBUG
+        //finalDest.value = LatLng(45.75725, 4.84974)//Lyon
+        ///
         stationData = repo.getBikeSystemStationData(getApplication())
 
         //userLoc.value = LatLng(45.75725, 4.84974)//Lyon

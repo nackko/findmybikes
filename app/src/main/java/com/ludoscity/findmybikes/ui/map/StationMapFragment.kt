@@ -1,7 +1,6 @@
 package com.ludoscity.findmybikes.ui.map
 
 import android.Manifest
-import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.pm.PackageManager
@@ -38,7 +37,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     //models. TODO:Retrieve at construction time ?
     //TODO: answer to question : yes, like table fragment gets availability data source through findmybikes repo
     //private val favoriteListViewModel: FavoriteListViewModel
-    private lateinit var mapFragmentModel: MapFragmentViewModel
 
     private var mInitialCameraSetupDone: Boolean = false
 
@@ -47,11 +45,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     private var gfxData: List<StationMapGfx> = emptyList()
 
-    private var mMarkerPickedPlace: Marker? = null
-    private var mPinSearchIconBitmapDescriptor: BitmapDescriptor? = null
     private var mMarkerPickedFavorite: Marker? = null
-    private var mPinFavoriteIconBitmapDescriptor: BitmapDescriptor? = null
-    private var mNoPinFavoriteIconBitmapDescriptor: BitmapDescriptor? = null
 
     private var mAttributionsText: TextView? = null
 
@@ -59,11 +53,12 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     private lateinit var pinAIconBitmapDescriptor: BitmapDescriptor
     private lateinit var pinBIconBitmapDescriptor: BitmapDescriptor
+    private lateinit var pinSearchIconBitmapDescriptor: BitmapDescriptor
+    private lateinit var pinFavoriteIconBitmapDescriptor: BitmapDescriptor
+    private lateinit var noPinFavoriteIconBitmapDescriptor: BitmapDescriptor
     private lateinit var pinAMarker: Marker
     private var pinBMarker: Marker? = null
-
-    //Pin markers can only be restored after mGoogleMap is ready
-    private var mBufferedBundle: Bundle? = null
+    private var finalDestinationMarker: Marker? = null
 
     val markerALatLng: LatLng?
         get() {
@@ -75,55 +70,30 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             return null
         }
 
-    //TODO: refactor so that the map fragment is a simple dumb view
-    //Model and controller could be NearbyActivity
-    //in any case, try to remove checks for visibility as a basis fro branching in NearbyActivity
-    val isPickedPlaceMarkerVisible: Boolean
-        get() = mMarkerPickedPlace != null && mMarkerPickedPlace!!.isVisible
-
-    //TODO: refactor so that the map fragment is a simple dumb view
-    //Model and controller could be NearbyActivity
-    //in any case, try to remove checks for visibility as a basis fro branching in NearbyActivity
-    //investigate if that should extend to grabbing LatLng and Name
-    val isPickedFavoriteMarkerVisible: Boolean
-        get() = mMarkerPickedFavorite != null && mMarkerPickedFavorite!!.isVisible
-
-    //LatLng
-    val markerPickedPlaceVisibleLatLng: LatLng?
+    private val activityModel: NearbyActivityViewModel
         get() {
-            var toReturn: LatLng? = null
-            if (mMarkerPickedPlace != null) {
-                if (mMarkerPickedPlace!!.isVisible)
-                    toReturn = mMarkerPickedPlace!!.position
-            } else if (mBufferedBundle != null && mBufferedBundle!!.getBoolean("pin_picked_place_visibility"))
-                toReturn = mBufferedBundle!!.getParcelable("pin_picked_place_latlng")
+            val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-            return toReturn
-        }
-    //Name
-    val markerPickedPlaceVisibleName: String?
-        get() {
-            var toReturn: String? = ""
-            if (mMarkerPickedPlace != null) {
-                if (mMarkerPickedPlace!!.isVisible)
-                    toReturn = mMarkerPickedPlace!!.title
-            } else if (mBufferedBundle != null && mBufferedBundle!!.getBoolean("pin_picked_place_visibility"))
-                toReturn = mBufferedBundle!!.getString("pin_picked_place_name")
-
-            return toReturn
+            return ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
         }
 
-    //LatLng
-    val markerPickedFavoriteVisibleLatLng: LatLng?
+    private val fragmentModel: MapFragmentViewModel
         get() {
-            var toReturn: LatLng? = null
-            if (mMarkerPickedFavorite != null) {
-                if (mMarkerPickedFavorite!!.isVisible)
-                    toReturn = mMarkerPickedFavorite!!.position
-            } else if (mBufferedBundle != null && mBufferedBundle!!.getBoolean("pin_picked_favorite_visibility"))
-                toReturn = mBufferedBundle!!.getParcelable("pin_picked_favorite_latlng")
+            val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-            return toReturn
+            val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+
+            //TODO: pass prebuilt factories to fragment (like table fragment ?)
+            val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                    findMyBikesActivityModel.isLookingForBike,
+                    findMyBikesActivityModel.isDataOutOfDate,
+                    findMyBikesActivityModel.userLocation,
+                    findMyBikesActivityModel.getStationA(),
+                    findMyBikesActivityModel.getStationB(),
+                    findMyBikesActivityModel.finalDestinationLatLng,
+                    findMyBikesActivityModel.isFinalDestinationFavorite)
+
+            return ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
         }
 
     //TODO: this seems related to onSaveInstanceState, see if relevant
@@ -140,7 +110,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         override fun onFinish() {
 
-            mapFragmentModel.showMapItems()
+            fragmentModel.showMapItems()
 
             mAnimCallback = null
 
@@ -148,7 +118,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         override fun onCancel() {
 
-            mapFragmentModel.showMapItems()
+            fragmentModel.showMapItems()
 
             mAnimCallback = null
 
@@ -163,25 +133,19 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         if (mGoogleMap == null)
             (activity!!.fragmentManager.findFragmentById(R.id.mapNearby) as MapFragment).getMapAsync(this)
 
-        mBufferedBundle = savedInstanceState
-
-        mPinSearchIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_search_24dp_black)
-        mPinFavoriteIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_favorite_24dp_black)
-        mNoPinFavoriteIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_nopin_favorite_24dp_white)
-
         mAttributionsText = inflatedView.findViewById<View>(R.id.attributions_text) as TextView
 
         pinAIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_a_36dp_black)
         pinBIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_b_36dp_black)
+        pinSearchIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_search_24dp_black)
+        pinFavoriteIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_favorite_24dp_black)
+        noPinFavoriteIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_nopin_favorite_24dp_white)
 
-        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-        val activityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
-
-        mapFragmentModel.lastClickedWhileLookingForBike.observe(this, Observer {
+        fragmentModel.lastClickedWhileLookingForBike.observe(this, Observer {
             activityModel.setStationA(it)
         })
-        mapFragmentModel.lastClickedWhileLookingForDock.observe(this, Observer {
+        fragmentModel.lastClickedWhileLookingForDock.observe(this, Observer {
             activityModel.setStationB(it)
         })
 
@@ -243,30 +207,15 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         mGoogleMap!!.uiSettings.isIndoorLevelPickerEnabled = false
         mGoogleMap!!.uiSettings.isTiltGesturesEnabled = false
 
-        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
-
-        val activityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
-
-
-        val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
-                activityModel.isLookingForBike,
-                activityModel.isDataOutOfDate,
-                activityModel.userLocation,
-                activityModel.getStationA(),
-                activityModel.getStationB(),
-                MutableLiveData<LatLng>())
-
-        mapFragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
-
-        mapFragmentModel.mapPaddingLeftPx.observe(this, Observer {
-            mGoogleMap!!.setPadding(it ?: 0, 0, mapFragmentModel.mapPaddingRightPx.value ?: 0, 0)
+        fragmentModel.mapPaddingLeftPx.observe(this, Observer {
+            mGoogleMap!!.setPadding(it ?: 0, 0, fragmentModel.mapPaddingRightPx.value ?: 0, 0)
         })
 
-        mapFragmentModel.mapPaddingRightPx.observe(this, Observer {
-            mGoogleMap!!.setPadding(mapFragmentModel.mapPaddingLeftPx.value ?: 0, 0, it ?: 0, 0)
+        fragmentModel.mapPaddingRightPx.observe(this, Observer {
+            mGoogleMap!!.setPadding(fragmentModel.mapPaddingLeftPx.value ?: 0, 0, it ?: 0, 0)
         })
 
-        mapFragmentModel.showMapItems.observe(this, Observer {
+        fragmentModel.showMapItems.observe(this, Observer {
             Log.d(TAG, "map item new visibility : $it")
             if (it == true) {
                 gfxData.forEach { mapGfx ->
@@ -279,21 +228,21 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             }
         })
 
-        mapFragmentModel.isDataOutOfDate.observe(this, Observer { dataIsOutOfDate ->
+        fragmentModel.isDataOutOfDate.observe(this, Observer { dataIsOutOfDate ->
             gfxData.forEach {
-                it.updateMarker(dataIsOutOfDate != false, mapFragmentModel.isLookingForBike.value == true,
+                it.updateMarker(dataIsOutOfDate != false, fragmentModel.isLookingForBike.value == true,
                         context!!)
             }
         })
 
-        mapFragmentModel.isLookingForBike.observe(this, Observer { isLookingForBike ->
+        fragmentModel.isLookingForBike.observe(this, Observer { isLookingForBike ->
             gfxData.forEach {
-                it.updateMarker(mapFragmentModel.isDataOutOfDate.value == true,
+                it.updateMarker(fragmentModel.isDataOutOfDate.value == true,
                         isLookingForBike == true, context!!)
             }
         })
 
-        mapFragmentModel.mapGfxLiveData.observe(this, Observer { newGfxData ->
+        fragmentModel.mapGfxLiveData.observe(this, Observer { newGfxData ->
 
 
             //TODO: should local gfxData list be cleared ?
@@ -316,6 +265,15 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                             .icon(pinBIconBitmapDescriptor)
                             .visible(activityModel.getStationB().value != null)
                             .title(activityModel.getStationB().value?.locationHash))
+
+
+            finalDestinationMarker = mGoogleMap!!.addMarker(
+                    MarkerOptions().position(
+                            fragmentModel.finalDestinationLatLng.value ?: LatLng(0.0, 0.0))
+                            .icon(pinFavoriteIconBitmapDescriptor)
+                            .visible(fragmentModel.finalDestinationLatLng.value != null)
+                            .title("")
+            )
             /*mMarkerPickedPlace = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedPlaceLatLng!!)
                     .icon(mPinSearchIconBitmapDescriptor)
                     .visible(pinPickedPlaceVisible)
@@ -339,14 +297,31 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             Log.d(TAG, "Markers redrawned, size :" + gfxData.size)
 
             if (mAnimCallback == null) {
-                mapFragmentModel.showMapItems()
+                fragmentModel.showMapItems()
             }
         })
 
-        mapFragmentModel.cameraAnimationTarget.observe(this, Observer {
+        fragmentModel.cameraAnimationTarget.observe(this, Observer {
             if (it != null) {
                 mAnimCallback = CustomCancellableCallback()
                 mGoogleMap!!.animateCamera(it, resources.getInteger(R.integer.camera_animation_duration), mAnimCallback)
+            }
+        })
+
+        fragmentModel.finalDestinationLatLng.observe(this, Observer {
+            if (it != null) {
+                finalDestinationMarker?.position = it
+                finalDestinationMarker?.isVisible = true
+            } else {
+                finalDestinationMarker?.isVisible = false
+            }
+        })
+
+        fragmentModel.isFinalDestinationFavorite.observe(this, Observer {
+            if (it == true) {
+                finalDestinationMarker?.setIcon(pinFavoriteIconBitmapDescriptor)
+            } else {
+                finalDestinationMarker?.setIcon(pinSearchIconBitmapDescriptor)
             }
         })
 
@@ -372,16 +347,13 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     override fun onMarkerClick(marker: Marker): Boolean {
 
         //TODO: this is the beginning of going full model
-        mapFragmentModel.setLastClickedStationById(marker.title)
+        fragmentModel.setLastClickedStationById(marker.title)
 
         //following code is "legacy"
         //TODO: in model
-        if (isPickedFavoriteMarkerVisible)
-            mMarkerPickedFavorite!!.showInfoWindow()
+        if (fragmentModel.finalDestinationLatLng.value != null)
+            finalDestinationMarker?.showInfoWindow()
 
-        //TODO: in model
-        if (isPickedPlaceMarkerVisible)
-            mMarkerPickedPlace!!.showInfoWindow()
 
         if (marker.title.equals(pinAMarker.title, ignoreCase = true) ||
                 pinAMarker.isVisible &&
@@ -415,17 +387,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mGoogleMap!!.uiSettings.isMyLocationButtonEnabled = false
         }
     }
-
-
-    //TODO: can't remove before re enabling
-    //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
-    fun setMapPaddingRight(_paddingPx: Int) {
-        //CURRENT_MAP_PADDING_RIGHT = _paddingPx
-        //mGoogleMap!!.setPadding(CURRENT_MAP_PADDING_LEFT, 0, CURRENT_MAP_PADDING_RIGHT, 0)   //seen java.lang.NullPointerException on Galaxy Nexus
-        //on rapid multiple screen orientation change
-        //timing issue with Handler runnable (NearbyActivity.java:2653)
-    }
-
     //TODO: in fragment model
     //TODO: rethink gestures
     fun setScrollGesturesEnabled(_toSet: Boolean) {
@@ -440,57 +401,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     //TODO: in model
     fun pickedFavoriteMarkerInfoWindowHide() {
         mMarkerPickedFavorite!!.hideInfoWindow()
-    }
-
-
-    //TODO: cleanup when place marker is back
-    fun setPinForPickedPlace(_placeName: String, _placePosition: LatLng, _attributions: CharSequence?) {
-
-        mMarkerPickedPlace!!.title = _placeName
-        mMarkerPickedPlace!!.position = _placePosition
-        mMarkerPickedPlace!!.isVisible = true
-        mMarkerPickedPlace!!.showInfoWindow()
-
-        if (_attributions != null) {
-            mAttributionsText!!.text = Utils.fromHtml(_attributions.toString())
-            mAttributionsText!!.visibility = View.VISIBLE
-        }
-    }
-
-    //TODO: cleanup when favorite marker is backk
-    fun setPinForPickedFavorite(_favoriteName: String, _favoritePosition: LatLng, _attributions: CharSequence?) {
-
-        mMarkerPickedFavorite!!.title = _favoriteName
-        mMarkerPickedFavorite!!.position = _favoritePosition
-        mMarkerPickedFavorite!!.isVisible = true
-
-        if (_favoritePosition.latitude == markerBVisibleLatLng!!.latitude && _favoritePosition.longitude == markerBVisibleLatLng!!.longitude) {
-            mMarkerPickedFavorite!!.setIcon(mNoPinFavoriteIconBitmapDescriptor)
-            mMarkerPickedFavorite!!.hideInfoWindow()
-        } else {
-            mMarkerPickedFavorite!!.setIcon(mPinFavoriteIconBitmapDescriptor)
-            mMarkerPickedFavorite!!.showInfoWindow()
-        }
-
-        if (_attributions != null) {
-            mAttributionsText!!.text = Utils.fromHtml(_attributions.toString())
-            mAttributionsText!!.visibility = View.VISIBLE
-        }
-    }
-
-    //TODO: cleanup when place marker is back
-    fun clearMarkerPickedPlace() {
-        if (mMarkerPickedPlace != null)
-            mMarkerPickedPlace!!.isVisible = false
-
-        mAttributionsText!!.visibility = View.GONE
-        mAttributionsText!!.text = ""
-    }
-
-    //TODO: cleanup when favorite marker is back
-    fun clearMarkerPickedFavorite() {
-        if (mMarkerPickedFavorite != null)
-            mMarkerPickedFavorite!!.isVisible = false
     }
 
     companion object {

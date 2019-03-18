@@ -40,12 +40,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -494,10 +492,10 @@ public class NearbyActivity extends AppCompatActivity
                     mOnboardingShowcaseView.hide();
                     mOnboardingShowcaseView = null;
                 }
-                if (mStationMapFragment.isPickedPlaceMarkerVisible())
-                    launchGoogleMapsForDirections(mStationMapFragment.getMarkerBVisibleLatLng(), mStationMapFragment.getMarkerPickedPlaceVisibleLatLng(), true);
-                else //Either Place marker or Favorite marker is visible, but not both at once
-                    launchGoogleMapsForDirections(mStationMapFragment.getMarkerBVisibleLatLng(), mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng(), true);
+                //if (mStationMapFragment.isPickedPlaceMarkerVisible())
+                //    launchGoogleMapsForDirections(mStationMapFragment.getMarkerBVisibleLatLng(), mStationMapFragment.getMarkerPickedPlaceVisibleLatLng(), true);
+                //else //Either Place marker or Favorite marker is visible, but not both at once
+                //    launchGoogleMapsForDirections(mStationMapFragment.getMarkerBVisibleLatLng(), mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng(), true);
             }
         });
         findViewById(R.id.trip_details_share).setOnClickListener(new View.OnClickListener() {
@@ -695,7 +693,7 @@ public class NearbyActivity extends AppCompatActivity
                     }
                 }
 
-                if (_toAdd instanceof FavoriteEntityPlace) {
+                /*if (_toAdd instanceof FavoriteEntityPlace) {
                     getTablePagerAdapter().showFavoriteHeaderInBTab();
                     mStationMapFragment.clearMarkerPickedPlace();
                     mFavoritePicked = true;
@@ -709,7 +707,7 @@ public class NearbyActivity extends AppCompatActivity
                     mStationMapFragment.setPinForPickedFavorite(_toAdd.getDisplayName(),
                             getLatLngForStation(_toAdd.getId()),
                             null);
-                }
+                }*/
 
                 if (!mIsFavorite)
                 {
@@ -1427,12 +1425,12 @@ public class NearbyActivity extends AppCompatActivity
 
                 boolean showFavoriteAddFab = false;
 
-                if (!mStationMapFragment.isPickedFavoriteMarkerVisible()) {
+                /*if (!mStationMapFragment.isPickedFavoriteMarkerVisible()) {
                     if (mStationMapFragment.isPickedPlaceMarkerVisible())
                         showFavoriteAddFab = true;  //Don't setup the fab as it's been done in OnActivityResult
                     else if (setupAddFavoriteFab(newFavForStation))
                         showFavoriteAddFab = true;
-                }
+                }*/
 
                 if (showFavoriteAddFab)
                     mAddFavoriteFAB.show();
@@ -1750,10 +1748,10 @@ public class NearbyActivity extends AppCompatActivity
                         .setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                if (!mStationMapFragment.isPickedFavoriteMarkerVisible())
+                                /*if (!mStationMapFragment.isPickedFavoriteMarkerVisible())
                                     animateShowcaseToAddFavorite();
                                 else
-                                    animateShowcaseToItinerary();
+                                    animateShowcaseToItinerary();*/
                             }
                         })
                         .build();
@@ -1991,11 +1989,11 @@ public class NearbyActivity extends AppCompatActivity
                     getTablePagerAdapter().highlightStationForTable(stationId, StationTablePagerAdapter.Companion.getDOCK_STATIONS());
                     getTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), true);
 
-                    mStationMapFragment.setPinForPickedPlace(_from.getName().toString(),
-                            _from.getLatLng(),
-                            _from.getAttributions());
+                    //mStationMapFragment.setPinForPickedPlace(_from.getName().toString(),
+                    //        _from.getLatLng(),
+                    //        _from.getAttributions());
 
-                    mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
+                    //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
                     animateCameraToShow((int) getResources().getDimension(R.dimen.camera_search_infowindow_padding),
                             _from.getLatLng(),
                             mStationMapFragment.getMarkerBVisibleLatLng(),
@@ -2085,11 +2083,11 @@ public class NearbyActivity extends AppCompatActivity
 
                         LatLng location = favorite.getLocation() != null ? favorite.getLocation() : getLatLngForStation(favorite.getId());
 
-                        mStationMapFragment.setPinForPickedFavorite(favorite.getDisplayName(),
+                        /*mStationMapFragment.setPinForPickedFavorite(favorite.getDisplayName(),
                                 location,
-                                favorite.getAttributions());
+                                favorite.getAttributions());*/
 
-                        mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
+                        //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
                         animateCameraToShow((int) getResources().getDimension(R.dimen.camera_search_infowindow_padding),
                                 location,
                                 mStationMapFragment.getMarkerBVisibleLatLng(),
@@ -2097,7 +2095,7 @@ public class NearbyActivity extends AppCompatActivity
                     }
                     else    //trip to a favorite station that has docks
                     {
-                        mStationMapFragment.setPinForPickedFavorite(favorite.getDisplayName(), favorite.getLocation() != null ? favorite.getLocation() : getLatLngForStation(favorite.getId()), favorite.getAttributions());
+                        //mStationMapFragment.setPinForPickedFavorite(favorite.getDisplayName(), favorite.getLocation() != null ? favorite.getLocation() : getLatLngForStation(favorite.getId()), favorite.getAttributions());
                         //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerBVisibleLatLng(), 15));
                     }
 
@@ -2150,17 +2148,17 @@ public class NearbyActivity extends AppCompatActivity
         //mStationMapFragment.setPinOnStation(false, _selectedStationId);
         getTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), true);
 
-        if (!mFavoritePicked)
-            mStationMapFragment.clearMarkerPickedFavorite();
+        //if (!mFavoritePicked)
+        //    mStationMapFragment.clearMarkerPickedFavorite();
 
-        if (mStationMapFragment.isPickedPlaceMarkerVisible() || mStationMapFragment.isPickedFavoriteMarkerVisible())
+        /*if (mStationMapFragment.isPickedPlaceMarkerVisible() || mStationMapFragment.isPickedFavoriteMarkerVisible())
         {
-            LatLng locationToShow;
+            LatLng locationToShow = null;
 
-            if (mStationMapFragment.isPickedPlaceMarkerVisible())
-                locationToShow = mStationMapFragment.getMarkerPickedPlaceVisibleLatLng();
-            else
-                locationToShow = mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng();
+            //if (mStationMapFragment.isPickedPlaceMarkerVisible())
+            //    locationToShow = mStationMapFragment.getMarkerPickedPlaceVisibleLatLng();
+            //else
+            //    locationToShow = mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng();
 
             //TODO: looks like removing and readding observer on a LiveData
             if (!_silent) {
@@ -2168,7 +2166,7 @@ public class NearbyActivity extends AppCompatActivity
                         locationToShow.longitude != selectedStation.getLocation().longitude)
                 {
                     //TODO: Padding in mapFragmentModel
-                    mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
+                    //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
                     animateCameraToShow((int) getResources().getDimension(R.dimen.camera_search_infowindow_padding),
                             selectedStation.getLocation(),//getLatLngForStation(_selectedStationId),
                             locationToShow,
@@ -2182,7 +2180,8 @@ public class NearbyActivity extends AppCompatActivity
             getTablePagerAdapter().highlightStationForTable(_selectedStationId, StationTablePagerAdapter.Companion.getDOCK_STATIONS());
             getTablePagerAdapter().smoothScrollHighlightedInViewForTable(StationTablePagerAdapter.Companion.getDOCK_STATIONS(), isAppBarExpanded());
         }
-        else{   //it's just an A-B trip
+        else*/
+        {   //it's just an A-B trip
             getTablePagerAdapter().setupUI(StationTablePagerAdapter.Companion.getDOCK_STATIONS(),
                     false,
                     null,
@@ -2195,8 +2194,8 @@ public class NearbyActivity extends AppCompatActivity
 
             if (!mFavoritePicked){
                 FavoriteEntityBase fav = mFavoriteListViewModel.getFavoriteEntityForId(_selectedStationId);
-                if (fav != null)
-                    mStationMapFragment.setPinForPickedFavorite(fav.getDisplayName(), getLatLngForStation(_selectedStationId), null );
+                //if (fav != null)
+                //    mStationMapFragment.setPinForPickedFavorite(fav.getDisplayName(), getLatLngForStation(_selectedStationId), null );
             }
 
             if (!_silent) {
@@ -2292,7 +2291,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     //TODO: this string of if...elseif...elseif...else needs refactoring.
                     // Explore extract methods or create some kind of tripdetailswidget configurator
-                    if (mStationMapFragment.getMarkerPickedPlaceVisibleLatLng() == null &&
+                    /*if (mStationMapFragment.getMarkerPickedPlaceVisibleLatLng() == null &&
                             mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng() == null) {
                         //no marker is showed
 
@@ -2320,34 +2319,13 @@ public class NearbyActivity extends AppCompatActivity
                         ViewGroup.LayoutParams param = mTripDetailsSumSeparator.getLayoutParams();
                         ((RelativeLayout.LayoutParams) param).addRule(RelativeLayout.BELOW, R.id.trip_details_b_to_search);
                     }
-                    else if (mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng().latitude != mStationMapFragment.getMarkerBVisibleLatLng().latitude ||
-                                mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng().longitude != mStationMapFragment.getMarkerBVisibleLatLng().longitude) {
-                        //Favorite marker is showed and not on B station
-
-                        formattedProximityString = Utils.getWalkingProximityString(selectedStation.getLocation(),
-                                mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng(),
-                                true, null, NearbyActivity.this);
-
-                        if (formattedProximityString.startsWith(">"))
-                            BToSearchMinutes = 61;
-                        else if (!formattedProximityString.startsWith("<"))
-                            BToSearchMinutes = Integer.valueOf(formattedProximityString.substring(1, 3));
-
-                        mTripDetailsProximitySearch.setText(formattedProximityString);
-
-                        mTripDetailsPinSearch.setVisibility(View.INVISIBLE);
-                        mTripDetailsPinFavorite.setVisibility(View.VISIBLE);
-                        mTripDetailsBToDestinationRow.setVisibility(View.VISIBLE);
-                        ViewGroup.LayoutParams param = mTripDetailsSumSeparator.getLayoutParams();
-                        ((RelativeLayout.LayoutParams) param).addRule(RelativeLayout.BELOW, R.id.trip_details_b_to_search);
-                    }
                     else{
                         //Favorite marker is showed and on B station
 
                         mTripDetailsBToDestinationRow.setVisibility(View.GONE);
                         ViewGroup.LayoutParams param = mTripDetailsSumSeparator.getLayoutParams();
                         ((RelativeLayout.LayoutParams) param).addRule(RelativeLayout.BELOW, R.id.trip_details_a_to_b);
-                    }
+                    }*/
 
                     int total = locToAMinutes + AToBMinutes + BToSearchMinutes;
 
@@ -2461,8 +2439,8 @@ public class NearbyActivity extends AppCompatActivity
                 getString(R.string.b_tab_question));
 
         //mStationMapFragment.clearMarkerB();
-        mStationMapFragment.clearMarkerPickedPlace();
-        mStationMapFragment.clearMarkerPickedFavorite();
+        //mStationMapFragment.clearMarkerPickedPlace();
+        //mStationMapFragment.clearMarkerPickedFavorite();
 
         //A TAB
         getTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), false);
@@ -2834,20 +2812,20 @@ public class NearbyActivity extends AppCompatActivity
 
                     LatLng locationToShow = null;
 
-                    if (mStationMapFragment.isPickedPlaceMarkerVisible()) {
-                        locationToShow = mStationMapFragment.getMarkerPickedPlaceVisibleLatLng();
+                    /*if (mStationMapFragment.isPickedPlaceMarkerVisible()) {
+                        //locationToShow = mStationMapFragment.getMarkerPickedPlaceVisibleLatLng();
                         mAddFavoriteFAB.show();
-                    }
-                    else if(mStationMapFragment.isPickedFavoriteMarkerVisible() &&
+                    }*/
+                    /*else if(mStationMapFragment.isPickedFavoriteMarkerVisible() &&
                             (mStationMapFragment.getMarkerBVisibleLatLng().latitude != mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng().latitude ||
                             mStationMapFragment.getMarkerBVisibleLatLng().longitude != mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng().longitude)
                             )
                         locationToShow = mStationMapFragment.getMarkerPickedFavoriteVisibleLatLng();
                     else if(!mStationMapFragment.isPickedFavoriteMarkerVisible() && !mFavoriteListViewModel.isFavorite(highlightedStation.getLocationHash()))
-                        mAddFavoriteFAB.show();
+                        mAddFavoriteFAB.show();*/
 
                     if (locationToShow != null) {
-                        mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
+                        //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_infowindow_padding));
                         animateCameraToShow((int) getResources().getDimension(R.dimen.camera_search_infowindow_padding),
                                 mStationMapFragment.getMarkerBVisibleLatLng(),
                                 locationToShow,

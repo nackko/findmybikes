@@ -366,11 +366,11 @@ class FindMyBikesActivity : AppCompatActivity(),
         }
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_b_to_destination).setOnClickListener {
-            if (stationMapFragment.isPickedPlaceMarkerVisible)
+            /*if (stationMapFragment.isPickedPlaceMarkerVisible)
                 launchGoogleMapsForDirections(stationMapFragment.markerBVisibleLatLng!!, stationMapFragment.markerPickedPlaceVisibleLatLng!!, true)
             else
             //Either Place marker or Favorite marker is visible, but not both at once
-                launchGoogleMapsForDirections(stationMapFragment.markerBVisibleLatLng!!, stationMapFragment.markerPickedFavoriteVisibleLatLng!!, true)
+                launchGoogleMapsForDirections(stationMapFragment.markerBVisibleLatLng!!, stationMapFragment.markerPickedFavoriteVisibleLatLng!!, true)*/
         }
         findViewById<View>(R.id.trip_details_share).setOnClickListener {
             //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
@@ -492,8 +492,8 @@ class FindMyBikesActivity : AppCompatActivity(),
                 false, null, null,
                 getString(R.string.b_tab_question))
 
-        stationMapFragment.clearMarkerPickedPlace()
-        stationMapFragment.clearMarkerPickedFavorite()
+        //stationMapFragment.clearMarkerPickedPlace()
+        //stationMapFragment.clearMarkerPickedFavorite()
 
         //A TAB
         getContentTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.BIKE_STATIONS, false)
