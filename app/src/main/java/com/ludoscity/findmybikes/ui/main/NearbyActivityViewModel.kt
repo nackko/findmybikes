@@ -189,6 +189,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     init {
         ///DEBUG
+        dataOutOfDate.value = true
         //finalDest.value = LatLng(45.75725, 4.84974)//Lyon
         ///
         stationData = repo.getBikeSystemStationData(getApplication())

@@ -742,8 +742,9 @@ class FindMyBikesActivity : AppCompatActivity(),
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
 
+        //this is debug
         nearbyActivityViewModel.setDataOutOfDate(!(nearbyActivityViewModel.isDataOutOfDate.value
-                ?: false))
+                ?: true))
 
         //TODO: act on model ?
         getTablePagerAdapter().setRefreshingAll(false)
