@@ -198,6 +198,10 @@ class FindMyBikesActivity : AppCompatActivity(),
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
 
+        nearbyActivityViewModel.isConnectivityAvailable.observe(this, Observer {
+            Log.d(TAG, "new connectivity status : $it")
+        })
+
         nearbyActivityViewModel.stationData.observe(this, Observer {
             Log.d(TAG, "New data has " + (it?.size ?: "") + " stations")
 

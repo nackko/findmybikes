@@ -5,6 +5,9 @@ import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkRequest
 import android.util.Log
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -23,6 +26,44 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
 
 //TODO: use AndroidViewModel instead of passing context
 class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
+
+    inner class FMBConnectivityManagerNetworkCallback
+        : ConnectivityManager.NetworkCallback() {
+
+        private var availabilityByNetworkToStringMap: HashMap<String, Boolean> = HashMap()
+
+        init {
+            //no connection by default
+            connectivityAvailable.value = false
+        }
+
+        @Suppress("unused")
+        fun getNetworkMap(): HashMap<String, Boolean> {
+            return availabilityByNetworkToStringMap
+        }
+
+        override fun onAvailable(network: Network) {
+            availabilityByNetworkToStringMap[network.toString()] = true
+            updateNetworkAvailability()
+        }
+
+        override fun onLost(network: Network?) {
+            availabilityByNetworkToStringMap[network.toString()] = false
+            updateNetworkAvailability()
+        }
+
+        //Sets availability to true if at least one network is available, false otherwise
+        private fun updateNetworkAvailability() {
+            var atLeastOneAvailable = false
+
+            for (networkAvailable in availabilityByNetworkToStringMap.values) {
+                atLeastOneAvailable = atLeastOneAvailable || networkAvailable
+            }
+
+            connectivityAvailable.postValue(atLeastOneAvailable)
+        }
+    }
+
     private val favoriteFabShown = MutableLiveData<Boolean>()
     private val favoriteSheetShown = MutableLiveData<Boolean>()
     private val favoriteItemNameEditInProgress = MutableLiveData<Boolean>()
@@ -32,7 +73,6 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     private val nearestBikeAutoSelected = MutableLiveData<Boolean>()
     private val lastDataUpdateEpochTimestamp = MutableLiveData<Long>()
-    private val currentUserLatLng = MutableLiveData<LatLng>()
     private val stationA = MutableLiveData<BikeStation>()
     private val stationB = MutableLiveData<BikeStation>()
     private val pickedFavorite = MutableLiveData<FavoriteEntityBase>()
@@ -44,6 +84,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     private val appBarExpanded = MutableLiveData<Boolean>()
 
     //TODO: should that be maintained in repository or should repo update activity model ?
+    //Tentative reply : that should be exposed by repo and channelled through model (like station availability data is)
     private val dataOutOfDate = MutableLiveData<Boolean>()
 
     val userLocation: LiveData<LatLng>
@@ -65,7 +106,10 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         lookingForBike.value = toSet
     }
 
-    private val isConnectivityAvailable = MutableLiveData<Boolean>()
+    val isConnectivityAvailable: LiveData<Boolean>
+        get() = connectivityAvailable
+
+    private val connectivityAvailable = MutableLiveData<Boolean>()
     private val isLocationServiceAvailable = MutableLiveData<Boolean>()
 
     val isFavoriteFabShown: LiveData<Boolean>
@@ -196,6 +240,14 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
         //userLoc.value = LatLng(45.75725, 4.84974)//Lyon
 
+        //connectivity
+        val builder = NetworkRequest.Builder()
+
+        (getApplication<Application>().applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).registerNetworkCallback(
+                builder.build(),
+                FMBConnectivityManagerNetworkCallback())
+
+        //user location
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication() as Context)
 
         locationCallback = object : LocationCallback() {
