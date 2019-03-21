@@ -77,8 +77,20 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             return ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
         }
 
-    private val fragmentModel: MapFragmentViewModel
+    //TODO: this seems related to onSaveInstanceState, see if relevant
+    /*val cameraPosition: CameraPosition?
         get() {
+            var toReturn: CameraPosition? = null
+            if (isMapReady)
+                toReturn = mGoogleMap!!.cameraPosition
+
+            return toReturn
+        }*/
+
+    private inner class CustomCancellableCallback : GoogleMap.CancelableCallback {
+        private val fragmentModel: MapFragmentViewModel
+
+        init {
             val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
             val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
@@ -93,20 +105,8 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                     findMyBikesActivityModel.finalDestinationLatLng,
                     findMyBikesActivityModel.isFinalDestinationFavorite)
 
-            return ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
+            fragmentModel = ViewModelProviders.of(this@StationMapFragment, modelFactory).get(MapFragmentViewModel::class.java)
         }
-
-    //TODO: this seems related to onSaveInstanceState, see if relevant
-    /*val cameraPosition: CameraPosition?
-        get() {
-            var toReturn: CameraPosition? = null
-            if (isMapReady)
-                toReturn = mGoogleMap!!.cameraPosition
-
-            return toReturn
-        }*/
-
-    private inner class CustomCancellableCallback : GoogleMap.CancelableCallback {
 
         override fun onFinish() {
 
@@ -140,6 +140,22 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         pinSearchIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_search_24dp_black)
         pinFavoriteIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_pin_favorite_24dp_black)
         noPinFavoriteIconBitmapDescriptor = Utils.getBitmapDescriptor(context!!, R.drawable.ic_nopin_favorite_24dp_white)
+
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
+
+        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+
+        //TODO: pass prebuilt factories to fragment (like table fragment ?)
+        val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                findMyBikesActivityModel.isLookingForBike,
+                findMyBikesActivityModel.isDataOutOfDate,
+                findMyBikesActivityModel.userLocation,
+                findMyBikesActivityModel.getStationA(),
+                findMyBikesActivityModel.getStationB(),
+                findMyBikesActivityModel.finalDestinationLatLng,
+                findMyBikesActivityModel.isFinalDestinationFavorite)
+
+        val fragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
 
 
         fragmentModel.lastClickedWhileLookingForBike.observe(this, Observer {
@@ -207,6 +223,22 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         mGoogleMap!!.uiSettings.isIndoorLevelPickerEnabled = false
         mGoogleMap!!.uiSettings.isTiltGesturesEnabled = false
 
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
+
+        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+
+        //TODO: pass prebuilt factories to fragment (like table fragment ?)
+        val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                findMyBikesActivityModel.isLookingForBike,
+                findMyBikesActivityModel.isDataOutOfDate,
+                findMyBikesActivityModel.userLocation,
+                findMyBikesActivityModel.getStationA(),
+                findMyBikesActivityModel.getStationB(),
+                findMyBikesActivityModel.finalDestinationLatLng,
+                findMyBikesActivityModel.isFinalDestinationFavorite)
+
+        val fragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
+
         fragmentModel.mapPaddingLeftPx.observe(this, Observer {
             mGoogleMap!!.setPadding(it ?: 0, 0, fragmentModel.mapPaddingRightPx.value ?: 0, 0)
         })
@@ -230,7 +262,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         fragmentModel.isDataOutOfDate.observe(this, Observer { dataIsOutOfDate ->
             gfxData.forEach {
-                it.updateMarker(dataIsOutOfDate != false, fragmentModel.isLookingForBike.value == true,
+                it.updateMarker(dataIsOutOfDate == true, fragmentModel.isLookingForBike.value == true,
                         context!!)
             }
         })
@@ -302,7 +334,11 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         })
 
         fragmentModel.cameraAnimationTarget.observe(this, Observer {
+
+            Log.d("truc", "MappPaddingLeft: ${fragmentModel.mapPaddingLeftPx.value}, MapPaddingRight: ${fragmentModel.mapPaddingRightPx.value}")
+
             if (it != null) {
+                Log.d(TAG, "observed new camera target")
                 mAnimCallback = CustomCancellableCallback()
                 mGoogleMap!!.animateCamera(it, resources.getInteger(R.integer.camera_animation_duration), mAnimCallback)
             }
@@ -325,6 +361,10 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             }
         })
 
+        fragmentModel.isScrollGesturesEnabled.observe(this, Observer {
+            mGoogleMap!!.uiSettings.isScrollGesturesEnabled = it == true
+        })
+
         activityModel.getStationA().observe(this, Observer {
             if (it != null) {
                 //TODO: find a way to animate that
@@ -345,6 +385,22 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
+
+        val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
+
+        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+
+        //TODO: pass prebuilt factories to fragment (like table fragment ?)
+        val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                findMyBikesActivityModel.isLookingForBike,
+                findMyBikesActivityModel.isDataOutOfDate,
+                findMyBikesActivityModel.userLocation,
+                findMyBikesActivityModel.getStationA(),
+                findMyBikesActivityModel.getStationB(),
+                findMyBikesActivityModel.finalDestinationLatLng,
+                findMyBikesActivityModel.isFinalDestinationFavorite)
+
+        val fragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
 
         //TODO: this is the beginning of going full model
         fragmentModel.setLastClickedStationById(marker.title)
@@ -386,11 +442,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mGoogleMap!!.isMyLocationEnabled = true
             mGoogleMap!!.uiSettings.isMyLocationButtonEnabled = false
         }
-    }
-    //TODO: in fragment model
-    //TODO: rethink gestures
-    fun setScrollGesturesEnabled(_toSet: Boolean) {
-        mGoogleMap!!.uiSettings.isScrollGesturesEnabled = _toSet
     }
 
     //TODO: in model

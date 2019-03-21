@@ -4,6 +4,7 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.arch.lifecycle.Observer
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -27,44 +28,11 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
 //TODO: use AndroidViewModel instead of passing context
 class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
 
-    inner class FMBConnectivityManagerNetworkCallback
-        : ConnectivityManager.NetworkCallback() {
-
-        private var availabilityByNetworkToStringMap: HashMap<String, Boolean> = HashMap()
-
-        init {
-            //no connection by default
-            connectivityAvailable.value = false
-        }
-
-        @Suppress("unused")
-        fun getNetworkMap(): HashMap<String, Boolean> {
-            return availabilityByNetworkToStringMap
-        }
-
-        override fun onAvailable(network: Network) {
-            availabilityByNetworkToStringMap[network.toString()] = true
-            updateNetworkAvailability()
-        }
-
-        override fun onLost(network: Network?) {
-            availabilityByNetworkToStringMap[network.toString()] = false
-            updateNetworkAvailability()
-        }
-
-        //Sets availability to true if at least one network is available, false otherwise
-        private fun updateNetworkAvailability() {
-            var atLeastOneAvailable = false
-
-            for (networkAvailable in availabilityByNetworkToStringMap.values) {
-                atLeastOneAvailable = atLeastOneAvailable || networkAvailable
-            }
-
-            connectivityAvailable.postValue(atLeastOneAvailable)
-        }
-    }
-
     private val favoriteFabShown = MutableLiveData<Boolean>()
+    private val favoritePickerFabShown = MutableLiveData<Boolean>()
+    private val searchFabShown = MutableLiveData<Boolean>()
+    private val directionsToStationAFabShown = MutableLiveData<Boolean>()
+    private val clearBSelectionFabShown = MutableLiveData<Boolean>()
     private val favoriteSheetShown = MutableLiveData<Boolean>()
     private val favoriteItemNameEditInProgress = MutableLiveData<Boolean>()
     private val favoriteSheetEditInProgress = MutableLiveData<Boolean>()
@@ -106,14 +74,27 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         lookingForBike.value = toSet
     }
 
-    val isConnectivityAvailable: LiveData<Boolean>
-        get() = connectivityAvailable
-
     private val connectivityAvailable = MutableLiveData<Boolean>()
     private val isLocationServiceAvailable = MutableLiveData<Boolean>()
 
+    val isConnectivityAvailable: LiveData<Boolean>
+        get() = connectivityAvailable
+
+    val isSearchFabShown: LiveData<Boolean>
+        get() = searchFabShown
+
+    val isDirectionsToStationAFabShown: LiveData<Boolean>
+        get() = directionsToStationAFabShown
+
+    val isClearBSelectionFabShown: LiveData<Boolean>
+        get() = clearBSelectionFabShown
+
     val isFavoriteFabShown: LiveData<Boolean>
         get() = favoriteFabShown
+
+    val isFavoritePickerFabShown: LiveData<Boolean>
+        get() = favoritePickerFabShown
+
     val isFavoriteSheetShown: LiveData<Boolean>
         get() {
 
@@ -185,7 +166,16 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         favoriteFabShown.value = true
     }
 
+    fun showSearchFab() {
+        searchFabShown.value = true
+    }
+
+    fun hideSearchFab() {
+        searchFabShown.value = false
+    }
+
     fun showFavoriteSheet() {
+        searchFabShown.value = false
         favoriteSheetShown.value = true
     }
 
@@ -199,6 +189,14 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     fun showFavoriteSheetEditFab() {
         favoriteSheetEditFabShown.value = true
+    }
+
+    fun showFavoritePickerFab() {
+        favoritePickerFabShown.value = true
+    }
+
+    fun hideFavoritePickerFab() {
+        favoritePickerFabShown.value = false
     }
 
     fun hideFavoriteFab() {
@@ -228,6 +226,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     //////////////////////////////////////////////////////////////////////////////////////////////
     //findMyBikesActivityViewModel
     private var locationCallback: LocationCallback
+    private var connectivityManagerNetworkCallback: ConnectivityManager.NetworkCallback
     private val repository : FindMyBikesRepository = repo
     val stationData: LiveData<List<BikeStation>>
 
@@ -241,11 +240,57 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         //userLoc.value = LatLng(45.75725, 4.84974)//Lyon
 
         //connectivity
+        connectivityManagerNetworkCallback = object : ConnectivityManager.NetworkCallback() {
+
+            private var availabilityByNetworkToStringMap: HashMap<String, Boolean> = HashMap()
+
+            init {
+                //no connection by default
+                connectivityAvailable.value = false
+            }
+
+            @Suppress("unused")
+            fun getNetworkMap(): HashMap<String, Boolean> {
+                return availabilityByNetworkToStringMap
+            }
+
+            override fun onAvailable(network: Network) {
+                availabilityByNetworkToStringMap[network.toString()] = true
+                updateNetworkAvailability()
+            }
+
+            override fun onLost(network: Network?) {
+                availabilityByNetworkToStringMap[network.toString()] = false
+                updateNetworkAvailability()
+            }
+
+            //Sets availability to true if at least one network is available, false otherwise
+            private fun updateNetworkAvailability() {
+                var atLeastOneAvailable = false
+
+                for (networkAvailable in availabilityByNetworkToStringMap.values) {
+                    atLeastOneAvailable = atLeastOneAvailable || networkAvailable
+                }
+
+                connectivityAvailable.postValue(atLeastOneAvailable)
+            }
+        }
+
         val builder = NetworkRequest.Builder()
 
         (getApplication<Application>().applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).registerNetworkCallback(
                 builder.build(),
-                FMBConnectivityManagerNetworkCallback())
+                connectivityManagerNetworkCallback)
+
+        connectivityAvailable.observeForever {
+            if (it == true) {
+                if (lookingForBike.value == false && stationB.value == null && favoriteSheetShown.value != true)
+                    searchFabShown.value = true
+            } else {
+                searchFabShown.value = false
+            }
+        }
+
 
         //user location
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication() as Context)
@@ -277,6 +322,51 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         } catch (e: SecurityException) {
             Log.e(this::class.java.simpleName, "You need location permission !!")
         }
+
+        //
+        isLookingForBike.observeForever(Observer {
+            if (it == true) {
+                searchFabShown.value = false
+                favoritePickerFabShown.value = false
+                favoriteFabShown.value = false
+                clearBSelectionFabShown.value = false
+                directionsToStationAFabShown.value = stationB.value == null
+            } else {
+                directionsToStationAFabShown.value = false
+                if (stationB.value == null) {
+
+                    if (favoriteSheetShown.value == true) {
+                        searchFabShown.value = false
+                    }
+                    if (favoriteSheetShown.value == null || favoriteSheetShown.value == false) {
+                        searchFabShown.value = connectivityAvailable.value == true
+                        favoritePickerFabShown.value = true
+                    }
+                } else {
+                    favoritePickerFabShown.value = false
+                    searchFabShown.value = false
+                    favoriteFabShown.value = true
+                    clearBSelectionFabShown.value = true
+                }
+            }
+        })
+
+        stationB.observeForever(Observer {
+            if (it != null) {
+                if (lookingForBike.value != true) {
+                    favoritePickerFabShown.value = false
+                    searchFabShown.value = false
+                    favoriteFabShown.value = true
+                    clearBSelectionFabShown.value = true
+                }
+            } else {
+                favoritePickerFabShown.value = true
+                searchFabShown.value = connectivityAvailable.value == true
+                favoriteFabShown.value = false
+                clearBSelectionFabShown.value = false
+
+            }
+        })
 
     }
 

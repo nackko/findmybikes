@@ -2730,7 +2730,8 @@ public class NearbyActivity extends AppCompatActivity
 
                 dismissOnboardingHint();
 
-                mStationMapFragment.setScrollGesturesEnabled(false);
+                //TODO: this is on map model now
+                //mStationMapFragment.setScrollGesturesEnabled(false);
 
                 if (mStationMapFragment.getMarkerBVisibleLatLng() == null) {
                     //mStationMapFragment.setMapPaddingLeft(0);
@@ -2772,7 +2773,8 @@ public class NearbyActivity extends AppCompatActivity
                 //mStationMapFragment.setMapPaddingRight(0);
 
                 //TODO: Should I lock that for regular users ?
-                mStationMapFragment.setScrollGesturesEnabled(true);
+                //TODO2: this is on map model now
+                //mStationMapFragment.setScrollGesturesEnabled(true);
 
                 mAppBarLayout.setExpanded(true, true);
 

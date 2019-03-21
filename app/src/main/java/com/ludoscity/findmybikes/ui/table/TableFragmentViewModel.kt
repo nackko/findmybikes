@@ -354,19 +354,19 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
             headerAvailText.value = app.getString(R.string.bikes)
         }
 
-
-
-
-
         bikeSystemAvailabilityDataSource = repo.getBikeSystemStationData(getApplication())
 
         //recyclerView
         bikeSystemAvailabilityDataObserver = android.arch.lifecycle.Observer { newData ->
 
-            computeAndEmitStationRecapDisplayData(stationRecapDataSource.value, isDataOutOfDate.value != false)
+            //TODO: have better Room database update strategy
+            //this is to protect against drop table strategy (led to inconsistency crashes in recyclerView)
+            if (newData?.isNotEmpty() != false) {
+                computeAndEmitStationRecapDisplayData(stationRecapDataSource.value, isDataOutOfDate.value != false)
 
-            computeAndEmitTableDisplayData(newData, isDataOutOfDate.value != false,
-                    numFormat, isDockTable)
+                computeAndEmitTableDisplayData(newData, isDataOutOfDate.value != false,
+                        numFormat, isDockTable)
+            }
 
         }
 

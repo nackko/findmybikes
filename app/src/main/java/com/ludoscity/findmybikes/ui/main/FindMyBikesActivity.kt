@@ -174,7 +174,6 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         //variables to retore state from bundle. TODO: Model will take care of that
 
-        var autoCompleteLoadingProgressBarVisible = false
         //var showcaseTripTotalPlaceName: String? = null
 
         /*if (savedInstanceState != null) {
@@ -198,10 +197,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
 
-        nearbyActivityViewModel.isConnectivityAvailable.observe(this, Observer {
-            Log.d(TAG, "new connectivity status : $it")
-        })
-
         nearbyActivityViewModel.stationData.observe(this, Observer {
             Log.d(TAG, "New data has " + (it?.size ?: "") + " stations")
 
@@ -218,11 +213,50 @@ class FindMyBikesActivity : AppCompatActivity(),
         //mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel::class.java)
 
 
-        nearbyActivityViewModel.isFavoriteFabShown.observe(this, Observer<Boolean> { aBoolean ->
-            if (aBoolean == null || aBoolean)
+        nearbyActivityViewModel.isFavoritePickerFabShown.observe(this, Observer {
+
+            if (it == true)
                 favoritesSheetFab.showFab()
             else
                 favoritesSheetFab.hideSheetThenFab()
+        })
+
+        nearbyActivityViewModel.isFavoriteSheetShown.observe(this, Observer {
+            if (it == true)
+                favoritesSheetFab.showSheet()
+            else
+                favoritesSheetFab.hideSheet()
+
+        })
+
+        nearbyActivityViewModel.isFavoriteFabShown.observe(this, Observer {
+            if (it == true) {
+                addFavoriteFAB.show()
+            } else {
+                addFavoriteFAB.hide()
+            }
+        })
+
+        nearbyActivityViewModel.isClearBSelectionFabShown.observe(this, Observer {
+            if (it == true) {
+                clearFAB.show()
+            } else {
+                clearFAB.hide()
+            }
+        })
+
+        nearbyActivityViewModel.isSearchFabShown.observe(this, Observer {
+            if (it == true)
+                searchFAB.show()
+            else
+                searchFAB.hide()
+        })
+
+        nearbyActivityViewModel.isDirectionsToStationAFabShown.observe(this, Observer {
+            if (it == true)
+                directionsLocToAFab.show()
+            else
+                directionsLocToAFab.hide()
         })
 
         nearbyActivityViewModel.getCurrentBikeSytemId().observe(this, Observer<String> { newBikeSystemId ->
@@ -288,6 +322,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                         NumberFormat.getInstance()
                 ))
         stationTableViewPager.addOnPageChangeListener(this)
+        nearbyActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
 
         // Give the TabLayout the ViewPager
         tabLayout = findViewById(R.id.sliding_tabs)
@@ -336,8 +371,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         addFavoriteFAB = findViewById(R.id.favorite_add_remove_fab)
         directionsLocToAFab = findViewById(R.id.directions_loc_to_a_fab)
         placeAutocompleteLoadingProgressBar = findViewById(R.id.place_autocomplete_loading)
-        if (autoCompleteLoadingProgressBarVisible)
-            placeAutocompleteLoadingProgressBar.visibility = View.VISIBLE
 
         //TODO: add splashscreen back
         /*if (savedInstanceState == null)
@@ -482,9 +515,23 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     private fun clearBSelection() {
-        nearbyActivityViewModel.clearPickedFavorite()
-        hideTripDetailsWidget()
-        clearBTab()
+        nearbyActivityViewModel.setStationB(null)
+        //nearbyActivityViewModel.clearPickedFavorite()
+        //hideTripDetailsWidget()
+        //clearBTab()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            PLACE_AUTOCOMPLETE_REQUEST_CODE -> {
+                placeAutocompleteLoadingProgressBar.visibility = View.GONE
+                searchFAB.backgroundTintList = ContextCompat.getColorStateList(this, R.color.theme_primary_dark)
+                nearbyActivityViewModel.showFavoritePickerFab()
+                //mFavoritesSheetFab.showFab();
+                addFavoriteFAB.hide()
+                nearbyActivityViewModel.showSearchFab()
+            }
+        }
     }
 
     //TODO: this business logic will go in Activity model
@@ -505,10 +552,11 @@ class FindMyBikesActivity : AppCompatActivity(),
         if (nearbyActivityViewModel.isLookingForBike.value == null || nearbyActivityViewModel.isLookingForBike.value == false) {
             //stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(stationMapFragment.markerALatLng, 13f))
             //mFavoritesSheetFab.showFab();
-            nearbyActivityViewModel.showFavoriteFab()
+            nearbyActivityViewModel.showFavoritePickerFab()
+            //nearbyActivityViewModel.showFavoriteFab()
             //mFavoriteListViewModel.showFab();
             if (Utils.Connectivity.isConnected(this@FindMyBikesActivity))
-                searchFAB.show()
+                nearbyActivityViewModel.showSearchFab()
             clearFAB.hide()
             addFavoriteFAB.hide()
         } else {
@@ -624,7 +672,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
                 startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE)
 
-                nearbyActivityViewModel.hideFavoriteFab()
+                nearbyActivityViewModel.hideFavoritePickerFab()
 
                 searchFAB.backgroundTintList = ContextCompat.getColorStateList(this@FindMyBikesActivity, R.color.light_gray)
 
@@ -723,21 +771,16 @@ class FindMyBikesActivity : AppCompatActivity(),
         favoritesSheetFab.setEventListener(object : MaterialSheetFabEventListener() {
             override fun onShowSheet() {
 
-                searchFAB.hide()
-                //mFavoriteSheetVisible = true;   //This is tracked in viewmodel
+                nearbyActivityViewModel.hideSearchFab()
             }
 
             override fun onSheetHidden() {
 
-                //if (!isLookingForBike() && stationMapFragment.markerBVisibleLatLng == null) {
                 if (nearbyActivityViewModel.isLookingForBike.value == false &&
-                        nearbyActivityViewModel.getStationB().value == null) {
-                    //B tab with no selection
-                    if (Utils.Connectivity.isConnected(this@FindMyBikesActivity))
-                        searchFAB.show()
-                }
+                        nearbyActivityViewModel.getStationB().value == null &&
+                        nearbyActivityViewModel.isConnectivityAvailable.value == true)
 
-                //mFavoriteSheetVisible = false;
+                    nearbyActivityViewModel.showSearchFab()
             }
         })
     }
