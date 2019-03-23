@@ -61,7 +61,7 @@ public class Fab extends FloatingActionButton implements AnimatedFab {
             }
 
             // Animate FAB expanding
-            anim.setDuration(FAB_ANIM_DURATION);
+            anim.setDurationText(FAB_ANIM_DURATION);
             anim.setInterpolator(getInterpolator());
             startAnimation(anim);
         }
@@ -70,7 +70,7 @@ public class Fab extends FloatingActionButton implements AnimatedFab {
     }
 
     /*private void setTranslation(float translationX, float translationY) {
-        animate().setInterpolator(getInterpolator()).setDuration(FAB_ANIM_DURATION)
+        animate().setInterpolator(getInterpolator()).setDurationText(FAB_ANIM_DURATION)
                 .translationX(translationX).translationY(translationY);
     }
 

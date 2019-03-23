@@ -360,11 +360,11 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
                         //The width percentage is updated so that the name TextView gives room to the fabs
                         //RecyclerView gives us free opacity/bounds resizing animations
-                        PercentRelativeLayout.LayoutParams params =(PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
+                        PercentRelativeLayout.LayoutParams params =(PercentRelativeLayout.LayoutParams) nameText.getLayoutParams();
                         PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
 
                         info.widthPercent = Utils.getPercentResource(mCtx, R.dimen.favorite_name_width_sheet_editing, true);
-                        mName.requestLayout();
+                        nameText.requestLayout();
 
                     }
                     else {
@@ -379,11 +379,11 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
 
                         mOrderingAffordanceHandle.setVisibility(View.GONE);
 
-                        PercentRelativeLayout.LayoutParams params =(PercentRelativeLayout.LayoutParams) mName.getLayoutParams();
+                        PercentRelativeLayout.LayoutParams params =(PercentRelativeLayout.LayoutParams) nameText.getLayoutParams();
                         PercentLayoutHelper.PercentLayoutInfo info = params.getPercentLayoutInfo();
 
                         info.widthPercent = Utils.getPercentResource(mCtx, R.dimen.favorite_name_width_no_sheet_editing, true);
-                        mName.requestLayout();
+                        nameText.requestLayout();
                     }
 
                 }
@@ -512,7 +512,7 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
                 mName.requestFocus();
 
                 //API level 21+
-                //mName.setShowSoftInputOnFocus(true);
+                //nameText.setShowSoftInputOnFocus(true);
 
                 showSoftInput();
             }

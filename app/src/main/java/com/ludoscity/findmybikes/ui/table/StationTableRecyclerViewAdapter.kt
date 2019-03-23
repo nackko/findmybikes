@@ -105,50 +105,50 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
 
     inner class BikeStationListItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
-        var mProximity: TextView = itemView.findViewById(R.id.station_proximity)
-        var mName: TextView = itemView.findViewById(R.id.station_name)
-        var mAvailability: TextView = itemView.findViewById(R.id.station_availability)
+        private var durationText: TextView = itemView.findViewById(R.id.station_proximity)
+        private var nameText: TextView = itemView.findViewById(R.id.station_name)
+        var availabilityText: TextView = itemView.findViewById(R.id.station_availability)
 
-        var mFavoriteFab: FloatingActionButton = itemView.findViewById(R.id.favorite_fab)
+        private var favoriteFab: FloatingActionButton = itemView.findViewById(R.id.favorite_fab)
 
         //This View is gone by default. It becomes visible when a row in the recycler View is tapped
         //It's used in two ways
         //-clear the space underneath fabs final positions
         //-anchor fabs to their final position
-        var mFabsAnchor: FrameLayout = itemView.findViewById(R.id.fabs_anchor)
+        var fabsAnchor: FrameLayout = itemView.findViewById(R.id.fabs_anchor)
 
-        private val mFabAnimHandler: Handler? = null
-        private var mStationId: String? = null
+        private val fabAnimHandler: Handler? = null
+        private var stationId: String? = null
 
         val favoriteFabTarget: ViewTarget
-            get() = ViewTarget(mFavoriteFab)
+            get() = ViewTarget(favoriteFab)
 
         init {
 
             itemView.setOnClickListener(this)
 
-            mFavoriteFab.setOnClickListener(this)
+            favoriteFab.setOnClickListener(this)
         }
 
         fun bindStation(item: StationTableItemData) {
 
-            mStationId = item.locationHash
+            stationId = item.locationHash
 
-            if (item.proximityText != null) {
-                mProximity.visibility = View.VISIBLE
-                mProximity.text = item.proximityText
+            if (item.durationText != null) {
+                durationText.visibility = View.VISIBLE
+                durationText.text = item.durationText
             } else {
-                mProximity.visibility = View.GONE
+                durationText.visibility = View.GONE
             }
 
-            mProximity.alpha = item.proximityAlpha
+            durationText.alpha = item.proximityAlpha
 
-            mName.text = item.name
+            nameText.text = item.name
 
-            mName.alpha = item.nameAlpha
+            nameText.alpha = item.nameAlpha
 
-            mAvailability.paint.isStrikeThruText = item.isAvailabilityPaintStrikeThru
-            mAvailability.paint.typeface = item.availabilityPaintTypeface
+            availabilityText.paint.isStrikeThruText = item.isAvailabilityPaintStrikeThru
+            availabilityText.paint.typeface = item.availabilityPaintTypeface
 
 
             //TODO: replug fab in item view
@@ -156,7 +156,7 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
             //Remove this code to display a fab on selected station
             //val nameWidthPercent: Float
 
-            //TODO: on observinf, is proximityText string is null or not
+            //TODO: on observinf, is durationText string is null or not
             /*if (mShowProximity) {
                 nameWidthPercent = Utils.getPercentResource(mCtx, R.dimen.name_column_width_default_percent, true)
             } else {
@@ -164,14 +164,14 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
             }
 
             //name width percentage restoration
-            val params = mName.layoutParams as PercentRelativeLayout.LayoutParams
+            val params = nameText.layoutParams as PercentRelativeLayout.LayoutParams
             val info = params.percentLayoutInfo
             info.widthPercent = nameWidthPercent
-            mName.requestLayout()*/
+            nameText.requestLayout()*/
 
-            mAvailability.text = item.availabilityText
+            availabilityText.text = item.availabilityText
 
-            mAvailability.alpha = item.availabilityalpha
+            availabilityText.alpha = item.availabilityAlpha
 
             itemView.setBackgroundResource(item.itemBackgroundResId)
         }
@@ -182,7 +182,7 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
 
             //TODO: rework BikeStation identification
             //I'm on the ViewHolder, I have the bike station location hash/"id"
-            tableFragmentModel.setLastClickedStationById(mStationId)
+            tableFragmentModel.setLastClickedStationById(stationId)
 
             //TODO: see stationTableRecyclerViewAdapter.notifyItemRangeChanged(0, it?.size ?: 0) in tableFragment
             //JAVA CODE ! (Converted in Kotlin)
@@ -221,9 +221,9 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
                     mListener.onStationListItemClick(StationTableFragment.STATION_LIST_FAVORITE_FAB_CLICK_PATH)
                     //ordering matters
                     if (mFavoriteListViewModel.isFavorite(selected!!.locationHash))
-                        mFavoriteFab.setImageResource(R.drawable.ic_action_favorite_24dp)
+                        favoriteFab.setImageResource(R.drawable.ic_action_favorite_24dp)
                     else
-                        mFavoriteFab.setImageResource(R.drawable.ic_action_favorite_outline_24dp)
+                        favoriteFab.setImageResource(R.drawable.ic_action_favorite_outline_24dp)
                 }
             }
             */
