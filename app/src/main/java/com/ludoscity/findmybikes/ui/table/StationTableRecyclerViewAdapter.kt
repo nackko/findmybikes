@@ -4,6 +4,7 @@ import android.os.Handler
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,9 +65,11 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
     fun loadItems(newItems: List<StationTableItemData>) {
 
         coroutineScopeIO.launch {
+            Log.d(TAG, "Background thread, about to calculate diffresult, oldSize: ${items.size} -- newSize: ${newItems.size}")
             val diffResult = DiffUtil.calculateDiff(TableDiffCallback(items, newItems))
 
             coroutineScopeMAIN.launch {
+                Log.d(TAG, "UI thread, about to dispatch, oldSize: ${items.size} -- newSize: ${newItems.size}")
                 diffResult.dispatchUpdatesTo(this@StationTableRecyclerViewAdapter)
                 items = newItems
             }
@@ -230,5 +233,6 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
     companion object {
 
         private lateinit var mFavoriteListViewModel: FavoriteListViewModel
+        private val TAG = StationTableRecyclerViewAdapter::class.java.simpleName
     }
 }
