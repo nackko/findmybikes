@@ -6,7 +6,7 @@ data class StationTableItemData(
         val itemBackgroundResId: Int,
         val durationText: String?, val proximityAlpha: Float,
         val name: String, val nameAlpha: Float,
-        val availabilityText: String, val availabilityalpha: Float,
+        val availabilityText: String, val availabilityAlpha: Float,
         val isAvailabilityPaintStrikeThru: Boolean,
         val availabilityPaintTypeface: Typeface,
         //TODO: rework station identification
