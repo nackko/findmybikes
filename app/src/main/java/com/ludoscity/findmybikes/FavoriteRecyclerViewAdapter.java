@@ -177,8 +177,8 @@ public class FavoriteRecyclerViewAdapter extends RecyclerView.Adapter<FavoriteRe
         super();
         mItemClickListener = _onItemClicklistener;
         mItemStartDragListener = _onItemDragListener;
-        mFavoriteNameWidthSheetEditing = Utils.getPercentResource(_ctx, R.dimen.favorite_name_width_sheet_editing, true);
-        mFavoriteNameWidthNoSheetEditing = Utils.getPercentResource(_ctx, R.dimen.favorite_name_width_no_sheet_editing, true);
+        mFavoriteNameWidthSheetEditing = Utils.INSTANCE.getPercentResource(_ctx, R.dimen.favorite_name_width_sheet_editing, true);
+        mFavoriteNameWidthNoSheetEditing = Utils.INSTANCE.getPercentResource(_ctx, R.dimen.favorite_name_width_no_sheet_editing, true);
         mResolvedThemeAccentColor = ContextCompat.getColor(_ctx, R.color.theme_accent);
         mResolvedThemeAccentTransparentColor = ContextCompat.getColor(_ctx, R.color.theme_accent_transparent);
         mInputMethodManager = (InputMethodManager) _ctx.getSystemService(Context.INPUT_METHOD_SERVICE);

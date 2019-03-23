@@ -418,15 +418,15 @@ public class NearbyActivity extends AppCompatActivity
         mSplashScreenTextTop = findViewById(R.id.splashscreen_text_top);
         mSplashScreenTextBottom = findViewById(R.id.splashscreen_text_bottom);
 
-        mTripDetailsWidget = findViewById(R.id.trip_details);
-        mTripDetailsProximityA = findViewById(R.id.trip_details_proximity_a);
+        //mTripDetailsWidget = findViewById(R.id.trip_details);
+        /*mTripDetailsProximityA = findViewById(R.id.trip_details_proximity_a);
         mTripDetailsProximityB = findViewById(R.id.trip_details_proximity_b);
         mTripDetailsProximitySearch = findViewById(R.id.trip_details_proximity_search);
         mTripDetailsProximityTotal = findViewById(R.id.trip_details_proximity_total);
         mTripDetailsSumSeparator = findViewById(R.id.trip_details_sum_separator);
         mTripDetailsBToDestinationRow = findViewById(R.id.trip_details_b_to_search);
         mTripDetailsPinSearch = findViewById(R.id.trip_details_to_search);
-        mTripDetailsPinFavorite = findViewById(R.id.trip_details_to_favorite);
+        mTripDetailsPinFavorite = findViewById(R.id.trip_details_to_favorite);*/
 
         mSearchFAB = findViewById(R.id.search_fab);
         mAddFavoriteFAB = findViewById(R.id.favorite_add_remove_fab);
@@ -504,7 +504,8 @@ public class NearbyActivity extends AppCompatActivity
 
                 //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
                 //I will be at the Bixi station Hutchison/beaubien in ~15min ! Shared via #findmybikes
-                String message = String.format(getResources().getString(R.string.trip_details_share_message_content),
+                //TODO: re implement share
+                /*String message = String.format(getResources().getString(R.string.trip_details_share_message_content),
                         DBHelper.getInstance().getBikeNetworkName(getApplicationContext()), getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getDOCK_STATIONS()).getName(),
                         mTripDetailsProximityTotal.getText().toString());
 
@@ -512,7 +513,7 @@ public class NearbyActivity extends AppCompatActivity
                 sendIntent.setAction(Intent.ACTION_SEND);
                 sendIntent.putExtra(Intent.EXTRA_TEXT, message);
                 sendIntent.setType("text/plain");
-                startActivity(Intent.createChooser(sendIntent, getString(R.string.trip_details_share_title)));
+                startActivity(Intent.createChooser(sendIntent, getString(R.string.trip_details_share_title)));*/
             }
         });
 
@@ -538,7 +539,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private void tryInitialSetup(){
 
-        if (Utils.Connectivity.isConnected(this)) {
+        if (Utils.Connectivity.Companion.isConnected(this)) {
             mSplashScreenTextTop.setText(getString(R.string.auto_bike_select_finding));
 
             if (DBHelper.getInstance().isBikeNetworkIdAvailable(this)) {
@@ -557,7 +558,7 @@ public class NearbyActivity extends AppCompatActivity
             }
         }
         else{
-            Utils.Snackbar.makeStyled(mSplashScreen, R.string.connectivity_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
+            Utils.Snackbar.INSTANCE.makeStyled(mSplashScreen, R.string.connectivity_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                     .setAction(R.string.retry, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -569,7 +570,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private void setupActionBarStrings() {
         //noinspection ConstantConditions
-        getSupportActionBar().setTitle(Utils.fromHtml(String.format(getResources().getString(R.string.appbar_title_formatting),
+        getSupportActionBar().setTitle(Utils.INSTANCE.fromHtml(String.format(getResources().getString(R.string.appbar_title_formatting),
                 getResources().getString(R.string.appbar_title_prefix),
                 DBHelper.getInstance().getHashtaggableNetworkName(this),
                 getResources().getString(R.string.appbar_title_postfix))));
@@ -580,7 +581,7 @@ public class NearbyActivity extends AppCompatActivity
             city_hashtag = " @mtlvi";
         }
         String hastagedEnhanced_bikeNetworkCity = bikeNetworkCity + city_hashtag;
-        getSupportActionBar().setSubtitle(Utils.fromHtml(String.format(getResources().getString(R.string.appbar_subtitle_formatted), hastagedEnhanced_bikeNetworkCity)));
+        getSupportActionBar().setSubtitle(Utils.INSTANCE.fromHtml(String.format(getResources().getString(R.string.appbar_subtitle_formatted), hastagedEnhanced_bikeNetworkCity)));
     }
 
     private void setupLocationRequest(){
@@ -744,7 +745,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
                             .setBoundsBias(DBHelper.getInstance().getBikeNetworkBounds(NearbyActivity.this,
-                                    Utils.getAverageBikingSpeedKmh(NearbyActivity.this)))
+                                    Utils.INSTANCE.getAverageBikingSpeedKmh(NearbyActivity.this)))
                             .build(NearbyActivity.this);
 
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
@@ -889,7 +890,7 @@ public class NearbyActivity extends AppCompatActivity
                     mSplashScreenTextTop.setText(R.string.sad_emoji);
                     mSplashScreenTextBottom.setText("");
 
-                    Utils.Snackbar.makeStyled(mSplashScreen, R.string.location_turn_on, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
+                    Utils.Snackbar.INSTANCE.makeStyled(mSplashScreen, R.string.location_turn_on, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                             .setAction(R.string.retry, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -969,7 +970,7 @@ public class NearbyActivity extends AppCompatActivity
             if (ActivityCompat.shouldShowRequestPermissionRationale(NearbyActivity.this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-                Utils.Snackbar.makeStyled(mSplashScreen, R.string.location_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
+                Utils.Snackbar.INSTANCE.makeStyled(mSplashScreen, R.string.location_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                         .setAction(R.string.retry, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -978,7 +979,7 @@ public class NearbyActivity extends AppCompatActivity
                         }).show();
             }
             else{
-                Utils.Snackbar.makeStyled(mSplashScreen, R.string.location_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
+                Utils.Snackbar.INSTANCE.makeStyled(mSplashScreen, R.string.location_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                         .setAction(R.string.settings, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -1016,7 +1017,7 @@ public class NearbyActivity extends AppCompatActivity
 
                                 switch (which){
                                     case 0:
-                                        startActivity(Utils.getWebIntent(NearbyActivity.this, "http://www.citybik.es", true, text.toString()));
+                                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.citybik.es")));
                                         break;
                                     case 1:
                                         intent = new Intent(Intent.ACTION_VIEW);
@@ -1034,12 +1035,12 @@ public class NearbyActivity extends AppCompatActivity
                                             uri = Uri.parse("fb://facewebmodal/f?href=" + url);
                                             intent = new Intent(Intent.ACTION_VIEW, uri);
                                         } catch (PackageManager.NameNotFoundException e) {
-                                            intent = Utils.getWebIntent(NearbyActivity.this, url, true, text.toString());
+                                            intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                                         }
 
                                         //Seen ActivityNotFoundException in firebase cloud lab (FB package found but can't be launched)
                                         if(intent.resolveActivity(getPackageManager()) == null)
-                                            intent = Utils.getWebIntent(NearbyActivity.this, url, true, text.toString());
+                                            intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 
                                         startActivity(intent);
 
@@ -1073,11 +1074,11 @@ public class NearbyActivity extends AppCompatActivity
                                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         } catch (PackageManager.NameNotFoundException e) {
                                             // no Twitter app, revert to browser
-                                            intent = Utils.getWebIntent(NearbyActivity.this, "https://twitter.com/findmybikesdata", true, text.toString());
+                                            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/findmybikesdata"));
                                         }
 
                                         if(intent.resolveActivity(getPackageManager()) == null)
-                                            intent = Utils.getWebIntent(NearbyActivity.this, "https://twitter.com/findmybikesdata", true, text.toString());
+                                            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/findmybikesdata"));
 
                                         startActivity(intent);
 
@@ -1117,11 +1118,11 @@ public class NearbyActivity extends AppCompatActivity
             getTablePagerAdapter().notifyStationChangedAll(_toAdd.getId());
 
         if (!showUndo) {
-            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_added,
+            Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.favorite_added,
                     Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
                     .show();
         } else {
-            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_added, Snackbar.LENGTH_LONG, ContextCompat.getColor(this, R.color.theme_primary_dark))
+            Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.favorite_added, Snackbar.LENGTH_LONG, ContextCompat.getColor(this, R.color.theme_primary_dark))
                     .setAction(R.string.undo, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -1176,7 +1177,7 @@ public class NearbyActivity extends AppCompatActivity
             public void onSheetHidden() {
                 if (!isLookingForBike() && mStationMapFragment.getMarkerBVisibleLatLng() == null) {
                     //B tab with no selection
-                    if (Utils.Connectivity.isConnected(NearbyActivity.this))
+                    if (Utils.Connectivity.Companion.isConnected(NearbyActivity.this))
                         mSearchFAB.show();
 
                     if (!checkOnboarding(eONBOARDING_LEVEL.ONBOARDING_LEVEL_FULL, eONBOARDING_STEP.ONBOARDING_STEP_SEARCH_SHOWCASE) &&
@@ -1237,13 +1238,13 @@ public class NearbyActivity extends AppCompatActivity
 
         if(!showUndo){
 
-            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_removed,
+            Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.favorite_removed,
                     Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
                     .show();
         }
         else {
             final FavoriteEntityBase toReAdd = mFavoriteListViewModel.getFavoriteEntityForId(favoriteId);
-            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.favorite_removed,
+            Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.favorite_removed,
                     Snackbar.LENGTH_LONG, ContextCompat.getColor(this, R.color.theme_primary_dark))
                     .setAction(R.string.undo, new View.OnClickListener() {
                         @Override
@@ -1261,7 +1262,7 @@ public class NearbyActivity extends AppCompatActivity
     public void onFavoriteListChanged(boolean noFavorite) {
          if (noFavorite){
             ((TextView)findViewById(R.id.favorites_sheet_header_textview)).setText(
-                    Utils.fromHtml(String.format(getResources().getString(R.string.no_favorite), DBHelper.getInstance().getBikeNetworkName(this))));
+                    Utils.INSTANCE.fromHtml(String.format(getResources().getString(R.string.no_favorite), DBHelper.getInstance().getBikeNetworkName(this))));
             findViewById(R.id.favorite_sheet_edit_fab).setVisibility(View.INVISIBLE);
             findViewById(R.id.favorite_sheet_edit_done_fab).setVisibility(View.INVISIBLE);
 
@@ -1269,7 +1270,7 @@ public class NearbyActivity extends AppCompatActivity
         }
         else{
             ((TextView)findViewById(R.id.favorites_sheet_header_textview)).setText(
-                    Utils.fromHtml(String.format(getResources().getString(R.string.favorites_sheet_header), DBHelper.getInstance().getBikeNetworkName(this))));
+                    Utils.INSTANCE.fromHtml(String.format(getResources().getString(R.string.favorites_sheet_header), DBHelper.getInstance().getBikeNetworkName(this))));
 
             ((FloatingActionButton)findViewById(R.id.favorite_sheet_edit_fab)).show();
         }
@@ -1281,7 +1282,7 @@ public class NearbyActivity extends AppCompatActivity
 
         if (stationA.getLocationHash().equalsIgnoreCase(favoriteId)) {
 
-            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.such_short_trip, Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
+            Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.such_short_trip, Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
                     .show();
 
         } else {
@@ -1492,7 +1493,7 @@ public class NearbyActivity extends AppCompatActivity
                     //String formatted = DateUtils.formatElapsedTime(differenceInSeconds);
 
                     //... then about next update
-                    if (Utils.Connectivity.isConnected(getApplicationContext())) {
+                    if (Utils.Connectivity.Companion.isConnected(getApplicationContext())) {
 
                         getTablePagerAdapter().setRefreshEnabledAll(true);
                         if (!mSearchFAB.isEnabled()) {
@@ -1573,7 +1574,7 @@ public class NearbyActivity extends AppCompatActivity
 
                         //Requesting raw string with availability
                         String rawClosest = getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
-                        getTablePagerAdapter().highlightStationforId(true, Utils.extractNearestAvailableStationIdFromDataString(rawClosest));
+                        getTablePagerAdapter().highlightStationforId(true, Utils.INSTANCE.extractNearestAvailableStationIdFromDataString(rawClosest));
 
                         getTablePagerAdapter().smoothScrollHighlightedInViewForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS(), isAppBarExpanded());
                         final BikeStation closestBikeStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
@@ -1643,18 +1644,18 @@ public class NearbyActivity extends AppCompatActivity
 
                                 if (mDataOutdated){
 
-                                    mFindBikesSnackbar = Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.auto_bike_select_outdated,
+                                    mFindBikesSnackbar = Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.auto_bike_select_outdated,
                                             Snackbar.LENGTH_LONG, ContextCompat.getColor(NearbyActivity.this, R.color.theme_accent));
 
                                 }
                                 else if(!closestBikeStation.isLocked() && closestBikeStation.getFreeBikes() > DBHelper.getInstance().getCriticalAvailabilityMax(NearbyActivity.this)) {
 
-                                    mFindBikesSnackbar = Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.auto_bike_select_found,
+                                    mFindBikesSnackbar = Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.auto_bike_select_found,
                                             Snackbar.LENGTH_LONG, ContextCompat.getColor(NearbyActivity.this, R.color.snackbar_green));
                                 }
                                 else{
 
-                                    mFindBikesSnackbar = Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.auto_bike_select_none,
+                                    mFindBikesSnackbar = Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.auto_bike_select_none,
                                             Snackbar.LENGTH_LONG, ContextCompat.getColor(NearbyActivity.this, R.color.theme_accent));
                                 }
 
@@ -1665,7 +1666,7 @@ public class NearbyActivity extends AppCompatActivity
 
                         mClosestBikeAutoSelected = true;
                         //launch twitter task if not already running, pass it the raw String
-                        if ( Utils.Connectivity.isConnected(getApplicationContext()) && //data network available
+                        if (Utils.Connectivity.Companion.isConnected(getApplicationContext()) && //data network available
                                 mUpdateTwitterTask == null &&   //not already tweeting
                                 rawClosest.length() > 32 + TableFragmentViewModel.Companion.getAOK_AVAILABILITY_POSTFIX().length() && //validate format - 32 is station ID length
                                 (rawClosest.contains(TableFragmentViewModel.Companion.getAOK_AVAILABILITY_POSTFIX()) || rawClosest.contains(TableFragmentViewModel.Companion.getBAD_AVAILABILITY_POSTFIX())) && //validate content
@@ -1706,7 +1707,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private void setupShowcaseSearch() {
 
-        if (Utils.Connectivity.isConnected(getApplicationContext())) {
+        if (Utils.Connectivity.Companion.isConnected(getApplicationContext())) {
 
             /*if(mFavoritesSheetFab.isSheetVisible())
                 mFavoritesSheetFab.hideSheet();*/
@@ -1777,17 +1778,17 @@ public class NearbyActivity extends AppCompatActivity
 
         int messageResourceId = R.string.onboarding_hint_main_choice;
 
-        if (!Utils.Connectivity.isConnected(getApplicationContext()))
+        if (!Utils.Connectivity.Companion.isConnected(getApplicationContext()))
             messageResourceId = R.string.onboarding_hint_main_choice_no_connectivity;
 
-        mOnboardingSnackBar =  Utils.Snackbar.makeStyled(mCoordinatorLayout, messageResourceId, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(this, R.color.theme_primary_dark))
+        mOnboardingSnackBar = Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, messageResourceId, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(this, R.color.theme_primary_dark))
                 /*.setAction(R.string.gotit, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         //Snackbar dismisses itself on click
                     }
                 })*/;
-        if (!Utils.Connectivity.isConnected(getApplicationContext()))
+        if (!Utils.Connectivity.Companion.isConnected(getApplicationContext()))
             mOnboardingSnackBar.getView().setTag("NO_CONNECTIVITY");
         else
             mOnboardingSnackBar.getView().setTag("CONNECTIVITY");
@@ -1805,13 +1806,13 @@ public class NearbyActivity extends AppCompatActivity
     }
 
     private void setupHintTapFavName(){
-        mOnboardingSnackBar =  Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.onboarding_hint_tap_favorite_name, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark));
+        mOnboardingSnackBar = Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.onboarding_hint_tap_favorite_name, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark));
         mOnboardingSnackBar.getView().setTag(null);
         mOnboardingSnackBar.show();
     }
 
     private void setupHintSearch(){
-        mOnboardingSnackBar =  Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.onboarding_hint_search, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark));
+        mOnboardingSnackBar = Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.onboarding_hint_search, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark));
         mOnboardingSnackBar.getView().setTag(null);
         mOnboardingSnackBar.show();
     }
@@ -1834,22 +1835,17 @@ public class NearbyActivity extends AppCompatActivity
 
     private void setStatusBarClickListener() {
         //Because the citybik.es landing page is javascript heavy
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
 
-            mStatusBar.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (Utils.Connectivity.isConnected(getApplicationContext())) {
-                        // use the android system webview
-                        Intent intent = new Intent(NearbyActivity.this, WebViewActivity.class);
-                        intent.putExtra(WebViewActivity.EXTRA_URL, "http://www.citybik.es");
-                        intent.putExtra(WebViewActivity.EXTRA_ACTIONBAR_SUBTITLE, getString(R.string.hashtag_cities));
-                        intent.putExtra(WebViewActivity.EXTRA_JAVASCRIPT_ENABLED, true);
-                        startActivity(intent);
-                    }
-                }
-            });
-        }
+        mStatusBar.setOnClickListener(v -> {
+            if (Utils.Connectivity.Companion.isConnected(getApplicationContext())) {
+                // use the android system webview
+                Intent intent = new Intent(NearbyActivity.this, WebViewActivity.class);
+                intent.putExtra(WebViewActivity.EXTRA_URL, "http://www.citybik.es");
+                intent.putExtra(WebViewActivity.EXTRA_ACTIONBAR_SUBTITLE, getString(R.string.hashtag_cities));
+                intent.putExtra(WebViewActivity.EXTRA_JAVASCRIPT_ENABLED, true);
+                startActivity(intent);
+            }
+        });
     }
 
     /*@Override
@@ -1926,7 +1922,7 @@ public class NearbyActivity extends AppCompatActivity
                 }
             } else {
 
-                Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.onboarding_hint_main_choice, Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
+                Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.onboarding_hint_main_choice, Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
                         .show();
 
                 mStationTableViewPager.setCurrentItem(StationTablePagerAdapter.Companion.getDOCK_STATIONS(), true);
@@ -1981,7 +1977,7 @@ public class NearbyActivity extends AppCompatActivity
                     //highlight B station in list
 
                     //the following is why the handler is required (to let time for things to settle after calling getTablePagerAdapter().setupUI)
-                    String stationId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getDOCK_STATIONS()));
+                    String stationId = Utils.INSTANCE.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getDOCK_STATIONS()));
 
                     getTablePagerAdapter().hideStationRecap();
                     //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
@@ -2070,7 +2066,7 @@ public class NearbyActivity extends AppCompatActivity
                     //highlight B station in list
 
                     //the following is why the handler is required (to let time for things to settle after calling getTablePagerAdapter().setupUI)
-                    String stationId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getDOCK_STATIONS()));
+                    String stationId = Utils.INSTANCE.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getDOCK_STATIONS()));
 
                     getTablePagerAdapter().hideStationRecap();
                     //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
@@ -2267,7 +2263,7 @@ public class NearbyActivity extends AppCompatActivity
                     int BToSearchMinutes = 0;
 
                     BikeStation selectedStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
-                    String formattedProximityString = Utils.getWalkingProximityString(selectedStation.getLocation(),
+                    String formattedProximityString = Utils.INSTANCE.getWalkingProximityString(selectedStation.getLocation(),
                             mCurrentUserLatLng, true, null, NearbyActivity.this);
                     if (formattedProximityString.startsWith(">"))
                         locToAMinutes = 61;
@@ -2278,7 +2274,7 @@ public class NearbyActivity extends AppCompatActivity
 
 
                     selectedStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getDOCK_STATIONS());
-                    formattedProximityString = Utils.getBikingProximityString(selectedStation.getLocation(),
+                    formattedProximityString = Utils.INSTANCE.getBikingProximityString(selectedStation.getLocation(),
                             getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS()).getLocation(),
                             true, null, NearbyActivity.this);
                     if (formattedProximityString.startsWith(">"))
@@ -2329,7 +2325,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     int total = locToAMinutes + AToBMinutes + BToSearchMinutes;
 
-                    mTripDetailsProximityTotal.setText(Utils.durationToProximityString(total, false, null, NearbyActivity.this));
+                    mTripDetailsProximityTotal.setText(Utils.INSTANCE.durationToProximityString(total, false, null, NearbyActivity.this));
 
                 } else
                     handler.postDelayed(this, 10);
@@ -2338,34 +2334,29 @@ public class NearbyActivity extends AppCompatActivity
     }
 
     //For reusable Animators (which most Animators are, apart from the one-shot animator produced by createCircularReveal()
-    private Animator buildTripDetailsWidgetAnimators(boolean _show, long _duration, float _minRadiusMultiplier){
+    private Animator buildTripDetailsWidgetAnimators(boolean show, long durationMillis, float minRadiusMultiplier) {
 
-        float minRadiusMultiplier = Math.min(1.f, _minRadiusMultiplier);
+        float minRadiusMultiplierSafe = Math.min(1.f, minRadiusMultiplier);
 
-        Animator toReturn = null;
+        Animator toReturn;
 
-        // Use native circular reveal on Android 5.0+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        // Native circular reveal uses coordinates relative to the view
+        int revealStartX = 0;
+        int revealStartY = mTripDetailsWidget.getHeight();
 
-            // Native circular reveal uses coordinates relative to the view
-            int revealStartX = 0;
-            int revealStartY = mTripDetailsWidget.getHeight();
+        float radiusMax = (float) Math.hypot(mTripDetailsWidget.getHeight(), mTripDetailsWidget.getWidth());
+        float radiusMin = radiusMax * minRadiusMultiplierSafe;
 
-            float radiusMax = (float)Math.hypot(mTripDetailsWidget.getHeight(), mTripDetailsWidget.getWidth());
-            float radiusMin = radiusMax * minRadiusMultiplier;
-
-            if (_show)
-            {
-                toReturn = ViewAnimationUtils.createCircularReveal(mTripDetailsWidget, revealStartX,
-                                revealStartY, radiusMin, radiusMax);
-            } else {
-                toReturn = ViewAnimationUtils.createCircularReveal(mTripDetailsWidget, revealStartX,
-                        revealStartY, radiusMax, radiusMin);
-            }
-
-            toReturn.setDuration(_duration);
-            toReturn.setInterpolator(mCircularRevealInterpolator);
+        if (show) {
+            toReturn = ViewAnimationUtils.createCircularReveal(mTripDetailsWidget, revealStartX,
+                    revealStartY, radiusMin, radiusMax);
+        } else {
+            toReturn = ViewAnimationUtils.createCircularReveal(mTripDetailsWidget, revealStartX,
+                    revealStartY, radiusMax, radiusMin);
         }
+
+        toReturn.setDuration(durationMillis);
+        toReturn.setInterpolator(mCircularRevealInterpolator);
 
         return toReturn;
     }
@@ -2374,14 +2365,10 @@ public class NearbyActivity extends AppCompatActivity
 
         mTripDetailsWidget.setVisibility(View.VISIBLE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-            try {
-                buildTripDetailsWidgetAnimators(true, getResources().getInteger(R.integer.camera_animation_duration), 0).start();
-            }
-            catch (IllegalStateException e){
-                Log.i("NearbyActivity", "Trip widget show animation end encountered some trouble, skipping", e);
-            }
+        try {
+            buildTripDetailsWidgetAnimators(true, getResources().getInteger(R.integer.camera_animation_duration), 0).start();
+        } catch (IllegalStateException e) {
+            Log.i("NearbyActivity", "Trip widget show animation end encountered some trouble, skipping", e);
         }
     }
 
@@ -2450,7 +2437,7 @@ public class NearbyActivity extends AppCompatActivity
             //mFavoritesSheetFab.showFab();
             mNearbyActivityViewModel.showFavoriteFab();
             //mFavoriteListViewModel.showFab();
-            if (Utils.Connectivity.isConnected(NearbyActivity.this))
+            if (Utils.Connectivity.Companion.isConnected(NearbyActivity.this))
                 mSearchFAB.show();
             mClearFAB.hide();
             mAddFavoriteFAB.hide();
@@ -2638,7 +2625,7 @@ public class NearbyActivity extends AppCompatActivity
         if (getPackageManager().queryIntentActivities(intent, 0).size() > 0) {
             startActivity(intent); // launch the map activity
         } else {
-            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.google_maps_not_installed,
+            Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.google_maps_not_installed,
                     Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
                     .show();
         }
@@ -2764,7 +2751,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     //if mDataOutdated is true, a Download task will be launched if auto update is also true and a connection is available
                     //That's because autoupdate max interval is SMALLER than outdating one
-                    if (!(mDataOutdated && DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.isConnected(this)))
+                    if (!(mDataOutdated && DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.Companion.isConnected(this)))
                         ;//mStationMapFragment.lookingForBikes(mDataOutdated, true);
                 }
             } else { //B TAB
@@ -2794,7 +2781,7 @@ public class NearbyActivity extends AppCompatActivity
                         mDirectionsLocToAFab.hide();
                         mNearbyActivityViewModel.showFavoriteFab();
                         //mFavoritesSheetFab.showFab();
-                        if (Utils.Connectivity.isConnected(NearbyActivity.this))
+                        if (Utils.Connectivity.Companion.isConnected(NearbyActivity.this))
                             mSearchFAB.show();
                     }
 
@@ -2840,7 +2827,7 @@ public class NearbyActivity extends AppCompatActivity
                 //Log.d("NearbyActivity", "onPageSelected - about to update markers with mDataOutdated : " + mDataOutdated, new Exception());
                 //if mDataOutdated is true, a Download task will be launched if auto update is also true and a connection is available
                 //That's because autoupdate max interval is SMALLER than outdating one
-                if (!(mDataOutdated && DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.isConnected(this)))
+                if (!(mDataOutdated && DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.Companion.isConnected(this)))
                     ;//mStationMapFragment.lookingForBikes(mDataOutdated, false);
             }
         }
@@ -2854,7 +2841,7 @@ public class NearbyActivity extends AppCompatActivity
 
             //If update mode is set to manual and user are out of the bound of the bike network
             //let's check if there's a better bike network avaialble.
-            if (!DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.isConnected(NearbyActivity.this))
+            if (!DBHelper.getInstance().getAutoUpdate(this) && Utils.Connectivity.Companion.isConnected(NearbyActivity.this))
             {
                 if (mCurrentUserLatLng != null && !DBHelper.getInstance().getBikeNetworkBounds(NearbyActivity.this, 5).contains(mCurrentUserLatLng)) {
                     //This task will possibly auto cancel if it can't find a better bike network
@@ -2917,7 +2904,7 @@ public class NearbyActivity extends AppCompatActivity
     private boolean isStationAClosestBike(){
 
         String stationAId = "";//mStationMapFragment.getMarkerAStationId();
-        String closestBikeId = Utils.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getBIKE_STATIONS()));
+        String closestBikeId = Utils.INSTANCE.extractNearestAvailableStationIdFromDataString(getTablePagerAdapter().retrieveClosestRawIdAndAvailability(StationTablePagerAdapter.Companion.getBIKE_STATIONS()));
 
         return stationAId.equalsIgnoreCase(closestBikeId);
     }
@@ -2929,7 +2916,7 @@ public class NearbyActivity extends AppCompatActivity
 
         if (stationA.getLocationHash().equalsIgnoreCase(_favoriteID)) {
 
-            Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.such_short_trip, Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
+            Utils.Snackbar.INSTANCE.makeStyled(mCoordinatorLayout, R.string.such_short_trip, Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
                     .show();
 
         } else {
@@ -3081,7 +3068,7 @@ public class NearbyActivity extends AppCompatActivity
             if (!DBHelper.getInstance().isBikeNetworkIdAvailable(NearbyActivity.this)){
                 mSplashScreenTextTop.setText(getString(R.string.sad_emoji));
                 mSplashScreenTextBottom.setText("");
-                Utils.Snackbar.makeStyled(mSplashScreen, R.string.connectivity_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
+                Utils.Snackbar.INSTANCE.INSTANCE.makeStyled(mSplashScreen, R.string.connectivity_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                         .setAction(R.string.retry, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -3090,7 +3077,7 @@ public class NearbyActivity extends AppCompatActivity
                         }).show();
             }
             else if (_result.containsKey(ERROR_KEY_IOEXCEPTION)){   //HTTP session ran into troubles
-                Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.auto_download_failed,
+                Utils.Snackbar.INSTANCE.INSTANCE.makeStyled(mCoordinatorLayout, R.string.auto_download_failed,
                         Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                         .setAction(R.string.resume, new View.OnClickListener() {
                             @Override
@@ -3250,16 +3237,16 @@ public class NearbyActivity extends AppCompatActivity
             AlertDialog alertDialog = new AlertDialog.Builder(NearbyActivity.this).create();
             //alertDialog.setTitle(getString(R.string.network_found_title));
             if (!backgroundResults.keySet().contains("old_network_name")) {
-                alertDialog.setTitle(Utils.fromHtml(String.format(getResources().getString(R.string.hello_city), "", backgroundResults.get("new_network_city") )));
-                alertDialog.setMessage(Utils.fromHtml(String.format(getString(R.string.bike_network_found_message),
+                alertDialog.setTitle(Utils.INSTANCE.fromHtml(String.format(getResources().getString(R.string.hello_city), "", backgroundResults.get("new_network_city"))));
+                alertDialog.setMessage(Utils.INSTANCE.fromHtml(String.format(getString(R.string.bike_network_found_message),
                         DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this) )));
                 Message toPass = null; //To resolve ambiguous call
                 //noinspection ConstantConditions
                 alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(R.string.ok), toPass);
             }
             else{
-                alertDialog.setTitle(Utils.fromHtml(String.format(getResources().getString(R.string.hello_city), getResources().getString(R.string.hello_travel), backgroundResults.get("new_network_city"))));
-                alertDialog.setMessage(Utils.fromHtml(String.format(getString(R.string.bike_network_change_message),
+                alertDialog.setTitle(Utils.INSTANCE.fromHtml(String.format(getResources().getString(R.string.hello_city), getResources().getString(R.string.hello_travel), backgroundResults.get("new_network_city"))));
+                alertDialog.setMessage(Utils.INSTANCE.fromHtml(String.format(getString(R.string.bike_network_change_message),
                         DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this), mOldBikeNetworkName)));
                 Message toPass = null; //To resolve ambiguous call
                 //noinspection ConstantConditions
@@ -3356,7 +3343,7 @@ public class NearbyActivity extends AppCompatActivity
             List<Pair<String,String>> discardedStations = new ArrayList<>();
 
             BikeStation selectedStation = null;
-            List<String> extracted = Utils.extractOrderedStationIdsFromProcessedString(params[0]);
+            List<String> extracted = Utils.INSTANCE.extractOrderedStationIdsFromProcessedString(params[0]);
             //extracted will contain as firt element
             //   359f354466083c962d243bc238c95245_AVAILABILITY_AOK
             //OR 359f354466083c962d243bc238c95245_AVAILABILITY_BAD
@@ -3379,7 +3366,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     selectedNbBikes = selectedStation.getFreeBikes();
 
-                    selectedProximityString = Utils.getWalkingProximityString(selectedStation.getLocation(),
+                    selectedProximityString = Utils.INSTANCE.getWalkingProximityString(selectedStation.getLocation(),
                             mCurrentUserLatLng, false, null, NearbyActivity.this);
 
                     //station name will be truncated to fit everything in a single tweet
@@ -3601,7 +3588,7 @@ public class NearbyActivity extends AppCompatActivity
                 DBHelper.getInstance().pauseAutoUpdate(); //Must be done in all cases : getAutoUpdate factorizes in the suspend flag
 
                 if (DBHelper.getInstance().getAutoUpdate(NearbyActivity.this)) {
-                    Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.auto_download_failed,
+                    Utils.Snackbar.INSTANCE.INSTANCE.makeStyled(mCoordinatorLayout, R.string.auto_download_failed,
                             Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                             .setAction(R.string.resume, new View.OnClickListener() {
                                 @Override
@@ -3610,7 +3597,7 @@ public class NearbyActivity extends AppCompatActivity
                                 }
                             }).show();
                 } else {
-                    Utils.Snackbar.makeStyled(mCoordinatorLayout, R.string.manual_download_failed,
+                    Utils.Snackbar.INSTANCE.INSTANCE.makeStyled(mCoordinatorLayout, R.string.manual_download_failed,
                             Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                             .setAction(R.string.retry, new View.OnClickListener() {
                                 @Override
@@ -3625,7 +3612,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 mSplashScreenTextTop.setText(getString(R.string.sad_emoji));
                 mSplashScreenTextBottom.setText("");
-                Utils.Snackbar.makeStyled(mSplashScreen, R.string.connectivity_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
+                Utils.Snackbar.INSTANCE.INSTANCE.makeStyled(mSplashScreen, R.string.connectivity_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark))
                         .setAction(R.string.retry, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {

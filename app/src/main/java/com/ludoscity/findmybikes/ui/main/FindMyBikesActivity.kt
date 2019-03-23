@@ -6,7 +6,6 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.support.design.widget.*
@@ -20,14 +19,12 @@ import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.animation.AnimationUtils
 import android.view.animation.Interpolator
-import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.location.places.ui.PlaceAutocomplete
 import com.google.android.gms.maps.MapsInitializer
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
@@ -118,22 +115,12 @@ class FindMyBikesActivity : AppCompatActivity(),
     private val PLACE_AUTOCOMPLETE_REQUEST_CODE = 1
 
     //TODO: Trip details fragment
-    private lateinit var tripDetailsWidget: View
-    private lateinit var tripDetailsProximityA: TextView
-    private lateinit var tripDetailsProximityB: TextView
-    private lateinit var tripDetailsProximitySearch: TextView
+    private lateinit var tripDetailsFragment: View
     private lateinit var tripDetailsProximityTotal: TextView
-    private lateinit var tripDetailsSumSeparator: FrameLayout
-    private lateinit var tripDetailsBToDestinationRow: View
-    private lateinit var tripDetailsPinSearch: View
-    private lateinit var tripDetailsPinFavorite: View
 
     //models. TODO:Retrieve at construction time ?
     //private val favoriteListViewModel: FavoriteListViewModel
     private lateinit var nearbyActivityViewModel: NearbyActivityViewModel
-
-    //TODO: in model ?
-    private var mSavedInstanceCameraPosition: CameraPosition? = null
 
     private val TABS_ICON_RES_ID = intArrayOf(R.drawable.ic_pin_a_36dp_white, R.drawable.ic_pin_b_36dp_white)
 
@@ -142,15 +129,6 @@ class FindMyBikesActivity : AppCompatActivity(),
     //-stop relying on mapfragment markers visibility to branch code
     //private var mFavoritePicked = false    //True from the moment a favorite is picked until it's cleared //also set to true when a place is converted to a favorite
     //TODO: Refactoring step 1 : it is in model. the mere fact that a favorite been picked gives a non null liveData
-
-    //TODO: moved to model
-    //-consider moving it to some central location (pager adapter also has a copy)
-    //private var mDataOutdated = false
-
-
-    //those are signals of some kind, should either be in model or... ?
-    //private var refreshMarkers = true
-    //private var refreshTabs = true
 
     //already in model
     //private boolean mClosestBikeAutoSelected = false;
@@ -197,13 +175,13 @@ class FindMyBikesActivity : AppCompatActivity(),
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
 
-        nearbyActivityViewModel.stationData.observe(this, Observer {
-            Log.d(TAG, "New data has " + (it?.size ?: "") + " stations")
+        nearbyActivityViewModel.stationData.observe(this, Observer { stationDataList ->
+            Log.d(TAG, "New data has " + (stationDataList?.size ?: "") + " stations")
 
-            if(it!!.isNotEmpty()){
-                Log.d(TAG, "un nom : " + it[0].name)
-                //Log.d(TAG, "Setting debug stationA : " + it[0])
-                //nearbyActivityViewModel.setStationA(it[0])
+            stationDataList?.let {
+                if (it.isNotEmpty()) {
+                    Log.d(TAG, "un nom : " + it[0].name)
+                }
             }
         })
 
@@ -291,11 +269,13 @@ class FindMyBikesActivity : AppCompatActivity(),
         })
 
         // Update Bar - TODO: Have fragment ?
-        statusTextView = findViewById<TextView>(R.id.status_textView)
+        statusTextView = findViewById(R.id.status_textView)
         statusBar = findViewById<View>(R.id.app_status_bar)
 
         //TODO: this is "debug"
         nearbyActivityViewModel.setStationB(null)
+        //TODO: the following crashes but shouldn't
+        //nearbyActivityViewModel.setStationA(null)
 
         if (nearbyActivityViewModel.isDataOutOfDate.value == true)
             statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_accent))
@@ -357,15 +337,20 @@ class FindMyBikesActivity : AppCompatActivity(),
         //splashScreen = findViewById<View>(R.id.fragment_splash_screen)
 
         //TODO: trip details fragment
-        tripDetailsWidget = findViewById<View>(R.id.trip_details)
-        tripDetailsProximityA = findViewById(R.id.trip_details_proximity_a)
-        tripDetailsProximityB = findViewById(R.id.trip_details_proximity_b)
-        tripDetailsProximitySearch = findViewById(R.id.trip_details_proximity_search)
-        tripDetailsProximityTotal = findViewById(R.id.trip_details_proximity_total)
-        tripDetailsSumSeparator = findViewById(R.id.trip_details_sum_separator)
-        tripDetailsBToDestinationRow = findViewById<View>(R.id.trip_details_b_to_search)
-        tripDetailsPinSearch = findViewById<View>(R.id.trip_details_to_search)
-        tripDetailsPinFavorite = findViewById<View>(R.id.trip_details_to_favorite)
+        tripDetailsFragment = findViewById<View>(R.id.trip_details_fragment)
+
+        val layoutListener = object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                v?.removeOnLayoutChangeListener(this)
+                nearbyActivityViewModel.isTripDetailsFragmentShown.observe(this@FindMyBikesActivity, Observer {
+                    //We start hide animation on show status change. At the end of the hide anim, callback will launch
+                    //show animation if show status is true then
+                    hideTripDetailsFragment(nearbyActivityViewModel)
+                })
+            }
+        }
+
+        tripDetailsFragment.addOnLayoutChangeListener(layoutListener)
 
         searchFAB = findViewById(R.id.search_fab)
         addFavoriteFAB = findViewById(R.id.favorite_add_remove_fab)
@@ -395,26 +380,28 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_loc_to_a).setOnClickListener {
-            launchGoogleMapsForDirections(DEBUG_FAKE_USER_CUR_LOC, stationMapFragment.markerALatLng!!, true)
+            //TODO: this is wrong as userLoc and station values are captured at setup time
+            nearbyActivityViewModel.stationALatLng.value?.let {
+                launchGoogleMapsForDirections(nearbyActivityViewModel.userLocation.value, nearbyActivityViewModel.stationALatLng.value, true)
+            }
+
         }
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_a_to_b).setOnClickListener {
-            launchGoogleMapsForDirections(stationMapFragment.markerALatLng!!, stationMapFragment.markerBVisibleLatLng!!, false)
+            //TODO: this is wrong as userLoc and station values are captured at setup time
+            launchGoogleMapsForDirections(nearbyActivityViewModel.stationALatLng.value, nearbyActivityViewModel.stationBLatLng.value, false)
         }
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_b_to_destination).setOnClickListener {
-            /*if (stationMapFragment.isPickedPlaceMarkerVisible)
-                launchGoogleMapsForDirections(stationMapFragment.markerBVisibleLatLng!!, stationMapFragment.markerPickedPlaceVisibleLatLng!!, true)
-            else
-            //Either Place marker or Favorite marker is visible, but not both at once
-                launchGoogleMapsForDirections(stationMapFragment.markerBVisibleLatLng!!, stationMapFragment.markerPickedFavoriteVisibleLatLng!!, true)*/
+            //TODO: this is wrong as userLoc and station values are captured at setup time
+            launchGoogleMapsForDirections(nearbyActivityViewModel.stationBLatLng.value, nearbyActivityViewModel.finalDestinationLatLng.value, true)
         }
         findViewById<View>(R.id.trip_details_share).setOnClickListener {
             //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
             //I will be at the Bixi station Hutchison/beaubien in ~15min ! Shared via #findmybikes
             val message = String.format(resources.getString(R.string.trip_details_share_message_content),
                     DBHelper.getInstance().getBikeNetworkName(applicationContext), getContentTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.DOCK_STATIONS)!!.name,
-                    tripDetailsProximityTotal.text.toString())
+                    tripDetailsProximityTotal.text.toString()) //TODO: total proximity is exposed in trip details fragment model
 
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
@@ -422,16 +409,6 @@ class FindMyBikesActivity : AppCompatActivity(),
             sendIntent.type = "text/plain"
             startActivity(Intent.createChooser(sendIntent, getString(R.string.trip_details_share_title)))
         }
-
-        // Create an instance of GoogleAPIClient.
-        /*if (googleApiClient == null) {
-            googleApiClient = GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build()
-        }
-        setupLocationRequest();*/
 
         circularRevealInterpolator = AnimationUtils.loadInterpolator(this, R.interpolator.msf_interpolator)
 
@@ -475,18 +452,15 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     private fun setStatusBarClickListener() {
-        //Because the citybik.es landing page is javascript heavy
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
 
-            statusBar.setOnClickListener {
-                if (Utils.Connectivity.isConnected(applicationContext)) {
-                    // use the android system webview
-                    val intent = Intent(this@FindMyBikesActivity, WebViewActivity::class.java)
-                    intent.putExtra(WebViewActivity.EXTRA_URL, "http://www.citybik.es")
-                    intent.putExtra(WebViewActivity.EXTRA_ACTIONBAR_SUBTITLE, getString(R.string.hashtag_cities))
-                    intent.putExtra(WebViewActivity.EXTRA_JAVASCRIPT_ENABLED, true)
-                    startActivity(intent)
-                }
+        statusBar.setOnClickListener {
+            if (Utils.Connectivity.isConnected(applicationContext)) {
+                // use the android system webview
+                val intent = Intent(this@FindMyBikesActivity, WebViewActivity::class.java)
+                intent.putExtra(WebViewActivity.EXTRA_URL, "http://www.citybik.es")
+                intent.putExtra(WebViewActivity.EXTRA_ACTIONBAR_SUBTITLE, getString(R.string.hashtag_cities))
+                intent.putExtra(WebViewActivity.EXTRA_JAVASCRIPT_ENABLED, true)
+                startActivity(intent)
             }
         }
     }
@@ -511,14 +485,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     private fun setupClearFab() {
         clearFAB = findViewById(R.id.clear_fab)
 
-        clearFAB.setOnClickListener { clearBSelection() }
-    }
-
-    private fun clearBSelection() {
-        nearbyActivityViewModel.setStationB(null)
-        //nearbyActivityViewModel.clearPickedFavorite()
-        //hideTripDetailsWidget()
-        //clearBTab()
+        clearFAB.setOnClickListener { nearbyActivityViewModel.setStationB(null) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -568,7 +535,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     private fun animateCameraToShowUserAndStation(station: BikeStation?) {
 
         if (DEBUG_FAKE_USER_CUR_LOC != null) {
-            if (tripDetailsWidget.visibility != View.VISIBLE)
+            if (tripDetailsFragment.visibility != View.VISIBLE)
             //Directions to A fab is visible
                 animateCameraToShow(resources.getDimension(R.dimen.camera_fab_padding).toInt(), station!!.location, DEBUG_FAKE_USER_CUR_LOC, null)
             else
@@ -594,49 +561,55 @@ class FindMyBikesActivity : AppCompatActivity(),
         //stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), _cameraPaddingPx)) //Pin icon is 36 dp
     }
 
-    private fun hideTripDetailsWidget() {
+    private fun showTripDetailsFragment() {
+
+        tripDetailsFragment.visibility = View.VISIBLE
+
+        buildTripDetailsWidgetAnimators(true, ((resources.getInteger(R.integer.camera_animation_duration) / 3) * 2).toLong(), 0.23f)!!.start()
+    }
+
+    private fun hideTripDetailsFragment(model: NearbyActivityViewModel) {
 
 
-        val hideAnimator = buildTripDetailsWidgetAnimators(false, resources.getInteger(R.integer.camera_animation_duration).toLong(), 0f)
+        val hideAnimator = buildTripDetailsWidgetAnimators(false, (resources.getInteger(R.integer.camera_animation_duration) / 3).toLong(), 0.23f)
         // make the view invisible when the animation is done
         hideAnimator!!.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 super.onAnimationEnd(animation)
-                tripDetailsWidget.visibility = View.INVISIBLE
+                tripDetailsFragment.visibility = View.INVISIBLE
+
+                if (model.isTripDetailsFragmentShown.value == true) {
+                    showTripDetailsFragment()
+                }
             }
         })
         hideAnimator.start()
-
     }
 
     //For reusable Animators (which most Animators are, apart from the one-shot animator produced by createCircularReveal()
-    private fun buildTripDetailsWidgetAnimators(_show: Boolean, _duration: Long, _minRadiusMultiplier: Float): Animator? {
+    private fun buildTripDetailsWidgetAnimators(show: Boolean, duration: Long, _minRadiusMultiplier: Float): Animator? {
 
         val minRadiusMultiplier = Math.min(1f, _minRadiusMultiplier)
 
-        var toReturn: Animator? = null
+        val toReturn: Animator?
 
-        // Use native circular reveal on Android 5.0+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        // Native circular reveal uses coordinates relative to the view
+        val revealStartX = 0
+        val revealStartY = tripDetailsFragment.height
 
-            // Native circular reveal uses coordinates relative to the view
-            val revealStartX = 0
-            val revealStartY = tripDetailsWidget.height
+        val radiusMax = Math.hypot(tripDetailsFragment.height.toDouble(), tripDetailsFragment.width.toDouble()).toFloat()
+        val radiusMin = radiusMax * minRadiusMultiplier
 
-            val radiusMax = Math.hypot(tripDetailsWidget.height.toDouble(), tripDetailsWidget.width.toDouble()).toFloat()
-            val radiusMin = radiusMax * minRadiusMultiplier
-
-            if (_show) {
-                toReturn = ViewAnimationUtils.createCircularReveal(tripDetailsWidget, revealStartX,
-                        revealStartY, radiusMin, radiusMax)
-            } else {
-                toReturn = ViewAnimationUtils.createCircularReveal(tripDetailsWidget, revealStartX,
-                        revealStartY, radiusMax, radiusMin)
-            }
-
-            toReturn!!.duration = _duration
-            toReturn.interpolator = circularRevealInterpolator
+        toReturn = if (show) {
+            ViewAnimationUtils.createCircularReveal(tripDetailsFragment, revealStartX,
+                    revealStartY, radiusMin, radiusMax)
+        } else {
+            ViewAnimationUtils.createCircularReveal(tripDetailsFragment, revealStartX,
+                    revealStartY, radiusMax, radiusMin)
         }
+
+        toReturn!!.duration = duration
+        toReturn.interpolator = circularRevealInterpolator
 
         return toReturn
     }
@@ -709,26 +682,32 @@ class FindMyBikesActivity : AppCompatActivity(),
         }
     }
 
-    private fun launchGoogleMapsForDirections(_origin: LatLng, _destination: LatLng, _walking: Boolean) {
-        val builder = StringBuilder("http://maps.google.com/maps?&saddr=")
+    private fun launchGoogleMapsForDirections(origin: LatLng?, destination: LatLng?, walking: Boolean) {
 
-        builder.append(_origin.latitude).append(",").append(_origin.longitude)
+        origin?.let {
+            destination?.let {
 
-        builder.append("&daddr=").append(_destination.latitude).append(",").append(_destination.longitude).append("&dirflg=")//append("B"). Labeling doesn't work :'(
+                val builder = StringBuilder("http://maps.google.com/maps?&saddr=")
 
-        if (_walking)
-            builder.append("w")
-        else
-            builder.append("b")
+                builder.append(origin.latitude).append(",").append(origin.longitude)
 
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(builder.toString()))
-        intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity")
-        if (packageManager.queryIntentActivities(intent, 0).size > 0) {
-            startActivity(intent) // launch the map activity
-        } else {
-            Utils.Snackbar.makeStyled(coordinatorLayout, R.string.google_maps_not_installed,
-                    Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
-                    .show()
+                builder.append("&daddr=").append(destination.latitude).append(",").append(destination.longitude).append("&dirflg=")//append("B"). Labeling doesn't work :'(
+
+                if (walking)
+                    builder.append("w")
+                else
+                    builder.append("b")
+
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(builder.toString()))
+                intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity")
+                if (packageManager.queryIntentActivities(intent, 0).size > 0) {
+                    startActivity(intent) // launch the map activity
+                } else {
+                    Utils.Snackbar.makeStyled(coordinatorLayout, R.string.google_maps_not_installed,
+                            Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
+                            .show()
+                }
+            }
         }
     }
 

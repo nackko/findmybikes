@@ -116,17 +116,17 @@ public abstract class FavoriteEntityBase {
 
     public Spanned getSpannedDisplayName(Context ctx, boolean favoriteDisplayNameOnly){
 
-        Spanned toReturn = Utils.fromHtml(String.format(ctx.getString(R.string.favorite_display_name_only_italic),
+        Spanned toReturn = Utils.INSTANCE.fromHtml(String.format(ctx.getString(R.string.favorite_display_name_only_italic),
                 getDefaultName()));
 
 
 
         if (!isDisplayNameDefault()){
             if(favoriteDisplayNameOnly){
-                toReturn = Utils.fromHtml(String.format(ctx.getString(R.string.favorite_display_name_only_bold),
+                toReturn = Utils.INSTANCE.fromHtml(String.format(ctx.getString(R.string.favorite_display_name_only_bold),
                         getDisplayName()));
             } else {
-                toReturn = Utils.fromHtml(String.format(ctx.getString(R.string.favorite_display_name_complete),
+                toReturn = Utils.INSTANCE.fromHtml(String.format(ctx.getString(R.string.favorite_display_name_complete),
                         getDisplayName(), getDefaultName() ));
             }
         }

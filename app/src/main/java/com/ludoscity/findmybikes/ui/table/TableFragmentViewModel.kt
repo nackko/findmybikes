@@ -173,24 +173,25 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     abstract class BaseBikeStationComparator : Comparator<BikeStation> {
         abstract fun getProximityString(station: BikeStation, lookingForBike: Boolean,
                                         numFormat: NumberFormat,
-                                        ctx: Context): String
+                                        ctx: Context): String?
     }
 
 
     class DistanceComparator : BaseBikeStationComparator, Parcelable {
         override fun getProximityString(station: BikeStation, lookingForBike: Boolean,
                                         numFormat: NumberFormat,
-                                        ctx: Context): String {
+                                        ctx: Context): String? {
             return if (lookingForBike) {
                 Utils.getWalkingProximityString(
                         station.location, distanceRef, false, numFormat, ctx)
             } else {
+                //TODO: use LiveData from model
                 Utils.getBikingProximityString(
                         station.location, distanceRef, false, numFormat, ctx)
             }
         }
 
-        internal var distanceRef: LatLng
+        private var distanceRef: LatLng
 
         constructor(_fromLatLng: LatLng) {
             distanceRef = _fromLatLng
@@ -227,11 +228,11 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         }
     }
 
-    class TotalTripTimeComparator : BaseBikeStationComparator, Parcelable {
+    /*class TotalTripTimeComparator : BaseBikeStationComparator, Parcelable {
         override fun getProximityString(station: BikeStation,
                                         lookingForBike: Boolean,
                                         numFormat: NumberFormat,
-                                        ctx: Context): String {
+                                        ctx: Context): String? {
             val totalTime = calculateWalkTimeMinute(station) + calculateBikeTimeMinute(station)
 
             return Utils.durationToProximityString(totalTime, false, numFormat, ctx)
@@ -242,7 +243,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         private val mWalkingSpeedKmh: Float
         private val mBikingSpeedKmh: Float
 
-        private val mTimeUserToAMinutes: Int
+        private val mTimeUserToAMinutes: Int?
 
         constructor(_walkingSpeedKmh: Float, _bikingSpeedKmh: Float, _userLatLng: LatLng,
                     _stationALatLng: LatLng, _destinationLatLng: LatLng) {
@@ -293,7 +294,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                 lhsWalkTime - rhsWalkTime
         }
 
-        internal fun calculateWalkTimeMinute(_stationB: BikeStation): Int {
+        internal fun calculateWalkTimeMinute(_stationB: BikeStation): Int? {
 
             var timeBtoDestMinutes = 0
 
@@ -334,7 +335,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                 return arrayOfNulls(size)
             }
         }
-    }
+    }*/
 
     init {
 
@@ -465,8 +466,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     private fun computeAndEmitStationRecapDisplayData(stationToRecap: BikeStation?,
                                                       outdated: Boolean) {
 
-        //TODO: re emit when outdated status changes
-        //TODO: re emit on new data available
         //TODO: replug favorite name
         /*if (mFavoriteListModelView!!.isFavorite(_station.locationHash)) {
             mStationRecapName!!.text = mFavoriteListModelView!!.getFavoriteEntityForId(_station.locationHash)!!.getSpannedDisplayName(context, true)

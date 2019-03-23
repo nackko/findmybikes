@@ -29,6 +29,7 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
 class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
 
     private val favoriteFabShown = MutableLiveData<Boolean>()
+    private val tripDetailsWidgetShown = MutableLiveData<Boolean>()
     private val favoritePickerFabShown = MutableLiveData<Boolean>()
     private val searchFabShown = MutableLiveData<Boolean>()
     private val directionsToStationAFabShown = MutableLiveData<Boolean>()
@@ -41,12 +42,14 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     private val nearestBikeAutoSelected = MutableLiveData<Boolean>()
     private val lastDataUpdateEpochTimestamp = MutableLiveData<Long>()
-    private val stationA = MutableLiveData<BikeStation>()
-    private val stationB = MutableLiveData<BikeStation>()
-    private val pickedFavorite = MutableLiveData<FavoriteEntityBase>()
-
     private val userLoc = MutableLiveData<LatLng>()
+    private val stationA = MutableLiveData<BikeStation>()
+    private val statALatLng = MutableLiveData<LatLng>()
+    private val stationB = MutableLiveData<BikeStation>()
+    private val statBLatLng = MutableLiveData<LatLng>()
+
     private val finalDest = MutableLiveData<LatLng>()
+    private val pickedFavorite = MutableLiveData<FavoriteEntityBase>()
     private val isFinalDestFav = MutableLiveData<Boolean>()
 
     private val appBarExpanded = MutableLiveData<Boolean>()
@@ -88,6 +91,9 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     val isClearBSelectionFabShown: LiveData<Boolean>
         get() = clearBSelectionFabShown
+
+    val isTripDetailsFragmentShown: LiveData<Boolean>
+        get() = tripDetailsWidgetShown
 
     val isFavoriteFabShown: LiveData<Boolean>
         get() = favoriteFabShown
@@ -155,12 +161,18 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         return stationA
     }
 
+    val stationALatLng: LiveData<LatLng>
+        get() = statALatLng
+
     fun setStationB(toSet: BikeStation?) {
         stationB.value = toSet
     }
     fun getStationB(): LiveData<BikeStation>{
         return stationB
     }
+
+    val stationBLatLng: LiveData<LatLng>
+        get() = statBLatLng
 
     fun showFavoriteFab() {
         favoriteFabShown.value = true
@@ -330,7 +342,8 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
                 favoritePickerFabShown.value = false
                 favoriteFabShown.value = false
                 clearBSelectionFabShown.value = false
-                directionsToStationAFabShown.value = stationB.value == null
+                directionsToStationAFabShown.value = stationA.value != null && stationB.value == null
+
             } else {
                 directionsToStationAFabShown.value = false
                 if (stationB.value == null) {
@@ -351,8 +364,28 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
             }
         })
 
-        stationB.observeForever(Observer {
+        //TODO_OLD: have an observer and remove it on cleared
+        //Nope, not when I observe one of my local member
+        stationA.observeForever {
             if (it != null) {
+                directionsToStationAFabShown.value = isLookingForBike.value == true && stationB.value == null
+
+                statALatLng.value = it.location
+
+                statBLatLng.value?.let {
+                    tripDetailsWidgetShown.value = true
+                }
+            } else {
+                directionsToStationAFabShown.value = false
+                tripDetailsWidgetShown.value = false
+                statALatLng.value = null
+            }
+        }
+
+        stationB.observeForever {
+            if (it != null) {
+                statBLatLng.value = it.location
+                tripDetailsWidgetShown.value = true
                 if (lookingForBike.value != true) {
                     favoritePickerFabShown.value = false
                     searchFabShown.value = false
@@ -360,14 +393,15 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
                     clearBSelectionFabShown.value = true
                 }
             } else {
+                statBLatLng.value = null
+                tripDetailsWidgetShown.value = false
                 favoritePickerFabShown.value = true
                 searchFabShown.value = connectivityAvailable.value == true
                 favoriteFabShown.value = false
                 clearBSelectionFabShown.value = false
 
             }
-        })
-
+        }
     }
 
     override fun onCleared() {

@@ -94,15 +94,13 @@
             />
 
         <!-- TRIP DETAILS WIDGET -->
-        <FrameLayout
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            android:name="com.ludoscity.findmybikes.ui.trip.TripDetailsFragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start">
-
-            <include
-                layout="@layout/trip_details"/>
-
-        </FrameLayout>
+            android:layout_gravity="bottom|start"
+            android:id="@+id/trip_details_fragment"
+            tools:layout="@layout/fragment_trip_details" />
 
         <!-- Can't put both fab in a linear layout cause it breaks sheet library-->
         <LinearLayout

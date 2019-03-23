@@ -10,6 +10,7 @@ import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
 import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
+import com.ludoscity.findmybikes.ui.trip.TripFragmentModelFactory
 import java.text.NumberFormat
 
 /**
@@ -76,6 +77,22 @@ class InjectorUtils {
                     stationSelectionDatasource,
                     dataOutOfDate,
                     userLoc,
+                    numFormat)
+        }
+
+        fun provideTripFragmentViewModelFactory(app: Application,
+                                                userLoc: LiveData<LatLng>,
+                                                stationALoc: LiveData<LatLng>,
+                                                stationBLoc: LiveData<LatLng>,
+                                                finalDestLoc: LiveData<LatLng>,
+                                                isFinalDestFavorite: LiveData<Boolean>,
+                                                numFormat: NumberFormat): TripFragmentModelFactory {
+            return TripFragmentModelFactory(app,
+                    userLoc,
+                    stationALoc,
+                    stationBLoc,
+                    finalDestLoc,
+                    isFinalDestFavorite,
                     numFormat)
         }
     }
