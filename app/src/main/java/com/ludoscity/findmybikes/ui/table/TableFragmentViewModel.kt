@@ -117,9 +117,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         }
     }
 
-    //val isLookingForBike: LiveData<Boolean>
-    //    get() = lookingForBike
-
     private val tableItemList: MutableLiveData<List<StationTableItemData>> = MutableLiveData()
 
     private val tableRecapMutableData: MutableLiveData<StationTableRecapData> = MutableLiveData()
@@ -169,7 +166,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
 
     //TODO: come up with a design that doesn't require dynamic casting
-    //Have a base comparator class that calculates proximityText String
+    //Have a base comparator class that calculates durationText String
     abstract class BaseBikeStationComparator : Comparator<BikeStation> {
         abstract fun getProximityString(station: BikeStation, lookingForBike: Boolean,
                                         numFormat: NumberFormat,
@@ -386,26 +383,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         stationRecapDataSourceObserver = android.arch.lifecycle.Observer {
 
-            computeAndEmitStationRecapDisplayData(it, isDataOutOfDate.value != false)
-            //TODO: re emit on new data available
-            //TODO: replug favorite name
-            /*if (mFavoriteListModelView!!.isFavorite(_station.locationHash)) {
-                mStationRecapName!!.text = mFavoriteListModelView!!.getFavoriteEntityForId(_station.locationHash)!!.getSpannedDisplayName(context, true)
-            } else {
-                mStationRecapName!!.text = _station.name
-            }*/
-            /*tableRecapMutableData.value = StationTableRecapData(
-                    it?.name ?: "[[[STATION_NAME]]]",
-                    String.format(app.getString(R.string.station_recap_bikes), it?.freeBikes ?: -1),
-                    isDataOutOfDate.value != false,
-                    if (isDataOutOfDate.value != false) Typeface.DEFAULT
-                    else Typeface.DEFAULT_BOLD,
-                    when {
-                        isDataOutOfDate.value != false -> R.color.theme_accent
-                        it?.freeBikes ?: -1 <= DBHelper.getInstance().getCriticalAvailabilityMax(app) -> R.color.station_recap_red
-                        it?.freeBikes ?: -1 <= DBHelper.getInstance().getBadAvailabilityMax(app) -> R.color.station_recap_yellow
-                        else -> R.color.station_recap_green
-                    })*/
+
         }
 
         stationRecapDataSource.observeForever(stationRecapDataSourceObserver)
@@ -429,9 +407,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         }
 
         isDataOutOfDate.observeForever(dataOutdatedObserver)
-
-        //TODO: observe data being out of date, if it happens, rebuild tableItemDataList and StationTableRecapData
-        //TODO: observe new user location available, requiring resorting and reprocessing of sorted list
     }
 
     override fun onCleared() {
@@ -510,15 +485,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                 else -> station.freeBikes
             }
 
-
-            val alpha = when {
-                oudated -> 1.0f
-                false -> 1.0f //TODO: selection tracking - this is selected branch
-                availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) -> getApplication<Application>().resources.getFraction(R.fraction.station_item_critical_availability_alpha, 1, 1)
-                availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) -> getApplication<Application>().resources.getFraction(R.fraction.station_item_name_bad_availability_alpha, 1, 1)
-                else -> 1.0f
-            }
-
             val backgroundResId = if (station.locationHash == stationSelectionDataSource.value?.locationHash ?: false) {
                 if (oudated) {
                     R.color.theme_accent
@@ -541,31 +507,41 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                 }
             }
 
-
-            /*val backgroundResId = when{
-                oudated -> when {
-                    station.locationHash == stationSelectionDataSource.value?.locationHash?: false -> R.color.theme_accent
-                    availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) -> R.color.stationtable_item_selected_background_red
-                    availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) -> R.color.stationtable_item_selected_background_yellow
-                    else -> android.R.color.transparent
-                }
+            val durationAlpha = when {
+                isDataOutOfDate.value == true -> 1.0f
+                station.locationHash == stationSelectionDataSource.value?.locationHash -> 1.0f
                 availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
-                    R.color.stationtable_item_background_red
+                    getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_25percent, 1, 1)
+                else -> 1.0f
+            }
+            val nameAlpha = when {
+                isDataOutOfDate.value == true -> 1.0f
+                station.locationHash == stationSelectionDataSource.value?.locationHash -> 1.0f
+                availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
+                    getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_25percent, 1, 1)
                 availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) ->
-                    R.color.stationtable_item_background_yellow
-                else -> android.R.color.transparent
-            }*/
+                    getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_50percent, 1, 1)
+                else -> 1.0f
+            }
+            val availabilityAlpha = when {
+                isDataOutOfDate.value == true -> getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_25percent, 1, 1)
+                station.locationHash == stationSelectionDataSource.value?.locationHash -> 1.0f
+                availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
+                    getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_25percent, 1, 1)
+                availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) ->
+                    getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_65percent, 1, 1)
+                else -> 1.0f
+            }
 
-            //TODO: emit a new list also when outdated data status changes
-            //TODO: observe constructor parameter private val isDataOutOfDate: LiveData<Boolean>
+
             newDisplayData.add(StationTableItemData(
-                    backgroundResId, //TODO: replug background color - includes item selection tracking
+                    backgroundResId,
                     proximityText,
-                    alpha, //TODO replug alpha - includes item selection tracking
+                    durationAlpha,
                     station.name, //TODO: replug having favorite name if it is a favorite
-                    alpha, //TODO replug alpha - includes item selection tracking
+                    nameAlpha,
                     if (availabilityValue != -1) numFormat.format(availabilityValue) else "--",
-                    alpha, //TODO replug alpha - includes item selection tracking
+                    availabilityAlpha,
                     oudated,
                     if (oudated) Typeface.DEFAULT
                     else Typeface.DEFAULT_BOLD,
@@ -575,8 +551,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         tableItemList.value = newDisplayData
 
-        //////////////////////////
-        //TODO: do this also when out of date value flips
         val availabilityDataPostfixBuilder = StringBuilder()
 
         if (oudated) {
@@ -668,146 +642,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     //////////////////////////
     //TODO: replug having favorite name if it is a favorite
     /*if (mFavoriteListViewModel.isFavorite(_station.locationHash))
-        mName.text = mFavoriteListViewModel.getFavoriteEntityForId(_station.locationHash)!!.getSpannedDisplayName(mCtx, false)
+        nameText.text = mFavoriteListViewModel.getFavoriteEntityForId(_station.locationHash)!!.getSpannedDisplayName(mCtx, false)
     else
-        mName.text = _station.name*/
-    //TODO: replug selection tracking, background color and alpha
-    /*private fun setColorAndTransparencyFeedback(selected: Boolean, availabilityValue: Int) {
-
-        if (!mOutdatedAvailability) {
-
-            if (availabilityValue != -1 && availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(mCtx)) {
-                if (selected) {
-                    itemView.setBackgroundResource(R.color.stationtable_item_selected_background_red)
-                    mProximity.alpha = 1f
-                    mName.alpha = 1f
-                    mAvailability.alpha = 1f
-                } else {
-                    itemView.setBackgroundResource(R.color.stationtable_item_background_red)
-                    val alpha = mCtx.resources.getFraction(R.fraction.station_item_critical_availability_alpha, 1, 1)
-                    mProximity.alpha = alpha
-                    mName.alpha = alpha
-                    mAvailability.alpha = alpha
-                }
-            } else if (availabilityValue != -1 && availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(mCtx)) {
-                if (selected) {
-                    itemView.setBackgroundResource(R.color.stationtable_item_selected_background_yellow)
-                    mProximity.alpha = 1f
-                    mName.alpha = 1f
-                    mAvailability.alpha = 1f
-                } else {
-                    itemView.setBackgroundResource(R.color.stationtable_item_background_yellow)
-                    mName.alpha = mCtx.resources.getFraction(R.fraction.station_item_name_bad_availability_alpha, 1, 1)
-                    mAvailability.alpha = mCtx.resources.getFraction(R.fraction.station_item_availability_bad_availability_alpha, 1, 1)
-                    mProximity.alpha = 1f
-                }
-            } else {
-                if (selected)
-                    itemView.setBackgroundResource(R.color.stationtable_item_selected_background_green)
-                else
-                    itemView.setBackgroundResource(android.R.color.transparent)
-
-                mName.alpha = 1f
-                mAvailability.alpha = 1f
-                mProximity.alpha = 1f
-            }
-        } else {
-            if (selected)
-                itemView.setBackgroundResource(R.color.theme_accent)
-            else
-                itemView.setBackgroundResource(android.R.color.transparent)
-
-            mAvailability.alpha = mCtx.resources.getFraction(R.fraction.station_item_critical_availability_alpha, 1, 1)
-            mProximity.alpha = 1f
-            mName.alpha = 1f
-        }
-    }*/
-    //TODO: replug list sorting keeps track of selection
-    /*private fun sortStationList() {
-        var selectedIdBefore: String? = null
-
-        if (null != selected)
-            selectedIdBefore = selected!!.locationHash
-
-        if (sortComparator != null)
-            Collections.sort(mStationList, sortComparator)
-
-        if (selectedIdBefore != null)
-            setSelection(selectedIdBefore, false)
-    }
-    val selected: BikeStation?
-        get() {
-            var toReturn: BikeStation? = null
-
-            if (selectedPos != NO_POSITION && selectedPos < mStationList.size)
-                toReturn = mStationList[selectedPos]
-
-            return toReturn
-        }
-    */
-    //TODO: replug selected item in recyclerview tracking
-    /*fun setSelection(_stationId: String?, unselectOnTwice: Boolean): Int {
-
-        return setSelectedPos(getStationItemPositionInList(_stationId), unselectOnTwice)
-    }
-
-    fun clearSelection() {
-        val selectedBefore = selectedPos
-        selectedPos = NO_POSITION
-
-        if (selectedBefore != NO_POSITION)
-            notifyItemChanged(selectedBefore)
-    }
-    fun setSelectedPos(pos: Int, unselectedOnTwice: Boolean): Int {
-
-        var toReturn = NO_POSITION
-
-        if (selectedPos == pos)
-            if (unselectedOnTwice)
-                clearSelection()
-            else
-                toReturn = selectedPos
-        else {
-            notifyItemChanged(selectedPos)
-            selectedPos = pos
-            notifyItemChanged(pos)
-            toReturn = selectedPos
-        }
-
-        return toReturn
-    }*/
-    //TODO: replug outdated status makes station recap different, grab values to use in the following coe
-    /*fun setupStationRecap(_station: BikeStation, _outdated: Boolean): Boolean {
-
-        if (context == null)
-            return false
-
-        //TODO: replug favorite name from favorite model
-        if (mFavoriteListModelView!!.isFavorite(_station.locationHash)) {
-            mStationRecapName!!.text = mFavoriteListModelView!!.getFavoriteEntityForId(_station.locationHash)!!.getSpannedDisplayName(context, true)
-        } else {
-            mStationRecapName!!.text = _station.name
-        }
-
-        mStationRecapAvailability!!.text = String.format(resources.getString(R.string.station_recap_bikes), _station.freeBikes)
-
-        if (_outdated) {
-            mStationRecapAvailability!!.paint.isStrikeThruText = true
-            mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT
-            mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.theme_accent))
-        } else {
-
-            mStationRecapAvailability!!.paint.typeface = Typeface.DEFAULT_BOLD
-            mStationRecapAvailability!!.paint.isStrikeThruText = false
-
-            when {
-                _station.freeBikes <= DBHelper.getInstance().getCriticalAvailabilityMax(context) -> mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.station_recap_red))
-                _station.freeBikes <= DBHelper.getInstance().getBadAvailabilityMax(context) -> mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.station_recap_yellow))
-                else -> mStationRecapAvailability!!.setTextColor(ContextCompat.getColor(context!!, R.color.station_recap_green))
-            }
-
-        }
-
-        return true
-    }*/
+        nameText.text = _station.name*/
 }
