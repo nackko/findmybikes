@@ -8,12 +8,17 @@ import android.util.Log
 import com.ludoscity.findmybikes.RootApplication
 import com.ludoscity.findmybikes.utils.InjectorUtils
 
-class FetchBikeSystemIntentService : JobIntentService() {
+class FetchCitybikDOTesDataIntentService : JobIntentService() {
     override fun onHandleWork(intent: Intent) {
         Log.i(TAG, "Executing work: $intent")
         val api = (application as RootApplication).citybik_esApi
 
-        InjectorUtils.provideNetworkDataSource().fetchBikeSystem(api, intent.getStringExtra("system_href"))
+        val action = intent.action
+
+        when (action) {
+            ACTION_FETCH_SYSTEM_STATUS -> InjectorUtils.provideBikeSystemStatusNetworkDataSource().fetchBikeSystemStatus(api, intent.getStringExtra("system_href"))
+            ACTION_FETCH_SYSTEM_LIST -> InjectorUtils.provideBikeSystemListNetworkDataSource().fetchBikeSystemList(api)
+        }
 
         Log.i(TAG, "Completed service @ " + SystemClock.elapsedRealtime())
     }
@@ -24,11 +29,16 @@ class FetchBikeSystemIntentService : JobIntentService() {
     }
 
     companion object {
+
+        const val ACTION_FETCH_SYSTEM_STATUS = "systemStatus"
+        const val ACTION_FETCH_SYSTEM_LIST = "systemList"
+
+
         private const val JOB_ID = 1000
-        private val TAG = FetchBikeSystemIntentService::class.java.simpleName
+        private val TAG = FetchCitybikDOTesDataIntentService::class.java.simpleName
 
         fun enqueueWork(ctx: Context, work: Intent){
-            enqueueWork(ctx, FetchBikeSystemIntentService::class.java, JOB_ID, work)
+            enqueueWork(ctx, FetchCitybikDOTesDataIntentService::class.java, JOB_ID, work)
         }
     }
 }

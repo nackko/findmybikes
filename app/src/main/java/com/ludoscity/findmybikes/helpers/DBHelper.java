@@ -12,7 +12,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase;
-import com.ludoscity.findmybikes.data.network.citybik_es.BikeNetworkDesc;
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemDesc;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
@@ -281,19 +281,19 @@ public class DBHelper {
                 .getString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_CITY, _ctx), "");
     }
 
-    public void saveBikeNetworkDesc(BikeNetworkDesc bikeNetworkDesc, Context ctx){
+    public void saveBikeNetworkDesc(BikeSystemDesc bikeSystemDesc, Context ctx) {
 
         SharedPreferences sp = ctx.getSharedPreferences(SHARED_PREF_FILENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor IdEditor = sp.edit();
 
         //Important to apply right away so that subsequent calls to buildNetworkSpecificKey work
-        IdEditor.putString(PREF_CURRENT_BIKE_NETWORK_ID, bikeNetworkDesc.id).apply();
+        IdEditor.putString(PREF_CURRENT_BIKE_NETWORK_ID, bikeSystemDesc.getId()).apply();
 
         SharedPreferences.Editor editor = sp.edit();
 
-        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_NAME, ctx), bikeNetworkDesc.name);
-        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_HREF, ctx), bikeNetworkDesc.href);
-        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_CITY, ctx), bikeNetworkDesc.location.getCity());
+        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_NAME, ctx), bikeSystemDesc.getName());
+        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_HREF, ctx), bikeSystemDesc.getHref());
+        editor.putString(buildNetworkSpecificKey(PREF_SUFFIX_NETWORK_CITY, ctx), bikeSystemDesc.getLocation().getCity());
 
         editor.apply();
     }

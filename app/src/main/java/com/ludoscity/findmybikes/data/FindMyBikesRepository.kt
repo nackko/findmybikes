@@ -5,19 +5,24 @@ import android.content.Context
 import android.util.Log
 import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.data.database.BikeStationDao
-import com.ludoscity.findmybikes.data.network.BikeSystemNetworkDataSource
+import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
+import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class FindMyBikesRepository private constructor(private val stationDao: BikeStationDao,
-                                                private val bikeSystemNetworkDataSource: BikeSystemNetworkDataSource){
+class FindMyBikesRepository private constructor(
+        private val stationDao: BikeStationDao,
+        private val bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
+        private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource) {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     private var mInitialized = false
-    private val networkBikeSystemStatusData: LiveData<BikeSystemStatus> = bikeSystemNetworkDataSource.bikeSystemStatusData
+    private val networkBikeSystemStatusData: LiveData<BikeSystemStatus> = bikeSystemStatusNetworkDataSource.data
+    private val networkBikeSystemListAnswerRootData: LiveData<BikeSystemListAnswerRoot> = bikeSystemListNetworkDataSource.data
 
     init {
 
@@ -62,6 +67,9 @@ class FindMyBikesRepository private constructor(private val stationDao: BikeStat
                 Log.d(TAG, "New values inserted with replace strategy")
             }
         }
+        networkBikeSystemListAnswerRootData.observeForever { newSystemListFromNetwork ->
+            Log.d(TAG, "Youppie, new data in: $newSystemListFromNetwork")
+        }
     }
 
     /**
@@ -79,11 +87,14 @@ class FindMyBikesRepository private constructor(private val stationDao: BikeStat
         // This method call triggers Findmybikes to create its task to synchronize station data
         // periodically.
         //TODO: non manual refresh
-        //bikeSystemNetworkDataSource.scheduleRecurringFetchBikeSystemSync()
+        //bikeSystemStatusNetworkDataSource.scheduleRecurringFetchBikeSystemSync()
 
         coroutineScopeIO.launch {
+            //TODO: implement real isFetchNeeded. Shall we have on for status and one for list ?
+            //or should the thing cascade ?
             if (isFetchNeeded()){
-                startFetchBikeSystemDataService(ctx)
+                //startFetchBikeSystemStatusDataService(ctx)
+                startFetchBikeSystemListDataService(ctx)
             }
         }
     }
@@ -102,8 +113,12 @@ class FindMyBikesRepository private constructor(private val stationDao: BikeStat
         return true
     }
 
-    private fun startFetchBikeSystemDataService(ctx: Context) {
-        bikeSystemNetworkDataSource.startFetchBikeSystemService(ctx)
+    private fun startFetchBikeSystemStatusDataService(ctx: Context) {
+        bikeSystemStatusNetworkDataSource.startFetchBikeSystemService(ctx)
+    }
+
+    private fun startFetchBikeSystemListDataService(ctx: Context) {
+        bikeSystemListNetworkDataSource.startFetchingBikeSystemListService(ctx)
     }
 
     companion object {
@@ -116,11 +131,14 @@ class FindMyBikesRepository private constructor(private val stationDao: BikeStat
         @Synchronized
         fun getInstance(
                 bikeStationDao: BikeStationDao,
-                bikeSystemNetworkDataSource: BikeSystemNetworkDataSource): FindMyBikesRepository {
+                bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
+                bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource): FindMyBikesRepository {
             Log.d(TAG, "Getting the repository")
             if (sInstance == null) {
                 synchronized(LOCK) {
-                    sInstance = FindMyBikesRepository(bikeStationDao, bikeSystemNetworkDataSource)
+                    sInstance = FindMyBikesRepository(bikeStationDao,
+                            bikeSystemListNetworkDataSource,
+                            bikeSystemStatusNetworkDataSource)
                     Log.d(TAG, "Made new repository")
                 }
             }

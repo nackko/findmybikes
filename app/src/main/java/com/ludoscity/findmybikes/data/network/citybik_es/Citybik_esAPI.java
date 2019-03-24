@@ -20,7 +20,7 @@ public interface Citybik_esAPI {
     Call<BikeSystemStatusAnswerRoot> getBikeNetworkStatus(@Path("href") String href, @QueryMap Map<String, String> options);
     //http://api.citybik.es/v2/networks/
     @GET("/v2/networks")
-    Call<BikeNetworkListAnswerRoot> getBikeNetworkList();
+    Call<BikeSystemListAnswerRoot> getBikeNetworkList();
 }
 
 

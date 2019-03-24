@@ -5,7 +5,8 @@ import android.arch.lifecycle.LiveData
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.BikeStation
-import com.ludoscity.findmybikes.data.network.BikeSystemNetworkDataSource
+import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
+import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
@@ -21,17 +22,26 @@ class InjectorUtils {
 
     companion object {
 
-        fun provideNetworkDataSource(): BikeSystemNetworkDataSource {
+        fun provideBikeSystemStatusNetworkDataSource(): BikeSystemStatusNetworkDataSource {
             // This call to provide repository is necessary if the app starts from a service - in this
             // case the repository will not exist unless it is specifically created.
             provideRepository()
-            return BikeSystemNetworkDataSource.getInstance()
+            return BikeSystemStatusNetworkDataSource.getInstance()
+        }
+
+        fun provideBikeSystemListNetworkDataSource(): BikeSystemListNetworkDataSource {
+            provideRepository()
+            return BikeSystemListNetworkDataSource.getInstance()
         }
 
         fun provideRepository(): FindMyBikesRepository {
+            //TODO: retrieve DAO by retrieving db from here instead of going to DBHelper class
             //val database = d.getInstance(context.applicationContext)
-            val networkDataSource = BikeSystemNetworkDataSource.getInstance()
-            return FindMyBikesRepository.getInstance(DBHelper.getInstance().database.bikeStationDao(), networkDataSource)
+            val systemListNetworkDataSource = BikeSystemListNetworkDataSource.getInstance()
+            val systemStatusNetworkDataSource = BikeSystemStatusNetworkDataSource.getInstance()
+            return FindMyBikesRepository.getInstance(DBHelper.getInstance().database.bikeStationDao(),
+                    systemListNetworkDataSource,
+                    systemStatusNetworkDataSource)
         }
 
         fun provideMainActivityViewModelFactory(app: Application): FindMyBikesModelFactory {

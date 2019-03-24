@@ -75,8 +75,8 @@ import com.ludoscity.findmybikes.Fab;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.RootApplication;
 import com.ludoscity.findmybikes.data.database.BikeStation;
-import com.ludoscity.findmybikes.data.network.citybik_es.BikeNetworkDesc;
-import com.ludoscity.findmybikes.data.network.citybik_es.BikeNetworkListAnswerRoot;
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemDesc;
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusAnswerRoot;
 import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
@@ -3147,33 +3147,33 @@ public class NearbyActivity extends AppCompatActivity
 
             Citybik_esAPI api = ((RootApplication) getApplication()).getCitybik_esApi();
 
-            final Call<BikeNetworkListAnswerRoot> call = api.getBikeNetworkList();
+            final Call<BikeSystemListAnswerRoot> call = api.getBikeNetworkList();
 
-            Response<BikeNetworkListAnswerRoot> listAnswer;
+            Response<BikeSystemListAnswerRoot> listAnswer;
 
             try {
                 listAnswer = call.execute();
 
-                ArrayList<BikeNetworkDesc> answerList = listAnswer.body().networks;
+                ArrayList<BikeSystemDesc> answerList = new ArrayList();//listAnswer.body().getNetworks();
 
-                Collections.sort(answerList, new Comparator<BikeNetworkDesc>() {
+                Collections.sort(answerList, new Comparator<BikeSystemDesc>() {
                     @Override
-                    public int compare(BikeNetworkDesc bikeNetworkDesc, BikeNetworkDesc t1) {
+                    public int compare(BikeSystemDesc bikeSystemDesc, BikeSystemDesc t1) {
 
                         //NullPointerException on mCurrentUserLatLng been seen on Galaxy Nexus
-                        return (int)(SphericalUtil.computeDistanceBetween(finalUserLoc, bikeNetworkDesc.location.getAsLatLng()) -
-                                SphericalUtil.computeDistanceBetween(finalUserLoc, t1.location.getAsLatLng()));
+                        return (int) (SphericalUtil.computeDistanceBetween(finalUserLoc, bikeSystemDesc.getLocation().getAsLatLng()) -
+                                SphericalUtil.computeDistanceBetween(finalUserLoc, t1.getLocation().getAsLatLng()));
                     }
                 });
 
-                BikeNetworkDesc closestNetwork = answerList.get(0);
+                BikeSystemDesc closestNetwork = answerList.get(0);
 
-                if (closestNetwork.id.equalsIgnoreCase(NEW_YORK_HUDSON_BIKESHARE_ID)){
+                if (closestNetwork.getId().equalsIgnoreCase(NEW_YORK_HUDSON_BIKESHARE_ID)) {
                     closestNetwork = answerList.get(1);
                 }
 
                 //It seems we don't have a better candidate than the one we're presently using
-                if (closestNetwork.id.equalsIgnoreCase(DBHelper.getInstance().getBikeNetworkId(NearbyActivity.this))){
+                if (closestNetwork.getId().equalsIgnoreCase(DBHelper.getInstance().getBikeNetworkId(NearbyActivity.this))) {
                     toReturn.put(ERROR_KEY_NO_BETTER, "dummy");
                     cancel(false);
                 }
@@ -3183,10 +3183,10 @@ public class NearbyActivity extends AppCompatActivity
                         toReturn.put("old_network_name", DBHelper.getInstance().getBikeNetworkName(NearbyActivity.this));
                     }
 
-                    toReturn.put("new_network_city", closestNetwork.location.getCity());
+                    toReturn.put("new_network_city", closestNetwork.getLocation().getCity());
 
                     BikeStationRepository.getInstance().setAll(null);
-                    mNearbyActivityViewModel.postCurrentBikeSytemId(closestNetwork.id);
+                    mNearbyActivityViewModel.postCurrentBikeSytemId(closestNetwork.getId());
                     DBHelper.getInstance().saveBikeNetworkDesc(closestNetwork, NearbyActivity.this);
                 }
 
