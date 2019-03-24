@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.helpers;
+package com.ludoscity.findmybikes.data.database;
 
 import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Database;
@@ -7,9 +7,11 @@ import android.arch.persistence.room.TypeConverters;
 import android.arch.persistence.room.migration.Migration;
 import android.support.annotation.NonNull;
 
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
+import com.ludoscity.findmybikes.helpers.FavoriteEntityPlaceDao;
+import com.ludoscity.findmybikes.helpers.FavoriteEntityStationDao;
+import com.ludoscity.findmybikes.helpers.LatLngTypeConverter;
 
 /**
  * Created by F8Full on 2017-12-17.
@@ -17,12 +19,12 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
  */
 @Database(entities = {BikeStation.class, FavoriteEntityStation.class, FavoriteEntityPlace.class}, version = 6)
 @TypeConverters({LatLngTypeConverter.class})
-public abstract class AppDatabase extends RoomDatabase {
+public abstract class FindMyBikesDatabase extends RoomDatabase {
     public abstract BikeStationDao bikeStationDao();
     public abstract FavoriteEntityStationDao favoriteEntityStationDao();
     public abstract FavoriteEntityPlaceDao favoriteEntityPlaceDao();
 
-    static final Migration MIGRATION_1_2 = new Migration(1,2){
+    public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
 
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
@@ -39,7 +41,7 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
-    static final Migration MIGRATION_2_3 = new Migration(2,3) {
+    public static final Migration MIGRATION_2_3 = new Migration(2, 3) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
 
@@ -47,7 +49,7 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
-    static final Migration MIGRATION_3_4 = new Migration(3,4) {
+    public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
 
@@ -55,7 +57,7 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
-    static final Migration MIGRATION_4_5 = new Migration(4,5) {
+    public static final Migration MIGRATION_4_5 = new Migration(4, 5) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
 
@@ -64,7 +66,7 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
-    static final Migration MIGRATION_5_6 = new Migration(5,6) {
+    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
 

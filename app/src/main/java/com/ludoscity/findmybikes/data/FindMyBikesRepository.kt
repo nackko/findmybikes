@@ -3,10 +3,10 @@ package com.ludoscity.findmybikes.data
 import android.arch.lifecycle.LiveData
 import android.content.Context
 import android.util.Log
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation
-import com.ludoscity.findmybikes.citybik_es.model.BikeSystemStatus
+import com.ludoscity.findmybikes.data.database.BikeStation
+import com.ludoscity.findmybikes.data.database.BikeStationDao
 import com.ludoscity.findmybikes.data.network.BikeSystemNetworkDataSource
-import com.ludoscity.findmybikes.helpers.BikeStationDao
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

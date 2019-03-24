@@ -1,7 +1,4 @@
-package com.ludoscity.findmybikes.citybik_es;
-
-import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkListAnswerRoot;
-import com.ludoscity.findmybikes.citybik_es.model.BikeSystemStatusAnswerRoot;
+package com.ludoscity.findmybikes.data.network.citybik_es;
 
 import java.util.Map;
 

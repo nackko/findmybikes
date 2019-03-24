@@ -6,7 +6,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.Nullable;
 
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
+import com.ludoscity.findmybikes.data.database.BikeStation;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;

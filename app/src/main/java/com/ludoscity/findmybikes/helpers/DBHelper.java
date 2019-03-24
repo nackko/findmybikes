@@ -11,7 +11,8 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.citybik_es.model.BikeNetworkDesc;
+import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase;
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeNetworkDesc;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
@@ -25,11 +26,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_1_2;
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_2_3;
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_3_4;
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_4_5;
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_5_6;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_1_2;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_2_3;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_3_4;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_4_5;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_5_6;
 
 /**
  * Created by F8Full on 2015-04-02.
@@ -53,7 +54,7 @@ public class DBHelper {
     }
 
     private  static final String TAG = "DBHelper";
-    private static AppDatabase mDatabase = null;
+    private static FindMyBikesDatabase mDatabase = null;
     private static final String mTRACKS_DB_NAME = "tracksdb";
 
     private static final String mSTATIONS_DB_NAME = "stationsdb";
@@ -84,7 +85,7 @@ public class DBHelper {
     private DBHelper() {}
 
     public void init(Context context) throws IOException, PackageManager.NameNotFoundException {
-        mDatabase = Room.databaseBuilder(context, AppDatabase.class, "findmybikes-database")
+        mDatabase = Room.databaseBuilder(context, FindMyBikesDatabase.class, "findmybikes-database")
                 .addMigrations(MIGRATION_1_2)
                 .addMigrations(MIGRATION_2_3)
                 .addMigrations(MIGRATION_3_4)
@@ -193,7 +194,7 @@ public class DBHelper {
     }
 
 
-    public AppDatabase getDatabase(){
+    public FindMyBikesDatabase getDatabase() {
         return mDatabase;
     }
 

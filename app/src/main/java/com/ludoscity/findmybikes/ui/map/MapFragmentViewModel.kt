@@ -11,8 +11,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
+import com.ludoscity.findmybikes.data.database.BikeStation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

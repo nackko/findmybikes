@@ -5,8 +5,8 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
+import com.ludoscity.findmybikes.data.database.BikeStation
 import java.text.NumberFormat
 
 /**

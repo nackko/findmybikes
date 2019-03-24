@@ -6,15 +6,15 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.ludoscity.findmybikes.RootApplication
-import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI
-import com.ludoscity.findmybikes.citybik_es.model.BikeSystemStatus
-import com.ludoscity.findmybikes.citybik_es.model.BikeSystemStatusAnswerRoot
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusAnswerRoot
+import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.io.IOException
-import java.util.HashMap
+import java.util.*
 
 class BikeSystemNetworkDataSource private constructor(){
 
@@ -58,6 +58,7 @@ class BikeSystemNetworkDataSource private constructor(){
                 statusAnswer = call.execute()
 
                 //TODO: remove copy in Rootapplication
+                //TODO: record a copy for working when API is down
                 val newBikeNetworkStationList = RootApplication.addAllToBikeNetworkStationList(statusAnswer.body()!!.network.bikeStationList!!)
 
 

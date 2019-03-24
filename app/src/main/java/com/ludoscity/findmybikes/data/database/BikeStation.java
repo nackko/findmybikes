@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.citybik_es.model;
+package com.ludoscity.findmybikes.data.database;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Embedded;

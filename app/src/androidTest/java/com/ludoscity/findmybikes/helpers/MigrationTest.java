@@ -6,16 +6,18 @@ import android.arch.persistence.room.testing.MigrationTestHelper;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
 
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_1_2;
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_2_3;
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_3_4;
-import static com.ludoscity.findmybikes.helpers.AppDatabase.MIGRATION_4_5;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_1_2;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_2_3;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_3_4;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_4_5;
 
 
 /**
@@ -33,7 +35,7 @@ public class MigrationTest {
 
     public MigrationTest() {
         helper = new MigrationTestHelper(InstrumentationRegistry.getInstrumentation(),
-                AppDatabase.class.getCanonicalName(),
+                FindMyBikesDatabase.class.getCanonicalName(),
                 new FrameworkSQLiteOpenHelperFactory());
     }
 

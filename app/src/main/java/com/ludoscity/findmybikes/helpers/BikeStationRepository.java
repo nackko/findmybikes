@@ -3,7 +3,7 @@ package com.ludoscity.findmybikes.helpers;
 import android.arch.lifecycle.Observer;
 import android.support.annotation.Nullable;
 
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation;
+import com.ludoscity.findmybikes.data.database.BikeStation;
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
 
 import java.util.ArrayList;
@@ -15,6 +15,7 @@ import java.util.Map;
  * Created by F8Full on 2017-12-26. This file is part of #findmybikes
  * A repo for bike stations. They are fetched from Room
  */
+//TODO: delete this whole class
 public class BikeStationRepository {
 
     private static BikeStationRepository mInstance = null;

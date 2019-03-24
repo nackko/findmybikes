@@ -4,7 +4,7 @@ import android.content.Context
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation
+import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.utils.Utils
 

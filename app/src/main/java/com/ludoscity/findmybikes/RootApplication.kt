@@ -5,19 +5,16 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.support.multidex.MultiDex
 import android.util.Log
-
-import com.ludoscity.findmybikes.citybik_es.Citybik_esAPI
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation
+import com.ludoscity.findmybikes.data.database.BikeStation
+import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI
 import com.ludoscity.findmybikes.helpers.BikeStationRepository
 import com.ludoscity.findmybikes.helpers.DBHelper
-
-import java.io.IOException
-
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import twitter4j.Twitter
 import twitter4j.TwitterFactory
 import twitter4j.conf.ConfigurationBuilder
+import java.io.IOException
 
 /**
  * Created by F8Full on 2015-09-28.

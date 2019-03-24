@@ -35,7 +35,7 @@ import com.ludoscity.findmybikes.Fab
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.RootApplication
 import com.ludoscity.findmybikes.activities.WebViewActivity
-import com.ludoscity.findmybikes.citybik_es.model.BikeStation
+import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
