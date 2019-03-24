@@ -245,6 +245,9 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
                         camAnimTarget.value = CameraUpdateFactory.newLatLngBounds(latLngBoundbuilder.build(),
                                 getApplication<Application>().resources.getDimension(camPaddingResId).toInt())
+                    } else {
+                        hideMapItems()
+                        camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(it, 15.0f)
                     }
                 }
 
