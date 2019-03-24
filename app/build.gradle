@@ -142,6 +142,7 @@ dependencies {
 
     implementation 'com.dmitrymalkovich.android:progress-fab:1.6'
     implementation 'com.dinuscxj:circleprogressbar:1.1.1'
+    implementation 'com.github.fondesa:kpermissions:1.0.0'
 
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.1'
 

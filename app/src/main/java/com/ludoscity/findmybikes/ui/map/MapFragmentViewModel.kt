@@ -24,6 +24,7 @@ import java.util.*
  */
 
 class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application,
+                           val hasLocationPermission: LiveData<Boolean>,
                            val isLookingForBike: LiveData<Boolean>,
                            val isDataOutOfDate: LiveData<Boolean>,
                            private val userLoc: LiveData<LatLng>,

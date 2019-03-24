@@ -70,13 +70,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             return null
         }
 
-    private val activityModel: NearbyActivityViewModel
-        get() {
-            val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
-
-            return ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
-        }
-
     //TODO: this seems related to onSaveInstanceState, see if relevant
     /*val cameraPosition: CameraPosition?
         get() {
@@ -97,6 +90,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
             //TODO: pass prebuilt factories to fragment (like table fragment ?)
             val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                    findMyBikesActivityModel.hasLocationPermission,
                     findMyBikesActivityModel.isLookingForBike,
                     findMyBikesActivityModel.isDataOutOfDate,
                     findMyBikesActivityModel.userLocation,
@@ -147,6 +141,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         //TODO: pass prebuilt factories to fragment (like table fragment ?)
         val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                findMyBikesActivityModel.hasLocationPermission,
                 findMyBikesActivityModel.isLookingForBike,
                 findMyBikesActivityModel.isDataOutOfDate,
                 findMyBikesActivityModel.userLocation,
@@ -157,12 +152,11 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         val fragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
 
-
         fragmentModel.lastClickedWhileLookingForBike.observe(this, Observer {
-            activityModel.setStationA(it)
+            findMyBikesActivityModel.setStationA(it)
         })
         fragmentModel.lastClickedWhileLookingForDock.observe(this, Observer {
-            activityModel.setStationB(it)
+            findMyBikesActivityModel.setStationB(it)
         })
 
         return inflatedView
@@ -229,6 +223,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         //TODO: pass prebuilt factories to fragment (like table fragment ?)
         val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                findMyBikesActivityModel.hasLocationPermission,
                 findMyBikesActivityModel.isLookingForBike,
                 findMyBikesActivityModel.isDataOutOfDate,
                 findMyBikesActivityModel.userLocation,
@@ -238,6 +233,15 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 findMyBikesActivityModel.isFinalDestinationFavorite)
 
         val fragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
+
+        fragmentModel.hasLocationPermission.observe(this, Observer {
+            if (it == true) {
+                mGoogleMap!!.isMyLocationEnabled = true
+                mGoogleMap!!.uiSettings.isMyLocationButtonEnabled = false
+            } else {
+                mGoogleMap!!.isMyLocationEnabled = false
+            }
+        })
 
         fragmentModel.mapPaddingLeftPx.observe(this, Observer {
             mGoogleMap!!.setPadding(it ?: 0, 0, fragmentModel.mapPaddingRightPx.value ?: 0, 0)
@@ -284,19 +288,19 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
             pinAMarker = mGoogleMap!!.addMarker(
                     MarkerOptions().position(
-                            LatLng(activityModel.getStationA().value?.latitude ?: 0.0,
-                                    activityModel.getStationA().value?.longitude ?: 0.0))
+                            LatLng(findMyBikesActivityModel.getStationA().value?.latitude ?: 0.0,
+                                    findMyBikesActivityModel.getStationA().value?.longitude ?: 0.0))
                             .icon(pinAIconBitmapDescriptor)
-                            .visible(activityModel.getStationA().value != null)
-                            .title(activityModel.getStationA().value?.locationHash))
+                            .visible(findMyBikesActivityModel.getStationA().value != null)
+                            .title(findMyBikesActivityModel.getStationA().value?.locationHash))
 
             pinBMarker = mGoogleMap!!.addMarker(
                     MarkerOptions().position(
-                            LatLng(activityModel.getStationB().value?.latitude ?: 0.0,
-                                    activityModel.getStationB().value?.longitude ?: 0.0))
+                            LatLng(findMyBikesActivityModel.getStationB().value?.latitude ?: 0.0,
+                                    findMyBikesActivityModel.getStationB().value?.longitude ?: 0.0))
                             .icon(pinBIconBitmapDescriptor)
-                            .visible(activityModel.getStationB().value != null)
-                            .title(activityModel.getStationB().value?.locationHash))
+                            .visible(findMyBikesActivityModel.getStationB().value != null)
+                            .title(findMyBikesActivityModel.getStationB().value?.locationHash))
 
 
             finalDestinationMarker = mGoogleMap!!.addMarker(
@@ -365,7 +369,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             mGoogleMap!!.uiSettings.isScrollGesturesEnabled = it == true
         })
 
-        activityModel.getStationA().observe(this, Observer {
+        findMyBikesActivityModel.getStationA().observe(this, Observer {
             if (it != null) {
                 //TODO: find a way to animate that
                 pinAMarker.position = LatLng(it.latitude, it.longitude)
@@ -374,7 +378,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 pinAMarker.isVisible = false
         })
 
-        activityModel.getStationB().observe(this, Observer {
+        findMyBikesActivityModel.getStationB().observe(this, Observer {
             if (it != null) {
                 pinBMarker?.position = LatLng(it.latitude, it.longitude)
                 pinBMarker?.isVisible = true
@@ -392,6 +396,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         //TODO: pass prebuilt factories to fragment (like table fragment ?)
         val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
+                findMyBikesActivityModel.hasLocationPermission,
                 findMyBikesActivityModel.isLookingForBike,
                 findMyBikesActivityModel.isDataOutOfDate,
                 findMyBikesActivityModel.userLocation,

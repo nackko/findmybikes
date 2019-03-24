@@ -40,6 +40,7 @@ class InjectorUtils {
         }
 
         fun provideMapFragmentViewModelFactory(app: Application,
+                                               hasLocationPermission: LiveData<Boolean>,
                                                isLookingForBike: LiveData<Boolean>,
                                                isDataOutOfDate: LiveData<Boolean>,
                                                userLoc: LiveData<LatLng>,
@@ -52,6 +53,7 @@ class InjectorUtils {
             return MapFragmentModelFactory(
                     repository,
                     app,
+                    hasLocationPermission,
                     isLookingForBike,
                     isDataOutOfDate,
                     userLoc,

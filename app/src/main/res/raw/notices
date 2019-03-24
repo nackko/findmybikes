@@ -37,6 +37,12 @@
         <license>Apache Software License 2.0</license>
      </notice>
      <notice>
+        <name>KPermissions</name>
+        <url>https://github.com/Fondesa/KPermissions</url>
+        <copyright>Copyright © 2018 Fondesa</copyright>
+        <license>Apache Software License 2.0</license>
+     </notice>
+     <notice>
          <name>CircleProgressBar</name>
          <url>https://github.com/dinuscxj/CircleProgressBar</url>
          <copyright>Copyright © 2015-2019 dinuscxj</copyright>

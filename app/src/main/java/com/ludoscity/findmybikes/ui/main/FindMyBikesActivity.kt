@@ -21,6 +21,8 @@ import android.view.animation.AnimationUtils
 import android.view.animation.Interpolator
 import android.widget.ProgressBar
 import android.widget.TextView
+import com.fondesa.kpermissions.extension.listeners
+import com.fondesa.kpermissions.extension.permissionsBuilder
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.location.places.ui.PlaceAutocomplete
@@ -420,6 +422,25 @@ class FindMyBikesActivity : AppCompatActivity(),
 
             tryInitialSetup()
         }
+    }
+
+    override fun onResume() {
+
+        if (nearbyActivityViewModel.hasLocationPermission.value != true) {
+            val request = permissionsBuilder(android.Manifest.permission.ACCESS_FINE_LOCATION).build()
+
+            request.send()
+
+            request.listeners {
+                onAccepted { nearbyActivityViewModel.setLocationPermissionGranted(true) }
+                onDenied { nearbyActivityViewModel.setLocationPermissionGranted(false) }
+                onPermanentlyDenied { nearbyActivityViewModel.setLocationPermissionGranted(false) }
+                onShouldShowRationale { perms, nonce ->
+                }
+            }
+        }
+
+        super.onResume()
     }
 
     //TODO, with repo and stuff, get rid of async tasks

@@ -1,14 +1,17 @@
 package com.ludoscity.findmybikes.ui.main
 
+import android.Manifest
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -27,6 +30,8 @@ import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
 
 //TODO: use AndroidViewModel instead of passing context
 class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
+
+    private val locationPermissionGranted = MutableLiveData<Boolean>()
 
     private val favoriteFabShown = MutableLiveData<Boolean>()
     private val tripDetailsWidgetShown = MutableLiveData<Boolean>()
@@ -57,6 +62,13 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     //TODO: should that be maintained in repository or should repo update activity model ?
     //Tentative reply : that should be exposed by repo and channelled through model (like station availability data is)
     private val dataOutOfDate = MutableLiveData<Boolean>()
+
+    val hasLocationPermission: LiveData<Boolean>
+        get() = locationPermissionGranted
+
+    fun setLocationPermissionGranted(toSet: Boolean) {
+        locationPermissionGranted.value = toSet
+    }
 
     val userLocation: LiveData<LatLng>
         get() = userLoc
@@ -245,6 +257,8 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     init {
         ///DEBUG
         dataOutOfDate.value = true
+        locationPermissionGranted.value = ContextCompat.checkSelfPermission(getApplication(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         //finalDest.value = LatLng(45.75725, 4.84974)//Lyon
         ///
         stationData = repo.getBikeSystemStationData(getApplication())
@@ -328,11 +342,13 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         locationRequest.fastestInterval = 5000 //TODO: make that flexible
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
-        try {
-            fusedLocationClient.requestLocationUpdates(locationRequest,
-                    locationCallback, null)
-        } catch (e: SecurityException) {
-            Log.e(this::class.java.simpleName, "You need location permission !!")
+        hasLocationPermission.observeForever {
+            if (it == true) {
+                fusedLocationClient.requestLocationUpdates(locationRequest,
+                        locationCallback, null)
+            } else {
+                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+            }
         }
 
         //

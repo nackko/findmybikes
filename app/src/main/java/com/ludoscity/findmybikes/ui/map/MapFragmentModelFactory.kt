@@ -14,6 +14,7 @@ import com.ludoscity.findmybikes.data.FindMyBikesRepository
  */
 class MapFragmentModelFactory(private val repository: FindMyBikesRepository,
                               private val application: Application,
+                              private val hasLocationPermission: LiveData<Boolean>,
                               private val isLookingForBike: LiveData<Boolean>,
                               private val isDataOutOfDate: LiveData<Boolean>,
                               private val userLoc: LiveData<LatLng>,
@@ -28,6 +29,7 @@ class MapFragmentModelFactory(private val repository: FindMyBikesRepository,
         return MapFragmentViewModel(
                 repository,
                 application,
+                hasLocationPermission,
                 isLookingForBike,
                 isDataOutOfDate,
                 userLoc,
