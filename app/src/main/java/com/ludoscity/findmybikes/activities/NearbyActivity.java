@@ -75,15 +75,14 @@ import com.ludoscity.findmybikes.Fab;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.RootApplication;
 import com.ludoscity.findmybikes.data.database.BikeStation;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityStation;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemDesc;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusAnswerRoot;
 import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment;
-import com.ludoscity.findmybikes.helpers.BikeStationRepository;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter;
@@ -3185,7 +3184,6 @@ public class NearbyActivity extends AppCompatActivity
 
                     toReturn.put("new_network_city", closestNetwork.getLocation().getCity());
 
-                    BikeStationRepository.getInstance().setAll(null);
                     mNearbyActivityViewModel.postCurrentBikeSytemId(closestNetwork.getId());
                     DBHelper.getInstance().saveBikeNetworkDesc(closestNetwork, NearbyActivity.this);
                 }
@@ -3280,8 +3278,6 @@ public class NearbyActivity extends AppCompatActivity
 
         @Override
         protected Void doInBackground(Void... params) {
-
-            //BikeStationRepository.getInstance().setAll(RootApplication.Companion.getBikeNetworkStationList());
 
             return null;
         }

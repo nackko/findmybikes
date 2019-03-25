@@ -7,10 +7,6 @@ import android.arch.persistence.room.TypeConverters;
 import android.arch.persistence.room.migration.Migration;
 import android.support.annotation.NonNull;
 
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
-import com.ludoscity.findmybikes.helpers.FavoriteEntityPlaceDao;
-import com.ludoscity.findmybikes.helpers.FavoriteEntityStationDao;
 import com.ludoscity.findmybikes.helpers.LatLngTypeConverter;
 
 /**
@@ -18,7 +14,7 @@ import com.ludoscity.findmybikes.helpers.LatLngTypeConverter;
  * This file is part of #findmybikes
  */
 @Database(entities = {BikeSystem.class, BikeStation.class,
-        FavoriteEntityStation.class, FavoriteEntityPlace.class}, version = 7)
+        FavoriteEntityStation.class, FavoriteEntityPlace.class}, version = 8)
 @TypeConverters({LatLngTypeConverter.class})
 public abstract class FindMyBikesDatabase extends RoomDatabase {
     public abstract BikeSystemDao bikeSystemDao();
@@ -84,6 +80,15 @@ public abstract class FindMyBikesDatabase extends RoomDatabase {
             database.execSQL("DROP TABLE BikeStation");
             database.execSQL("CREATE TABLE IF NOT EXISTS `BikeStation` (`uid` TEXT NOT NULL, `empty_slots` INTEGER NOT NULL, `free_bikes` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT, `timestamp` TEXT NOT NULL, `location_hash` TEXT NOT NULL, `extra_locked` INTEGER, `extra_name` TEXT, `extra_uid` INTEGER, `extra_renting` INTEGER, `extra_returning` INTEGER, `extra_status` TEXT, PRIMARY KEY(`uid`))");
             database.execSQL("CREATE TABLE IF NOT EXISTS `BikeSystem` (`id` TEXT NOT NULL, `citybik_dot_es_url` TEXT NOT NULL, `name` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `city` TEXT NOT NULL, `country` TEXT NOT NULL, `bbox_north_east_lat` REAL, `bbox_north_east_lng` REAL, `bbox_south_west_lat` REAL, `bbox_south_west_lng` REAL, PRIMARY KEY(`id`))");
+        }
+    };
+
+    public static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+
+            database.execSQL("DROP TABLE FavoriteEntityStation");
+            database.execSQL("CREATE TABLE IF NOT EXISTS `FavoriteEntityStation` (`id` TEXT NOT NULL, `default_name` TEXT NOT NULL, `custom_name` TEXT NOT NULL, `ui_index` INTEGER NOT NULL, `bike_system_id` TEXT NOT NULL, PRIMARY KEY(`id`))");
         }
     };
 }

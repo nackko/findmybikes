@@ -23,7 +23,7 @@ import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.data.database.BikeSystem
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
+import com.ludoscity.findmybikes.data.database.FavoriteEntityBase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

@@ -17,11 +17,11 @@ import com.ludoscity.findmybikes.EditableMaterialSheetFab;
 import com.ludoscity.findmybikes.FavoriteRecyclerViewAdapter;
 import com.ludoscity.findmybikes.ItemTouchHelperAdapter;
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
+import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 import com.ludoscity.findmybikes.utils.DividerItemDecoration;
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
-import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 
 import java.util.List;
 

@@ -23,9 +23,9 @@ import android.widget.TextView;
 
 import com.dinuscxj.progressbar.CircleProgressBar;
 import com.dmitrymalkovich.android.ProgressFloatingActionButton;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityStation;
 import com.ludoscity.findmybikes.utils.Utils;
 import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 

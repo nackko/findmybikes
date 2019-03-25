@@ -2,9 +2,9 @@ package com.ludoscity.findmybikes.helpers;
 
 import android.arch.lifecycle.LiveData;
 
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityStation;
 
 import java.util.ArrayList;
 import java.util.List;

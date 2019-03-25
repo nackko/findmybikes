@@ -11,11 +11,11 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.R;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityStation;
 import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemDesc;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +32,7 @@ import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRAT
 import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_4_5;
 import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_5_6;
 import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_6_7;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_7_8;
 
 /**
  * Created by F8Full on 2015-04-02.
@@ -93,6 +94,7 @@ public class DBHelper {
                 .addMigrations(MIGRATION_4_5)
                 .addMigrations(MIGRATION_5_6)
                 .addMigrations(MIGRATION_6_7)
+                .addMigrations(MIGRATION_7_8)
                 .build();
 
         //Check for SharedPreferences versioning

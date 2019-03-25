@@ -7,9 +7,9 @@ import android.arch.lifecycle.ViewModel;
 import android.support.annotation.Nullable;
 
 import com.ludoscity.findmybikes.data.database.BikeStation;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.datamodel.FavoriteEntityStation;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.data.database.FavoriteEntityStation;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 import com.ludoscity.findmybikes.helpers.FavoriteRepository;
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
