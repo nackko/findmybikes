@@ -1,10 +1,14 @@
 package com.ludoscity.findmybikes.data
 
 import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.util.Log
+import com.google.android.gms.maps.model.LatLngBounds
 import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.data.database.BikeStationDao
+import com.ludoscity.findmybikes.data.database.BikeSystem
+import com.ludoscity.findmybikes.data.database.BikeSystemDao
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
@@ -14,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class FindMyBikesRepository private constructor(
+        private val currentBikeSystemDao: BikeSystemDao,
         private val stationDao: BikeStationDao,
         private val bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
         private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource) {
@@ -24,51 +29,98 @@ class FindMyBikesRepository private constructor(
     private val networkBikeSystemStatusData: LiveData<BikeSystemStatus> = bikeSystemStatusNetworkDataSource.data
     private val networkBikeSystemListAnswerRootData: LiveData<BikeSystemListAnswerRoot> = bikeSystemListNetworkDataSource.data
 
+    //transient local list of all bike systems available. Model determine nearest one for DB saving with bounds of current bike system
+    private val availableBikeSystemList: MutableLiveData<List<BikeSystem>> = MutableLiveData()
+
     init {
 
         networkBikeSystemStatusData.observeForever { newStatusDataFromNetwork ->
-            coroutineScopeIO.launch {
 
-                Log.d(TAG, "New data from network, begin processing of " +
-                        "${newStatusDataFromNetwork?.bikeStationList?.size} stations for saving in Room")
-                //TODO: Calculate bounds
-                /*val boundsBuilder = LatLngBounds.Builder()
+            newStatusDataFromNetwork?.let {
 
-                for (station in statusAnswer.body()!!.network.bikeStationList) {
-                    boundsBuilder.include(station.location)
-                }
+                coroutineScopeIO.launch {
 
-                mDownloadedBikeNetworkBounds = boundsBuilder.build()*/
-                newStatusDataFromNetwork!!.bikeStationList!!.forEach {
+                    Log.d(TAG, "New data from network, begin processing of " +
+                            "${newStatusDataFromNetwork.bikeStationList?.size} stations for saving in Room")
 
-                    it.uid = it.locationHash
+                    val boundsBuilder = LatLngBounds.Builder()
 
-                    if (it.extra != null){
-                        if (it.extra.uid != null){
-                            it.uid = "${newStatusDataFromNetwork.id}:${it.extra.uid}"
-                        }
+                    newStatusDataFromNetwork.bikeStationList?.forEach {
 
-                        if (it.name == null){
-                            it.name = it.extra.name
+                        boundsBuilder.include(it.location)
+
+                        it.uid = it.locationHash
+
+                        if (it.extra != null) {
+                            if (it.extra.uid != null) {
+                                it.uid = "${newStatusDataFromNetwork.id}:${it.extra.uid}"
+                            }
+
+                            if (it.name == null) {
+                                it.name = it.extra?.name ?: "null"
+                            }
                         }
                     }
+
+                    Log.d(TAG, "Calculating bounds")
+                    val bounds = boundsBuilder.build()
+
+                    Log.d(TAG, "Saving bounds")
+                    currentBikeSystemDao.updateBounds(it.id,
+                            bounds.northeast.latitude,
+                            bounds.northeast.longitude,
+                            bounds.southwest.latitude,
+                            bounds.southwest.longitude)
+
+                    Log.d(TAG, "Processing done")
+                    //TODO: smarter update algorithm that purges obsolete stations from DB without dropping the whole table
+                    //deleteOldData
+                    //TODO: in relation to previous : do that only when switching from a bike network to an other one
+                    //BUT, even when updating in place, some strategy should be in place to detect 'orphans' and purge them
+                    //especially if they are a user's favourite.
+                    //For now, live with the visual glitch on launch where the UI table empties itself and refills
+                    stationDao.deleteAllBikeStation()
+                    Log.d(TAG, "Old station data deleted")
+                    //Insert new data into database
+                    stationDao.insertBikeStationList(newStatusDataFromNetwork.bikeStationList!!)
+                    Log.d(TAG, "New values inserted with replace strategy")
                 }
-                Log.d(TAG, "Processing done")
-                //TODO: smarter update algorithm that purges obsolete stations from DB without dropping the whole table
-                //deleteOldData
-                //TODO: in relation to previous : do that only when switching from a bike network to an other one
-                //BUT, even when updating in place, some strategy should be in place to detect 'orphans' and purge them
-                //especially if they are a user's favourite.
-                //For now, live with the visual glitch on launch where the UI table empties itself and refills
-                stationDao.deleteAllBikeStation()
-                Log.d(TAG, "Old station data deleted")
-                //Insert new data into database
-                stationDao.insertBikeStationList(newStatusDataFromNetwork.bikeStationList)
-                Log.d(TAG, "New values inserted with replace strategy")
             }
         }
-        networkBikeSystemListAnswerRootData.observeForever { newSystemListFromNetwork ->
-            Log.d(TAG, "Youppie, new data in: $newSystemListFromNetwork")
+        networkBikeSystemListAnswerRootData.observeForever { newBikeSystemListData ->
+
+            newBikeSystemListData?.let { newBikeSystemListFromNetwork ->
+                Log.d(TAG, "New complete list of bike system available, size: ${newBikeSystemListFromNetwork.networks?.size}")
+
+                coroutineScopeIO.launch {
+                    Log.d(TAG, "Backgorund thread, turning BikeSystemListanswerRoot into List<BikeSystem>")
+
+                    val bikeSystemList = ArrayList<BikeSystem>()
+                    //TODO: behave if networks is null (that should be a test)
+                    newBikeSystemListData.networks!!.forEach {
+
+                        bikeSystemList.add(BikeSystem(
+                                it.id,
+                                it.href,
+                                it.name,
+                                it.location.latitude,
+                                it.location.longitude,
+                                it.location.city,
+                                //TODO: also have country. Bounds will be calculated when network status is available
+                                "to add country here",
+                                null,
+                                null,
+                                null,
+                                null
+                        ))
+
+                    }
+
+                    //act model observes transient full list and then update repo for current bike system
+                    //(it knows user location)
+                    availableBikeSystemList.postValue(bikeSystemList)
+                }
+            }
         }
     }
 
@@ -104,17 +156,37 @@ class FindMyBikesRepository private constructor(
         return stationDao.all
     }
 
-
-
-    private fun isFetchNeeded(): Boolean {
-        /*val today = SunshineDateUtils.getNormalizedUtcDateForToday()
-        val count = mWeatherDao.countAllFutureWeather(today)
-        return count < WeatherNetworkDataSource.NUM_DAYS*/
-        return true
+    fun getBikeSystemListData(ctx: Context): LiveData<List<BikeSystem>> {
+        initializeData(ctx)
+        return availableBikeSystemList
     }
 
-    private fun startFetchBikeSystemStatusDataService(ctx: Context) {
-        bikeSystemStatusNetworkDataSource.startFetchBikeSystemService(ctx)
+    fun getCurrentBikeSystem(): LiveData<BikeSystem> {
+        return currentBikeSystemDao.single
+    }
+
+    fun setCurrentBikeSystem(ctx: Context, toSet: BikeSystem, alsoFetchStatus: Boolean = false) {
+        Log.d(TAG, "setting current bike system to : $toSet")
+        currentBikeSystemDao.deleteCurrentBikeSystem()
+        currentBikeSystemDao.insertCurrentBikeSystem(toSet)
+        if (alsoFetchStatus)
+            startFetchBikeSystemStatusDataService(ctx, toSet.citybikDOTesUrl)
+    }
+
+    fun invalidateCurrentBikeSystem(ctx: Context) {
+        startFetchBikeSystemListDataService(ctx)
+    }
+
+    private fun isFetchNeeded(): Boolean {
+        return 0 == currentBikeSystemDao.countCurrentBikeSystem()
+    }
+
+    private fun isBikeSystemStatusFetchNeeded(): Boolean {
+        return false
+    }
+
+    private fun startFetchBikeSystemStatusDataService(ctx: Context, systemHRef: String) {
+        bikeSystemStatusNetworkDataSource.startFetchBikeSystemStatusService(ctx, systemHRef)
     }
 
     private fun startFetchBikeSystemListDataService(ctx: Context) {
@@ -130,13 +202,15 @@ class FindMyBikesRepository private constructor(
 
         @Synchronized
         fun getInstance(
+                bikeSystemDao: BikeSystemDao,
                 bikeStationDao: BikeStationDao,
                 bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
                 bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource): FindMyBikesRepository {
-            Log.d(TAG, "Getting the repository")
+            //Log.d(TAG, "Getting the repository")
             if (sInstance == null) {
                 synchronized(LOCK) {
-                    sInstance = FindMyBikesRepository(bikeStationDao,
+                    sInstance = FindMyBikesRepository(bikeSystemDao,
+                            bikeStationDao,
                             bikeSystemListNetworkDataSource,
                             bikeSystemStatusNetworkDataSource)
                     Log.d(TAG, "Made new repository")

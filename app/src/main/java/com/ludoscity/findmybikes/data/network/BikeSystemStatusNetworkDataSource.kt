@@ -5,7 +5,6 @@ import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.ludoscity.findmybikes.RootApplication
 import com.ludoscity.findmybikes.data.network.FetchCitybikDOTesDataIntentService.Companion.ACTION_FETCH_SYSTEM_STATUS
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusAnswerRoot
@@ -33,10 +32,10 @@ class BikeSystemStatusNetworkDataSource private constructor() {
     val data: LiveData<BikeSystemStatus>
         get() = downloadedBikeSystemStatus
 
-    fun startFetchBikeSystemService(ctx: Context){
+    fun startFetchBikeSystemStatusService(ctx: Context, systemHRef: String) {
         val intentToFetch = Intent(ctx, FetchCitybikDOTesDataIntentService::class.java)
         intentToFetch.action = ACTION_FETCH_SYSTEM_STATUS
-        intentToFetch.putExtra("system_href", "/v2/networks/velov")
+        intentToFetch.putExtra("system_href", systemHRef)
 
         FetchCitybikDOTesDataIntentService.enqueueWork(ctx, intentToFetch)
     }
@@ -58,11 +57,7 @@ class BikeSystemStatusNetworkDataSource private constructor() {
             try {
                 statusAnswer = call.execute()
 
-                //TODO: remove copy in Rootapplication
                 //TODO: record a copy for working when API is down
-                val newBikeNetworkStationList = RootApplication.addAllToBikeNetworkStationList(statusAnswer.body()!!.network.bikeStationList!!)
-
-
                 downloadedBikeSystemStatus.postValue(statusAnswer.body()!!.network)
 
             } catch (e: IOException) {
@@ -70,8 +65,6 @@ class BikeSystemStatusNetworkDataSource private constructor() {
                 //server level error, could not retrieve bike system data
                 Log.w(TAG, "Exception raised trying to fetch bike system status -- Aborted")
             }
-
-
         }
     }
 

@@ -31,6 +31,7 @@ import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRAT
 import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_3_4;
 import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_4_5;
 import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_5_6;
+import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_6_7;
 
 /**
  * Created by F8Full on 2015-04-02.
@@ -91,6 +92,7 @@ public class DBHelper {
                 .addMigrations(MIGRATION_3_4)
                 .addMigrations(MIGRATION_4_5)
                 .addMigrations(MIGRATION_5_6)
+                .addMigrations(MIGRATION_6_7)
                 .build();
 
         //Check for SharedPreferences versioning

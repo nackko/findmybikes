@@ -382,8 +382,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         bikeSystemAvailabilityDataSource.observeForever(bikeSystemAvailabilityDataObserver)
 
         stationRecapDataSourceObserver = android.arch.lifecycle.Observer {
-
-
+            computeAndEmitStationRecapDisplayData(stationRecapDataSource.value, isDataOutOfDate.value != false)
         }
 
         stationRecapDataSource.observeForever(stationRecapDataSourceObserver)
@@ -538,7 +537,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                     backgroundResId,
                     proximityText,
                     durationAlpha,
-                    station.name, //TODO: replug having favorite name if it is a favorite
+                    station.name ?: "null", //TODO: replug having favorite name if it is a favorite
                     nameAlpha,
                     if (availabilityValue != -1) numFormat.format(availabilityValue) else "--",
                     availabilityAlpha,

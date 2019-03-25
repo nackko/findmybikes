@@ -1,4 +1,4 @@
 package com.ludoscity.findmybikes.data.database
 
-class BikeStationExtra(var locked: Boolean?, var name: String?, var uid: Int?, var renting: Boolean?,
-                       var returning: Boolean?, var status: String?)
+data class BikeStationExtra(val locked: Boolean?, val name: String?, val uid: Int?, val renting: Int?,
+                            val returning: Int?, val status: String?)

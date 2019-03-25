@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.support.multidex.MultiDex
 import android.util.Log
-import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI
-import com.ludoscity.findmybikes.helpers.BikeStationRepository
 import com.ludoscity.findmybikes.helpers.DBHelper
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -39,17 +37,6 @@ class RootApplication : Application() {
         } catch (e: PackageManager.NameNotFoundException) {
             Log.d(TAG, "Error initializing database", e)
         }
-
-        if (!DBHelper.getInstance().wasLastSavePartial(this)) {
-
-
-            bikeNetworkStationList = BikeStationRepository.getInstance().stationList
-
-
-            Log.i("RootApplication", bikeNetworkStationList!!.size.toString() + " stations loaded from DB")
-        } else
-            bikeNetworkStationList =  ArrayList()
-
 
         citybik_esApi = buildCitybik_esAPI()
         twitterApi = buildTwitterAPI()
@@ -87,27 +74,5 @@ class RootApplication : Application() {
         private val TAG = "RootApplication"
 
         internal val ENDPOINT = "http://api.citybik.es"
-        //Station list data is kept here to survive screen orientation change. TODO: use ViewModel
-        //It's built from the database on launch (if there's a complete record available) and updated in memory after data download
-        lateinit var bikeNetworkStationList: List<BikeStation>
-            private set
-
-        fun addAllToBikeNetworkStationList(_bikeStationList: ArrayList<BikeStation>): List<BikeStation> {
-
-            val newList = ArrayList<BikeStation>(_bikeStationList.size)
-
-            for (bikeStation in _bikeStationList) {
-
-                if (bikeStation.emptySlots == null)
-                    bikeStation.emptySlots = -1
-                //Some systems have empty_slots to null (like nextbike SZ-bike in Dresden, Germany)
-                //-1 is used to encode this case
-                newList.add(bikeStation)
-            }
-
-            bikeNetworkStationList = newList
-
-            return bikeNetworkStationList
-        }
     }
 }

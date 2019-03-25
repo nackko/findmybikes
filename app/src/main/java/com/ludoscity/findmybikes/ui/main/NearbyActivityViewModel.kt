@@ -18,9 +18,17 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.BikeStation
+import com.ludoscity.findmybikes.data.database.BikeSystem
 import com.ludoscity.findmybikes.datamodel.FavoriteEntityBase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import java.util.*
 
 /**
  * Created by F8Full on 2017-12-24. This file is part of #findmybikes
@@ -45,7 +53,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     private val currentBikeSytemId = MutableLiveData<String>()
 
     private val nearestBikeAutoSelected = MutableLiveData<Boolean>()
-    private val lastDataUpdateEpochTimestamp = MutableLiveData<Long>()
+    private val lastStationStatusDataUpdateTimestampEpoch = MutableLiveData<Long>()
     private val userLoc = MutableLiveData<LatLng>()
     private val stationA = MutableLiveData<BikeStation>()
     private val statALatLng = MutableLiveData<LatLng>()
@@ -248,10 +256,14 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     //findMyBikesActivityViewModel
+    private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
     private var locationCallback: LocationCallback
     private var connectivityManagerNetworkCallback: ConnectivityManager.NetworkCallback
     private val repository : FindMyBikesRepository = repo
     val stationData: LiveData<List<BikeStation>>
+
+    private lateinit var userLocObserverForInitialDownload: Observer<LatLng>
+    private lateinit var userLocObserverForOutOfBounds: Observer<LatLng>
 
     init {
         ///DEBUG
@@ -259,10 +271,62 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         locationPermissionGranted.value = ContextCompat.checkSelfPermission(getApplication(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         //finalDest.value = LatLng(45.75725, 4.84974)//Lyon
-        ///
+        /////userLoc.value = LatLng(45.75725, 4.84974)//Lyon
         stationData = repo.getBikeSystemStationData(getApplication())
 
-        //userLoc.value = LatLng(45.75725, 4.84974)//Lyon
+        val bikeSystemListData = repo.getBikeSystemListData(getApplication())
+
+        bikeSystemListData.observeForever {
+
+            it?.let { newList ->
+                if (userLoc.value != null) {
+                    findNearestBikeSystemAndSetInRepo(newList, userLoc.value, repo)
+                } else {
+                    userLocObserverForInitialDownload = Observer { newUserLoc ->
+
+                        newUserLoc?.let {
+                            findNearestBikeSystemAndSetInRepo(newList, newUserLoc, repo)
+                            userLoc.removeObserver(userLocObserverForInitialDownload)
+                        }
+                    }
+                    userLoc.observeForever(userLocObserverForInitialDownload)
+                }
+            }
+        }
+
+        repo.getCurrentBikeSystem().observeForever {
+            Log.d(TAG, "$it")
+
+            if (it == null) {
+                bikeSystemListData.value?.let { bikeSystemList ->
+                    findNearestBikeSystemAndSetInRepo(bikeSystemList, userLoc.value, repo)
+                }
+            } else {
+                //We have bounds, start watching user location to trigger new attempt at finding a bike system
+                //when getting out of bounds
+                it.boundingBoxNorthEastLatitude?.let { bbNELat ->
+
+                    Log.d(TAG, "registering observer on userLoc for out of bounds detection for ${it.id}")
+                    val boundsBuilder = LatLngBounds.builder()
+                    boundsBuilder.include(LatLng(bbNELat, it.boundingBoxNorthEastLongitude!!))
+                    boundsBuilder.include(LatLng(it.boundingBoxSouthWestLatitude!!, it.boundingBoxSouthWestLongitude!!))
+
+                    val bounds = boundsBuilder.build()
+
+                    userLocObserverForOutOfBounds = Observer { newUserLoc ->
+                        newUserLoc?.let {
+                            if (!bounds.contains(newUserLoc)) {
+                                Log.d(TAG, "out of bound dected, invalidating current bike system")
+                                userLoc.removeObserver(userLocObserverForOutOfBounds)
+                                repo.invalidateCurrentBikeSystem(getApplication())
+                            }
+                        }
+                    }
+
+                    userLoc.observeForever(userLocObserverForOutOfBounds)
+                }
+            }
+        }
 
         //connectivity
         connectivityManagerNetworkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -331,7 +395,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
                     toEmit = LatLng(userLat, userLng)
                 }
 
-                Log.d(this::class.java.simpleName, "Emitting new Location !! : $toEmit")
+                //Log.d(TAG, "Emitting new Location !! : $toEmit")
                 userLoc.value = toEmit
             }
         }
@@ -419,12 +483,36 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         }
     }
 
+    private fun findNearestBikeSystemAndSetInRepo(bikeSystemList: List<BikeSystem>, userLocation: LatLng?, repo: FindMyBikesRepository): Job {
+        val sortedList = bikeSystemList.toMutableList()
+
+        return coroutineScopeIO.launch {
+            sortedList.sortWith(Comparator { bikeSystemLeft, bikeSystemRight ->
+                (SphericalUtil.computeDistanceBetween(userLocation, LatLng(bikeSystemLeft.latitude, bikeSystemLeft.longitude)) -
+                        SphericalUtil.computeDistanceBetween(userLocation, LatLng(bikeSystemRight.latitude, bikeSystemRight.longitude))).toInt()
+            })
+
+            var nearestBikeSystem = sortedList[0]
+
+            if (nearestBikeSystem.id.equals(NEW_YORK_HUDSON_BIKESHARE_ID, ignoreCase = true)) {
+                nearestBikeSystem = sortedList[1]
+            }
+
+            repo.setCurrentBikeSystem(getApplication(), nearestBikeSystem, alsoFetchStatus = true)
+        }
+    }
+
     override fun onCleared() {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication() as Context)
 
         //TODO: activity lifecycle methods should remove and re request to save battery
         fusedLocationClient.removeLocationUpdates(locationCallback)
         super.onCleared()
+    }
+
+    companion object {
+        private val TAG = NearbyActivityViewModel::class.java.simpleName
+        private const val NEW_YORK_HUDSON_BIKESHARE_ID = "hudsonbikeshare-hoboken"
     }
 
     //TODO: added for status display. Revisit when usage is clearer (splash screen and status bar)

@@ -252,7 +252,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         })
 
         fragmentModel.showMapItems.observe(this, Observer {
-            Log.d(TAG, "map item new visibility : $it")
+            //Log.d(TAG, "map item new visibility : $it")
             if (it == true) {
                 gfxData.forEach { mapGfx ->
                     mapGfx.show(mGoogleMap!!.cameraPosition.zoom)
@@ -339,10 +339,10 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         fragmentModel.cameraAnimationTarget.observe(this, Observer {
 
-            Log.d("truc", "MappPaddingLeft: ${fragmentModel.mapPaddingLeftPx.value}, MapPaddingRight: ${fragmentModel.mapPaddingRightPx.value}")
+            //Log.d(TAG, "MappPaddingLeft: ${fragmentModel.mapPaddingLeftPx.value}, MapPaddingRight: ${fragmentModel.mapPaddingRightPx.value}")
 
             if (it != null) {
-                Log.d(TAG, "observed new camera target")
+                //Log.d(TAG, "observed new camera target")
                 mAnimCallback = CustomCancellableCallback()
                 mGoogleMap!!.animateCamera(it, resources.getInteger(R.integer.camera_animation_duration), mAnimCallback)
             }

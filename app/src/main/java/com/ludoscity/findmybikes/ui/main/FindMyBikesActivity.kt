@@ -33,7 +33,6 @@ import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.EditableMaterialSheetFab
 import com.ludoscity.findmybikes.Fab
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.RootApplication
 import com.ludoscity.findmybikes.activities.WebViewActivity
 import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.fragments.FavoriteListFragment
@@ -413,15 +412,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         }
 
         circularRevealInterpolator = AnimationUtils.loadInterpolator(this, R.interpolator.msf_interpolator)
-
-        //Not empty if RootApplication::onCreate got database data
-        //TODO: this is clearly wrong : no copy of data should exist in root application
-        //data should disseminate through repo observation
-        //Observe some LiveData and detect when an initial setup is required
-        if (RootApplication.bikeNetworkStationList.isEmpty()) {
-
-            tryInitialSetup()
-        }
     }
 
     override fun onResume() {
