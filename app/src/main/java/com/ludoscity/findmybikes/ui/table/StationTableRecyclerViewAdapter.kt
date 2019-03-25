@@ -68,11 +68,15 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
             Log.d(TAG, "Background thread, about to calculate diffresult, oldSize: ${items.size} -- newSize: ${newItems.size}")
             val diffResult = DiffUtil.calculateDiff(TableDiffCallback(items, newItems))
 
-            coroutineScopeMAIN.launch {
-                Log.d(TAG, "UI thread, about to dispatch, oldSize: ${items.size} -- newSize: ${newItems.size}")
-                diffResult.dispatchUpdatesTo(this@StationTableRecyclerViewAdapter)
-                items = newItems
+                coroutineScopeMAIN.launch {
+                    //Log.d(TAG, "UI thread, about to dispatch. loadId:$randomDebugloadID oldSize: ${items.size} -- newSize: ${newItems.size}")
+                    diffResult.dispatchUpdatesTo(this@StationTableRecyclerViewAdapter)
+                    items = newItems
+                }
             }
+        } else {
+            this@StationTableRecyclerViewAdapter.notifyDataSetChanged()
+            items = newItems
         }
     }
 
