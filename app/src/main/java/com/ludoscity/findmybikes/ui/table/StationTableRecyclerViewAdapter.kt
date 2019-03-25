@@ -4,7 +4,6 @@ import android.os.Handler
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,9 +63,22 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
 
     fun loadItems(newItems: List<StationTableItemData>) {
 
-        coroutineScopeIO.launch {
-            Log.d(TAG, "Background thread, about to calculate diffresult, oldSize: ${items.size} -- newSize: ${newItems.size}")
-            val diffResult = DiffUtil.calculateDiff(TableDiffCallback(items, newItems))
+        //val randomDebugloadID = Math.random()
+
+        //This is slow but safe...
+        /*val diffResult = DiffUtil.calculateDiff(TableDiffCallback(items, newItems))
+        diffResult.dispatchUpdatesTo(this@StationTableRecyclerViewAdapter)
+        items = newItems*/
+
+        //This if to try to mitigate crashes to some success, real debug would be to understand what happens on
+        //screen rotation to the size of the list of items passed
+        if (items.size == newItems.size) {
+            //...this is faster but lead to crashes like
+            //java.lang.IndexOutOfBoundsException: Inconsistency detected. Invalid view holder adapter positionViewHolder
+            //probably because of timing a user location update leading to resort while dispatching or something
+            coroutineScopeIO.launch {
+                //Log.d(TAG, "Background thread, about to calculate diffresult. loadId:$randomDebugloadID oldSize: ${items.size} -- newSize: ${newItems.size}")
+                val diffResult = DiffUtil.calculateDiff(TableDiffCallback(items, newItems))
 
                 coroutineScopeMAIN.launch {
                     //Log.d(TAG, "UI thread, about to dispatch. loadId:$randomDebugloadID oldSize: ${items.size} -- newSize: ${newItems.size}")
