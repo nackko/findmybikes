@@ -30,18 +30,18 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
-import com.ludoscity.findmybikes.EditableMaterialSheetFab
-import com.ludoscity.findmybikes.Fab
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.activities.WebViewActivity
 import com.ludoscity.findmybikes.data.database.BikeStation
-import com.ludoscity.findmybikes.fragments.FavoriteListFragment
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
+import com.ludoscity.findmybikes.ui.sheet.EditableMaterialSheetFab
+import com.ludoscity.findmybikes.ui.sheet.Fab
+import com.ludoscity.findmybikes.ui.sheet.FavoriteListFragment
+import com.ludoscity.findmybikes.ui.sheet.FavoriteListViewModel
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
-import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
 import java.text.NumberFormat
 
 class FindMyBikesActivity : AppCompatActivity(),

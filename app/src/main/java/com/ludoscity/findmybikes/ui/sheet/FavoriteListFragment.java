@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.fragments;
+package com.ludoscity.findmybikes.ui.sheet;
 
 import android.app.Activity;
 import android.arch.lifecycle.Observer;
@@ -13,15 +13,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.ludoscity.findmybikes.EditableMaterialSheetFab;
-import com.ludoscity.findmybikes.FavoriteRecyclerViewAdapter;
-import com.ludoscity.findmybikes.ItemTouchHelperAdapter;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 import com.ludoscity.findmybikes.utils.DividerItemDecoration;
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager;
-import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel;
 
 import java.util.List;
 

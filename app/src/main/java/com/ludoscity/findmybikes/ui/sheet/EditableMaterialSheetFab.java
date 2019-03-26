@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes;
+package com.ludoscity.findmybikes.ui.sheet;
 
 import android.arch.lifecycle.Observer;
 import android.support.annotation.Nullable;
@@ -6,6 +6,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
+import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.activities.NearbyActivity;
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivity;
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;

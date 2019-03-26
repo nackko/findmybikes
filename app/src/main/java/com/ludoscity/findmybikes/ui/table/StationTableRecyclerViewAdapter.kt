@@ -11,7 +11,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
+import com.ludoscity.findmybikes.ui.sheet.FavoriteListViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

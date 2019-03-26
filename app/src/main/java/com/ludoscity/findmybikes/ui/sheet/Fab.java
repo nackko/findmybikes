@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes;
+package com.ludoscity.findmybikes.ui.sheet;
 
 import android.content.Context;
 import android.support.design.widget.FloatingActionButton;

@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.viewmodels;
+package com.ludoscity.findmybikes.ui.sheet;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;

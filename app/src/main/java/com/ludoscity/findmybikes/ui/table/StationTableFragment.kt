@@ -19,10 +19,10 @@ import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
+import com.ludoscity.findmybikes.ui.sheet.FavoriteListViewModel
 import com.ludoscity.findmybikes.utils.DividerItemDecoration
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager
-import com.ludoscity.findmybikes.viewmodels.FavoriteListViewModel
 import java.text.NumberFormat
 import java.util.*
 

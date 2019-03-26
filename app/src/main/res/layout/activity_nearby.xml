@@ -167,7 +167,7 @@
             </LinearLayout>
 
             <!-- put a container for a fragment ??-->
-            <com.ludoscity.findmybikes.Fab
+            <com.ludoscity.findmybikes.ui.sheet.Fab
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:id="@+id/favorite_picker_fab"
