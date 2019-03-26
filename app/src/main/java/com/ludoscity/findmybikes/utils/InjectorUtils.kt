@@ -41,6 +41,8 @@ class InjectorUtils {
             val systemStatusNetworkDataSource = BikeSystemStatusNetworkDataSource.getInstance()
             return FindMyBikesRepository.getInstance(DBHelper.getInstance().database.bikeSystemDao(),
                     DBHelper.getInstance().database.bikeStationDao(),
+                    DBHelper.getInstance().database.favoriteEntityPlaceDao(),
+                    DBHelper.getInstance().database.favoriteEntityStationDao(),
                     systemListNetworkDataSource,
                     systemStatusNetworkDataSource)
         }

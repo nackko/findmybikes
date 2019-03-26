@@ -5,10 +5,7 @@ import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.maps.model.LatLngBounds
-import com.ludoscity.findmybikes.data.database.BikeStation
-import com.ludoscity.findmybikes.data.database.BikeStationDao
-import com.ludoscity.findmybikes.data.database.BikeSystem
-import com.ludoscity.findmybikes.data.database.BikeSystemDao
+import com.ludoscity.findmybikes.data.database.*
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
@@ -20,6 +17,8 @@ import kotlinx.coroutines.launch
 class FindMyBikesRepository private constructor(
         private val currentBikeSystemDao: BikeSystemDao,
         private val stationDao: BikeStationDao,
+        private val favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
+        private val favoriteEntityStationDao: FavoriteEntityStationDao,
         private val bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
         private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource) {
 
@@ -57,7 +56,7 @@ class FindMyBikesRepository private constructor(
                             }
 
                             if (it.name == null) {
-                                it.name = it.extra?.name ?: "null"
+                                it.name = it.extra.name ?: "null"
                             }
                         }
                     }
@@ -151,6 +150,24 @@ class FindMyBikesRepository private constructor(
         }
     }
 
+    fun getFavoritaStationList(): LiveData<List<FavoriteEntityStation>> {
+        return favoriteEntityStationDao.all
+    }
+
+    fun getFavoritePlaceList(): LiveData<List<FavoriteEntityPlace>> {
+        return favoriteEntityPlaceDao.all
+    }
+
+    fun addOrUpdateFavorite(toAddOrUpdate: FavoriteEntityStation) {
+        favoriteEntityStationDao.insertOne(toAddOrUpdate)
+    }
+
+    fun addOrUpdateFavorite(toAddOrUpdate: FavoriteEntityPlace) {
+        favoriteEntityPlaceDao.insertOne(toAddOrUpdate)
+    }
+
+
+
     fun getBikeSystemStationData(ctx: Context): LiveData<List<BikeStation>>{
         initializeData(ctx)
         return stationDao.all
@@ -204,6 +221,8 @@ class FindMyBikesRepository private constructor(
         fun getInstance(
                 bikeSystemDao: BikeSystemDao,
                 bikeStationDao: BikeStationDao,
+                favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
+                favoriteEntityStationDao: FavoriteEntityStationDao,
                 bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
                 bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource): FindMyBikesRepository {
             //Log.d(TAG, "Getting the repository")
@@ -211,6 +230,8 @@ class FindMyBikesRepository private constructor(
                 synchronized(LOCK) {
                     sInstance = FindMyBikesRepository(bikeSystemDao,
                             bikeStationDao,
+                            favoriteEntityPlaceDao,
+                            favoriteEntityStationDao,
                             bikeSystemListNetworkDataSource,
                             bikeSystemStatusNetworkDataSource)
                     Log.d(TAG, "Made new repository")
