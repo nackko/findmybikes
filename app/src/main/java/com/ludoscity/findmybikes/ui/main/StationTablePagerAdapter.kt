@@ -11,7 +11,6 @@ import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.ui.table.StationTableFragment
 import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel
-import com.ludoscity.findmybikes.utils.SmartFragmentPagerAdapter
 
 import java.text.NumberFormat
 

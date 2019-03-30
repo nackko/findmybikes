@@ -35,7 +35,6 @@ import java.util.*
  * ViewModel for handling favoritelistFragment data prep for UI and business logic
  */
 
-//TODO: use AndroidViewModel instead of passing context
 class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
 
     private val locationPermissionGranted = MutableLiveData<Boolean>()
@@ -193,6 +192,14 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     val stationBLatLng: LiveData<LatLng>
         get() = statBLatLng
 
+    fun addFavorite(toAdd: FavoriteEntityBase) {
+        repository.addOrUpdateFavorite(toAdd)
+    }
+
+    fun removeFavoriteByFavoriteId(idToRemove: String) {
+        repository.removeFavoriteByFavoriteId(idToRemove)
+    }
+
     fun showFavoriteFab() {
         favoriteFabShown.value = true
     }
@@ -242,7 +249,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         favoriteItemNameEditInProgress.value = false
     }
 
-    fun favoriteSheetEditStop() {
+    fun favoriteSheetEditDone() {
         favoriteSheetEditInProgress.value = false
     }
 
@@ -267,7 +274,8 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     init {
         ///DEBUG
-        dataOutOfDate.value = true
+        //if(dataOutOfDate.value == null)
+        //    dataOutOfDate.value = true
         locationPermissionGranted.value = ContextCompat.checkSelfPermission(getApplication(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         //finalDest.value = LatLng(45.75725, 4.84974)//Lyon
@@ -302,6 +310,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
                     findNearestBikeSystemAndSetInRepo(bikeSystemList, userLoc.value, repo)
                 }
             } else {
+                currentBikeSytemId.value = it.id
                 //We have bounds, start watching user location to trigger new attempt at finding a bike system
                 //when getting out of bounds
                 it.boundingBoxNorthEastLatitude?.let { bbNELat ->
@@ -415,7 +424,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
         }
 
         //
-        isLookingForBike.observeForever(Observer {
+        isLookingForBike.observeForever {
             if (it == true) {
                 searchFabShown.value = false
                 favoritePickerFabShown.value = false
@@ -441,7 +450,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
                     clearBSelectionFabShown.value = true
                 }
             }
-        })
+        }
 
         //TODO_OLD: have an observer and remove it on cleared
         //Nope, not when I observe one of my local member
@@ -469,6 +478,13 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
                     favoritePickerFabShown.value = false
                     searchFabShown.value = false
                     favoriteFabShown.value = true
+                    coroutineScopeIO.launch {
+                        //TODO: add favorite fab icon resID depending if station B is a favorite (ask repo)
+                        if (repo.isFavoriteId(it.locationHash)) {
+                            favoriteFabShown.postValue(false)
+                        }
+                    }
+
                     clearBSelectionFabShown.value = true
                 }
             } else {
@@ -503,6 +519,9 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     }
 
     override fun onCleared() {
+
+        (getApplication<Application>().applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
+                .unregisterNetworkCallback(connectivityManagerNetworkCallback)
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication() as Context)
 
         //TODO: activity lifecycle methods should remove and re request to save battery

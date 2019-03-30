@@ -1,5 +1,6 @@
-package com.ludoscity.findmybikes.utils;
+package com.ludoscity.findmybikes.ui.main;
 
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -22,6 +23,7 @@ public abstract class SmartFragmentPagerAdapter extends FragmentPagerAdapter {
     }
 
     // Register the fragment when the item is instantiated
+    @NonNull
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         Fragment fragment = (Fragment) super.instantiateItem(container, position);

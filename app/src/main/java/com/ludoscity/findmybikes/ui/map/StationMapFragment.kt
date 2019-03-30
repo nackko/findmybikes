@@ -36,7 +36,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     //models. TODO:Retrieve at construction time ?
     //TODO: answer to question : yes, like table fragment gets availability data source through findmybikes repo
-    //private val favoriteListViewModel: FavoriteListViewModel
+    //private val favoriteListViewModel: FavoriteSheetListViewModel
 
     private var mInitialCameraSetupDone: Boolean = false
 

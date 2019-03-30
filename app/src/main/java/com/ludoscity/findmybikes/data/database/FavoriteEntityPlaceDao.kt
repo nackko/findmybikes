@@ -12,11 +12,17 @@ import android.arch.persistence.room.Query
 @Dao
 interface FavoriteEntityPlaceDao {
 
-    @get:Query("SELECT * FROM FavoriteEntityPlace ORDER BY ui_index DESC")
+    @get:Query("SELECT * FROM FavoriteEntityPlace ORDER BY ui_index ASC")
     val all: LiveData<List<FavoriteEntityPlace>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOne(favoriteEntityPlace: FavoriteEntityPlace)
+
+    @Query("UPDATE FavoriteEntityPlace SET custom_name = :newCustomName WHERE id = :favoriteIdToUpdate")
+    fun updateCustomNameByFavoriteId(favoriteIdToUpdate: String, newCustomName: String)
+
+    @Query("UPDATE FavoriteEntityPlace SET ui_index = :newUiIndex WHERE id = :favoriteIdToUpdate")
+    fun updateUiIndexByFavoriteId(favoriteIdToUpdate: String, newUiIndex: Int)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(favoriteEntityPlaceList: List<FavoriteEntityPlace>)
@@ -26,9 +32,11 @@ interface FavoriteEntityPlaceDao {
 
     //TODO: a more complex query that can be returned as a LiveData<FavoriteEntityBase> ?
     @Query("SELECT * FROM FavoriteEntityPlace WHERE id = :favoriteId")
-    fun getForId(favoriteId: String): LiveData<FavoriteEntityPlace>
+    fun getForId(favoriteId: String): FavoriteEntityPlace
 
-    //TODO: this seems broken
-    @Query("SELECT COUNT(*) FROM FavoriteEntityPlace WHERE id <> :favoriteId")
-    fun validFavoriteCount(favoriteId: String): LiveData<Long>
+    @Query("SELECT COUNT(*) FROM FavoriteEntityPlace WHERE id <> :favoriteIdToExclude")
+    fun validFavoriteCount(favoriteIdToExclude: String): Int
+
+    @Query("SELECT COUNT(*) FROM FavoriteEntityPlace WHERE id = :favoriteIdToCheck")
+    fun isFavoriteId(favoriteIdToCheck: String): Int
 }

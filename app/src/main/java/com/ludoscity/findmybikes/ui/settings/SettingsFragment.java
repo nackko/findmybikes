@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.fragments;
+package com.ludoscity.findmybikes.ui.settings;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;

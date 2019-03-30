@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.helpers;
+package com.ludoscity.findmybikes.data.database;
 
 import android.arch.persistence.room.TypeConverter;
 

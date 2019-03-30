@@ -12,11 +12,17 @@ import android.arch.persistence.room.Query
 @Dao
 interface FavoriteEntityStationDao {
 
-    @get:Query("SELECT * FROM FavoriteEntityStation ORDER BY ui_index DESC")
+    @get:Query("SELECT * FROM FavoriteEntityStation ORDER BY ui_index ASC")
     val all: LiveData<List<FavoriteEntityStation>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOne(favoriteEntityStation: FavoriteEntityStation)
+
+    @Query("UPDATE FavoriteEntityStation SET custom_name = :newCustomName WHERE id = :favoriteIdToUpdate")
+    fun updateCustomNameByFavoriteId(favoriteIdToUpdate: String, newCustomName: String)
+
+    @Query("UPDATE FavoriteEntityStation SET ui_index = :newUiIndex WHERE id = :favoriteIdToUpdate")
+    fun updateUiIndexByFavoriteId(favoriteIdToUpdate: String, newUiIndex: Int)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(favoriteEntityStationList: List<FavoriteEntityStation>)
@@ -26,11 +32,13 @@ interface FavoriteEntityStationDao {
 
     //TODO: a more complex query that can be returned as a LiveData<FavoriteEntityBase> ?
     @Query("SELECT * FROM FavoriteEntityStation WHERE id = :favoriteId")
-    fun getForId(favoriteId: String): LiveData<FavoriteEntityStation>
+    fun getForId(favoriteId: String): FavoriteEntityStation
 
-    //TODO: this seems broken
     @Query("SELECT COUNT(*) FROM FavoriteEntityStation WHERE id <> :favoriteIdToExclude")
-    fun validFavoriteCount(favoriteIdToExclude: String): LiveData<Long>
+    fun validFavoriteCount(favoriteIdToExclude: String): Int
+
+    @Query("SELECT COUNT(*) FROM FavoriteEntityStation WHERE id = :favoriteIdToCheck")
+    fun isFavoriteId(favoriteIdToCheck: String): Int
 
     /*@Query("DELETE FROM favoriteentitystation")
     void deleteAll();*/

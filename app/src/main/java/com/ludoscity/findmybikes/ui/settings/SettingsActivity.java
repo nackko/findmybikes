@@ -1,9 +1,8 @@
-package com.ludoscity.findmybikes.activities;
+package com.ludoscity.findmybikes.ui.settings;
 
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.ludoscity.findmybikes.R;
@@ -20,7 +19,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_settings);
 
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar_main));
+        setSupportActionBar(findViewById(R.id.toolbar_main));
 
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

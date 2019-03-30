@@ -10,6 +10,7 @@ import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
+import com.ludoscity.findmybikes.ui.sheet.FavoriteSheetListFragmentModelFactory
 import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
 import com.ludoscity.findmybikes.ui.trip.TripFragmentModelFactory
 import java.text.NumberFormat
@@ -93,6 +94,13 @@ class InjectorUtils {
                     dataOutOfDate,
                     userLoc,
                     numFormat)
+        }
+
+        fun provideFavoriteSheetListFragmentViewModelFactory(app: Application,
+                                                             isSheetEditInProgress: LiveData<Boolean>): FavoriteSheetListFragmentModelFactory {
+            val repo = provideRepository()
+
+            return FavoriteSheetListFragmentModelFactory(repo, app, isSheetEditInProgress)
         }
 
         fun provideTripFragmentViewModelFactory(app: Application,

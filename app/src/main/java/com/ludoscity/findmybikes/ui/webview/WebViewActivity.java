@@ -1,10 +1,9 @@
-package com.ludoscity.findmybikes.activities;
+package com.ludoscity.findmybikes.ui.webview;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -23,7 +22,7 @@ public class WebViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
 
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar_main));
+        setSupportActionBar(findViewById(R.id.toolbar_main));
 
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -31,7 +30,7 @@ public class WebViewActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String url = intent.getStringExtra(EXTRA_URL);
 
-        WebView webview = (WebView) findViewById(R.id.webview);
+        WebView webview = findViewById(R.id.webview);
 
         if (intent.getBooleanExtra(EXTRA_JAVASCRIPT_ENABLED, false)) {
             webview.getSettings().setJavaScriptEnabled(true);

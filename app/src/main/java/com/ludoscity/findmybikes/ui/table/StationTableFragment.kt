@@ -19,10 +19,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.BikeStation
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
-import com.ludoscity.findmybikes.ui.sheet.FavoriteListViewModel
-import com.ludoscity.findmybikes.utils.DividerItemDecoration
+import com.ludoscity.findmybikes.ui.sheet.DividerItemDecoration
+import com.ludoscity.findmybikes.ui.sheet.ScrollingLinearLayoutManager
 import com.ludoscity.findmybikes.utils.InjectorUtils
-import com.ludoscity.findmybikes.utils.ScrollingLinearLayoutManager
 import java.text.NumberFormat
 import java.util.*
 
@@ -41,9 +40,6 @@ class StationTableFragment : Fragment() {
     private var mProximityHeaderToImageView: ImageView? = null
     private var headerAvailabilityTextView: TextView? = null
 
-    //TODO: make favorite list model hokked on fav repo and provided through InjectorUtils
-    private var mFavoriteListModelView: FavoriteListViewModel? = null
-
     private val stationTableRecyclerViewAdapter: StationTableRecyclerViewAdapter
         get() = mStationRecyclerView!!.adapter as StationTableRecyclerViewAdapter
 
@@ -52,8 +48,6 @@ class StationTableFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-
-        mFavoriteListModelView = ViewModelProviders.of(this).get(FavoriteListViewModel::class.java)
 
         // Inflate the layout for this fragment
         val inflatedView = inflater.inflate(R.layout.fragment_station_table, container, false)
@@ -80,8 +74,8 @@ class StationTableFragment : Fragment() {
         mStationRecyclerView = inflatedView.findViewById(R.id.station_table_recyclerview)
         mStationRecyclerView!!.addItemDecoration(DividerItemDecoration(activity!!, DividerItemDecoration.VERTICAL_LIST))
         //mStationRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mStationRecyclerView!!.layoutManager = ScrollingLinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false, 300)
-        mStationRecyclerView!!.adapter = StationTableRecyclerViewAdapter(tableFragmentModel, mFavoriteListModelView!!)
+        mStationRecyclerView!!.layoutManager = ScrollingLinearLayoutManager(activity!!, LinearLayoutManager.VERTICAL, false, 300)
+        mStationRecyclerView!!.adapter = StationTableRecyclerViewAdapter(tableFragmentModel)
         mStationRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
                 mRecyclerViewScrollingState = newState

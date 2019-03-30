@@ -7,7 +7,6 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
 import android.support.design.widget.*
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
@@ -28,18 +27,16 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.location.places.ui.PlaceAutocomplete
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.activities.WebViewActivity
-import com.ludoscity.findmybikes.data.database.BikeStation
+import com.ludoscity.findmybikes.data.database.FavoriteEntityStation
 import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
 import com.ludoscity.findmybikes.ui.sheet.EditableMaterialSheetFab
 import com.ludoscity.findmybikes.ui.sheet.Fab
 import com.ludoscity.findmybikes.ui.sheet.FavoriteListFragment
-import com.ludoscity.findmybikes.ui.sheet.FavoriteListViewModel
+import com.ludoscity.findmybikes.ui.webview.WebViewActivity
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
 import java.text.NumberFormat
@@ -68,19 +65,20 @@ class FindMyBikesActivity : AppCompatActivity(),
     override fun onPageScrollStateChanged(state: Int) {
     }
 
-    override fun onFavoriteItemEditDone(fsvoriteId: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun onFavoriteItemEditDone(fsvoriteId: String) {
+        //TODO: is there anything to do at activity level ?
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onFavoriteItemDeleted(favoriteId: String?, showUndo: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun onFavoriteItemDeleted(favoriteId: String, showUndo: Boolean) {
+        nearbyActivityViewModel.removeFavoriteByFavoriteId(favoriteId)
     }
 
     override fun onFavoriteListChanged(noFavorite: Boolean) {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onFavoriteListItemClicked(favoriteId: String?) {
+    override fun onFavoriteListItemClicked(favoriteId: String) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -115,12 +113,9 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     private val PLACE_AUTOCOMPLETE_REQUEST_CODE = 1
 
-    //TODO: Trip details fragment
     private lateinit var tripDetailsFragment: View
     private lateinit var tripDetailsProximityTotal: TextView
 
-    //models. TODO:Retrieve at construction time ?
-    //private val favoriteListViewModel: FavoriteListViewModel
     private lateinit var nearbyActivityViewModel: NearbyActivityViewModel
 
     private val TABS_ICON_RES_ID = intArrayOf(R.drawable.ic_pin_a_36dp_white, R.drawable.ic_pin_b_36dp_white)
@@ -185,12 +180,6 @@ class FindMyBikesActivity : AppCompatActivity(),
                 }
             }
         })
-
-        //nearbyActivityViewModel = ViewModelProviders.of(this).get(NearbyActivityViewModel::class.java)
-        //TODO: retrieve favorites model
-        FavoriteListViewModel.setNearbyActivityModel(nearbyActivityViewModel)
-        //mFavoriteListViewModel = ViewModelProviders.of(this).get(FavoriteListViewModel::class.java)
-
 
         nearbyActivityViewModel.isFavoritePickerFabShown.observe(this, Observer {
 
@@ -267,6 +256,16 @@ class FindMyBikesActivity : AppCompatActivity(),
 
                 onboardingShowcaseView.hide()
             }*/
+        })
+
+        nearbyActivityViewModel.isFavoriteSheetEditInProgress.observe(this, Observer {
+            if (it == true) {
+                favoritesSheetFab.hideEditFab()
+                favoritesSheetFab.showEditDoneFab()
+            } else {
+                favoritesSheetFab.showEditFab()
+                favoritesSheetFab.hideEditDoneFab()
+            }
         })
 
         // Update Bar - TODO: Have fragment ?
@@ -358,6 +357,16 @@ class FindMyBikesActivity : AppCompatActivity(),
         directionsLocToAFab = findViewById(R.id.directions_loc_to_a_fab)
         placeAutocompleteLoadingProgressBar = findViewById(R.id.place_autocomplete_loading)
 
+        addFavoriteFAB.setOnClickListener {
+            nearbyActivityViewModel.addFavorite(FavoriteEntityStation(
+                    nearbyActivityViewModel.getStationB().value!!.locationHash,
+                    nearbyActivityViewModel.getStationB().value!!.name!!,
+                    nearbyActivityViewModel.getCurrentBikeSytemId().value!!
+            ))
+
+            nearbyActivityViewModel.hideFavoriteFab()
+        }
+
         //TODO: add splashscreen back
         /*if (savedInstanceState == null)
             splashScreen.visibility = View.VISIBLE*/
@@ -365,11 +374,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         setupDirectionsLocToAFab()
         setupSearchFab()
         setupFavoritePickerFab()
-        if (savedInstanceState?.getParcelable<Parcelable>("add_favorite_fab_data") != null) {
-            //TODO: inspect this. It will have consequences when seting up the UI floating <3 button state
-            //setupAddFavoriteFab((FavoriteItemPlace)savedInstanceState.getParcelable("add_favorite_fab_data"));
-            addFavoriteFAB.show()
-        }
         setupClearFab()
         setupAutoselectBikeFab()
 
@@ -506,70 +510,11 @@ class FindMyBikesActivity : AppCompatActivity(),
                 searchFAB.backgroundTintList = ContextCompat.getColorStateList(this, R.color.theme_primary_dark)
                 nearbyActivityViewModel.showFavoritePickerFab()
                 //mFavoritesSheetFab.showFab();
+                //TODO: model shall control visibility through addToFavFabShown
                 addFavoriteFAB.hide()
                 nearbyActivityViewModel.showSearchFab()
             }
         }
-    }
-
-    //TODO: this business logic will go in Activity model
-    //Maybe adapter should just observe activity model ?
-    private fun clearBTab() {
-        getContentTablePagerAdapter().removeStationHighlightForTable(StationTablePagerAdapter.DOCK_STATIONS)
-
-        getContentTablePagerAdapter().setupUI(StationTablePagerAdapter.DOCK_STATIONS,
-                false, null, null,
-                getString(R.string.b_tab_question))
-
-        //stationMapFragment.clearMarkerPickedPlace()
-        //stationMapFragment.clearMarkerPickedFavorite()
-
-        //A TAB
-        getContentTablePagerAdapter().setClickResponsivenessForTable(StationTablePagerAdapter.BIKE_STATIONS, false)
-
-        if (nearbyActivityViewModel.isLookingForBike.value == null || nearbyActivityViewModel.isLookingForBike.value == false) {
-            //stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(stationMapFragment.markerALatLng, 13f))
-            //mFavoritesSheetFab.showFab();
-            nearbyActivityViewModel.showFavoritePickerFab()
-            //nearbyActivityViewModel.showFavoriteFab()
-            //mFavoriteListViewModel.showFab();
-            if (Utils.Connectivity.isConnected(this@FindMyBikesActivity))
-                nearbyActivityViewModel.showSearchFab()
-            clearFAB.hide()
-            addFavoriteFAB.hide()
-        } else {
-            val highlightedStation = getContentTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.BIKE_STATIONS)
-            animateCameraToShowUserAndStation(highlightedStation)
-        }
-    }
-
-    private fun animateCameraToShowUserAndStation(station: BikeStation?) {
-
-        if (DEBUG_FAKE_USER_CUR_LOC != null) {
-            if (tripDetailsFragment.visibility != View.VISIBLE)
-            //Directions to A fab is visible
-                animateCameraToShow(resources.getDimension(R.dimen.camera_fab_padding).toInt(), station!!.location, DEBUG_FAKE_USER_CUR_LOC, null)
-            else
-            //Map id padded on the left and interface is clear on the right
-                animateCameraToShow(resources.getDimension(R.dimen.camera_ab_pin_padding).toInt(), station!!.location, DEBUG_FAKE_USER_CUR_LOC, null)
-
-        } else {
-            //stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(station!!.location, 15f))
-        }
-    }
-
-    //TODO: refactor this method such as
-    //-passing only one valid LatLng leads to a regular animateCamera
-    //-passing identical LatLng leads to a regular animateCamera, maybe with client code provided zoom level or a default one
-    private fun animateCameraToShow(_cameraPaddingPx: Int, _latLng0: LatLng, _latLng1: LatLng, _latLng2: LatLng?) {
-        val boundsBuilder = LatLngBounds.Builder()
-
-        boundsBuilder.include(_latLng0).include(_latLng1)
-
-        if (_latLng2 != null)
-            boundsBuilder.include(_latLng2)
-
-        //stationMapFragment.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), _cameraPaddingPx)) //Pin icon is 36 dp
     }
 
     private fun showTripDetailsFragment() {
@@ -752,7 +697,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         //Caused by: java.lang.NullPointerException (sheetView)
         // Create material sheet FAB
         favoritesSheetFab = EditableMaterialSheetFab(
-                this,
                 nearbyActivityViewModel, favoritePickerFAB,
                 sheetView, overlay, sheetColor, fabColor,
                 newFavListFragment)

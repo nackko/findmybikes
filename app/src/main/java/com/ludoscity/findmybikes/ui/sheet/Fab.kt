@@ -1,46 +1,37 @@
-package com.ludoscity.findmybikes.ui.sheet;
+package com.ludoscity.findmybikes.ui.sheet
 
-import android.content.Context;
-import android.support.design.widget.FloatingActionButton;
-import android.util.AttributeSet;
+import android.content.Context
+import android.support.design.widget.FloatingActionButton
+import android.util.AttributeSet
 
-import com.gordonwong.materialsheetfab.AnimatedFab;
+import com.gordonwong.materialsheetfab.AnimatedFab
 
 /**
  * Created by F8Full on 2016-03-26.
  * from https://github.com/gowong/material-sheet-fab/blob/master/sample/src/main/java/com/gordonwong/materialsheetfab/sample/Fab.java
  */
-public class Fab extends FloatingActionButton implements AnimatedFab {
+class Fab : FloatingActionButton, AnimatedFab {
     //private static final int FAB_ANIM_DURATION = 200;
 
-    private boolean mIsShowAnimationRunning = false;
+    var isShowRunning = false
+        private set
 
-    public Fab(Context context) {
-        super(context);
-    }
+    constructor(context: Context) : super(context) {}
 
-    public Fab(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
 
-    public Fab(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {}
 
-    public boolean isShowRunning(){ return mIsShowAnimationRunning; }
+    override fun show(translationX: Float, translationY: Float) {
 
-    @Override
-    public void show(float translationX, float translationY) {
+        isShowRunning = true
 
-        mIsShowAnimationRunning = true;
-
-        show(new OnVisibilityChangedListener(){
-            @Override
-            public void onShown(FloatingActionButton fab) {
-                mIsShowAnimationRunning = false;
-                super.onShown(fab);
+        show(object : FloatingActionButton.OnVisibilityChangedListener() {
+            override fun onShown(fab: FloatingActionButton?) {
+                isShowRunning = false
+                super.onShown(fab)
             }
-        });
+        })
         // Set FAB's translation
         /*setTranslation(translationX, translationY);
 

@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.ui.sheet;
+package com.ludoscity.findmybikes.ui.sheet
 
 /**
  * Created by F8Full on 2016-03-31.
@@ -7,9 +7,9 @@ package com.ludoscity.findmybikes.ui.sheet;
  * from - https://medium.com/@ipaulpro/drag-and-swipe-with-recyclerview-b9456d2b1aaf#.4okwgvgtx
  */
 
-public interface ItemTouchHelperAdapter {
+interface ItemTouchHelperAdapter {
 
-    boolean onItemMove(int fromPosition, int toPosition);
+    fun onItemMove(fromPosition: Int, toPosition: Int): Boolean
 
-    void onItemDismiss(int position);
+    fun onItemDismiss(position: Int)
 }

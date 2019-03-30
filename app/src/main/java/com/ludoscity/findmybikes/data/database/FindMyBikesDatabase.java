@@ -7,8 +7,6 @@ import android.arch.persistence.room.TypeConverters;
 import android.arch.persistence.room.migration.Migration;
 import android.support.annotation.NonNull;
 
-import com.ludoscity.findmybikes.helpers.LatLngTypeConverter;
-
 /**
  * Created by F8Full on 2017-12-17.
  * This file is part of #findmybikes

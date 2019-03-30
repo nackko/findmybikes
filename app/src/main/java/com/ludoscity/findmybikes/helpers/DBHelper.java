@@ -16,12 +16,12 @@ import com.ludoscity.findmybikes.data.database.FavoriteEntityPlace;
 import com.ludoscity.findmybikes.data.database.FavoriteEntityStation;
 import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemDesc;
+import com.ludoscity.findmybikes.utils.InjectorUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -64,7 +64,7 @@ public class DBHelper {
     private static final String PREF_LAST_SAVE_CORRUPTED = "last_save_corrupted";
     private static boolean mSaving = false;
 
-    static final String SHARED_PREF_FILENAME = "FindMyBikes_prefs";
+    public static final String SHARED_PREF_FILENAME = "FindMyBikes_prefs";
     private static final String SHARED_PREF_VERSION_CODE = "FindMyBikes_prefs_version_code";
 
     private static final String PREF_CURRENT_BIKE_NETWORK_ID = "current_bike_network_id";
@@ -86,7 +86,7 @@ public class DBHelper {
 
     private DBHelper() {}
 
-    public void init(Context context) throws IOException, PackageManager.NameNotFoundException {
+    public void init(Context context) throws PackageManager.NameNotFoundException {
         mDatabase = Room.databaseBuilder(context, FindMyBikesDatabase.class, "findmybikes-database")
                 .addMigrations(MIGRATION_1_2)
                 .addMigrations(MIGRATION_2_3)
@@ -143,7 +143,7 @@ public class DBHelper {
                 for(FavoriteEntityBase fav : getFavoriteAll(context))
                 {
                     fav.setUiIndex(i);
-                    FavoriteRepository.getInstance().addOrUpdateFavorite(fav);
+                    InjectorUtils.Companion.provideRepository().addOrUpdateFavorite(fav);
 
                     ++i;
                 }

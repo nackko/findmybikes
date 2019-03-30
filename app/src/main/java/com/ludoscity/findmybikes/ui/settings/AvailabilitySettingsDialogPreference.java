@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes;
+package com.ludoscity.findmybikes.ui.settings;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
+import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.helpers.DBHelper;
 
 /**
@@ -35,11 +36,11 @@ public class AvailabilitySettingsDialogPreference extends DialogPreference {
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
 
-        mCriticalMaxPicker = (NumberPicker) view.findViewById(R.id.pref_availability_critical_max_picker);
-        mBadMaxPicker = (NumberPicker) view.findViewById(R.id.pref_availability_bad_max_picker);
-        mBadMinText = (TextView) view.findViewById(R.id.pref_availability_bad_min_text);
-        mGreatMinText = (TextView) view.findViewById(R.id.pref_availability_great_min_text);
-        mCriticalHint = (TextView) view.findViewById(R.id.pref_availability_critical_hint);
+        mCriticalMaxPicker = view.findViewById(R.id.pref_availability_critical_max_picker);
+        mBadMaxPicker = view.findViewById(R.id.pref_availability_bad_max_picker);
+        mBadMinText = view.findViewById(R.id.pref_availability_bad_min_text);
+        mGreatMinText = view.findViewById(R.id.pref_availability_great_min_text);
+        mCriticalHint = view.findViewById(R.id.pref_availability_critical_hint);
 
         int redUpperValue = DBHelper.getInstance().getCriticalAvailabilityMax(getContext());
         int yellowUpperValue = DBHelper.getInstance().getBadAvailabilityMax(getContext());
@@ -61,29 +62,18 @@ public class AvailabilitySettingsDialogPreference extends DialogPreference {
 
         mGreatMinText.setText(String.format(getContext().getString(R.string.pref_availability_great_min_label), yellowUpperValue + 1));
 
-        mCriticalMaxPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @SuppressLint("StringFormatInvalid")
-            @Override
-            public void onValueChange(NumberPicker numberPicker, int i, int _newValue) {
-                setupCriticalHint();
+        mCriticalMaxPicker.setOnValueChangedListener((numberPicker, i, _newValue) -> {
+            setupCriticalHint();
 
-                mBadMinText.setText(String.format(getContext().getString(R.string.pref_availability_bad_min_label), _newValue + 1));
+            mBadMinText.setText(String.format(getContext().getString(R.string.pref_availability_bad_min_label), _newValue + 1));
 
-                mBadMaxPicker.setMinValue(_newValue + 1);
-                mBadMaxPicker.setMaxValue(_newValue + 4);
+            mBadMaxPicker.setMinValue(_newValue + 1);
+            mBadMaxPicker.setMaxValue(_newValue + 4);
 
-                mGreatMinText.setText(String.format(getContext().getString(R.string.pref_availability_great_min_label), mBadMaxPicker.getValue() + 1));
-            }
+            mGreatMinText.setText(String.format(getContext().getString(R.string.pref_availability_great_min_label), mBadMaxPicker.getValue() + 1));
         });
 
-        mBadMaxPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker numberPicker, int i, int i1) {
-
-                mGreatMinText.setText(String.format(getContext().getString(R.string.pref_availability_great_min_label), i1 + 1));
-
-            }
-        });
+        mBadMaxPicker.setOnValueChangedListener((numberPicker, i, i1) -> mGreatMinText.setText(String.format(getContext().getString(R.string.pref_availability_great_min_label), i1 + 1)));
     }
 
     private void setupCriticalHint(){

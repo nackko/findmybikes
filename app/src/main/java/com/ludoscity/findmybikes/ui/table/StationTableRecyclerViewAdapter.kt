@@ -11,7 +11,6 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.ui.sheet.FavoriteListViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,8 +20,7 @@ import kotlinx.coroutines.launch
  *
  * Adapter used to show the datas of every stationItem
  */
-class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragmentViewModel,
-                                      favListViewModel: FavoriteListViewModel) : RecyclerView.Adapter<StationTableRecyclerViewAdapter.BikeStationListItemViewHolder>() {
+class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragmentViewModel) : RecyclerView.Adapter<StationTableRecyclerViewAdapter.BikeStationListItemViewHolder>() {
 
     /**
      * Created by F8Full on 2015-03-18.
@@ -49,14 +47,7 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
         }
     }
 
-    var items: List<StationTableItemData> = emptyList()
-
-    //TODO: selected pos in model
-    //var selectedPos = NO_POSITION
-    //private set
-
-    //TODO: rework the fab
-    //private var mFabAnimationRequested = false
+    private var items: List<StationTableItemData> = emptyList()
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
     private val coroutineScopeMAIN = CoroutineScope(Dispatchers.Main)
@@ -90,18 +81,6 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
             this@StationTableRecyclerViewAdapter.notifyDataSetChanged()
             items = newItems
         }
-    }
-
-    fun notifyStationChanged(_stationId: String) {
-        TODO("not implemented")
-        //notifyItemChanged(getStationItemPositionInList(_stationId))
-    }
-
-
-    init {
-        //TODO: should be favorite repo
-        //TODO: used to build display name, which is model responsibility now
-        mFavoriteListViewModel = favListViewModel
     }
 
     override fun onBindViewHolder(holder: BikeStationListItemViewHolder, position: Int) {
@@ -236,7 +215,8 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
                     notifyItemChanged(getStationItemPositionInList(selected!!.locationHash))
                     mListener.onStationListItemClick(StationTableFragment.STATION_LIST_FAVORITE_FAB_CLICK_PATH)
                     //ordering matters
-                    if (mFavoriteListViewModel.isFavorite(selected!!.locationHash))
+                    //TODO: add table model method to check if id is favorite (call simply forwards to repo)
+                    if (mFavoriteSheetListViewModel.isFavorite(selected!!.locationHash))
                         favoriteFab.setImageResource(R.drawable.ic_action_favorite_24dp)
                     else
                         favoriteFab.setImageResource(R.drawable.ic_action_favorite_outline_24dp)
@@ -248,7 +228,6 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
 
     companion object {
 
-        private lateinit var mFavoriteListViewModel: FavoriteListViewModel
         private val TAG = StationTableRecyclerViewAdapter::class.java.simpleName
     }
 }

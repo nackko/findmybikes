@@ -150,7 +150,7 @@ class FindMyBikesRepository private constructor(
         }
     }
 
-    fun getFavoritaStationList(): LiveData<List<FavoriteEntityStation>> {
+    fun getFavoriteStationList(): LiveData<List<FavoriteEntityStation>> {
         return favoriteEntityStationDao.all
     }
 
@@ -158,15 +158,63 @@ class FindMyBikesRepository private constructor(
         return favoriteEntityPlaceDao.all
     }
 
-    fun addOrUpdateFavorite(toAddOrUpdate: FavoriteEntityStation) {
-        favoriteEntityStationDao.insertOne(toAddOrUpdate)
+    fun addOrUpdateFavorite(toAddOrUpdate: FavoriteEntityBase) {
+        coroutineScopeIO.launch {
+            when (toAddOrUpdate) {
+                is FavoriteEntityPlace -> favoriteEntityPlaceDao.insertOne(toAddOrUpdate)
+                is FavoriteEntityStation -> favoriteEntityStationDao.insertOne(toAddOrUpdate)
+            }
+
+            Log.d(TAG, "Favorite added or updated, default name : ${toAddOrUpdate.defaultName}")
+        }
     }
 
-    fun addOrUpdateFavorite(toAddOrUpdate: FavoriteEntityPlace) {
-        favoriteEntityPlaceDao.insertOne(toAddOrUpdate)
+    fun updateFavoriteCustomNameByFavoriteId(idToUpdate: String, newCustomName: String) {
+
+        coroutineScopeIO.launch {
+            if (idToUpdate.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
+                favoriteEntityPlaceDao.updateCustomNameByFavoriteId(idToUpdate, newCustomName)
+            } else {
+                favoriteEntityStationDao.updateCustomNameByFavoriteId(idToUpdate, newCustomName)
+            }
+        }
     }
 
+    fun updateFavoriteUiIndexByFavoriteId(idToUpdate: String, newUiIndex: Int) {
+        coroutineScopeIO.launch {
+            if (idToUpdate.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
+                favoriteEntityPlaceDao.updateUiIndexByFavoriteId(idToUpdate, newUiIndex)
+            } else {
+                favoriteEntityStationDao.updateUiIndexByFavoriteId(idToUpdate, newUiIndex)
+            }
+        }
+    }
 
+    fun removeFavoriteByFavoriteId(idToRemove: String) {
+        coroutineScopeIO.launch {
+            if (idToRemove.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
+                favoriteEntityPlaceDao.deleteOne(idToRemove)
+            } else {
+                favoriteEntityStationDao.deleteOne(idToRemove)
+            }
+        }
+    }
+
+    fun getFavoriteStationByFavoriteId(favoriteId: String): FavoriteEntityStation {
+        return favoriteEntityStationDao.getForId(favoriteId)
+    }
+
+    fun getFavoritePlaceByFavoriteId(favoriteId: String): FavoriteEntityPlace {
+        return favoriteEntityPlaceDao.getForId(favoriteId)
+    }
+
+    fun isFavoriteId(id: String): Boolean {
+        return favoriteEntityPlaceDao.isFavoriteId(id) != 0 || favoriteEntityStationDao.isFavoriteId(id) != 0
+    }
+
+    fun hasAtLeastNValidStationFavorites(nearestStationId: String, n: Int): Boolean {
+        return favoriteEntityStationDao.validFavoriteCount(nearestStationId) >= n
+    }
 
     fun getBikeSystemStationData(ctx: Context): LiveData<List<BikeStation>>{
         initializeData(ctx)

@@ -1,14 +1,11 @@
 package com.ludoscity.findmybikes.ui.sheet;
 
-import android.arch.lifecycle.Observer;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.activities.NearbyActivity;
-import com.ludoscity.findmybikes.ui.main.FindMyBikesActivity;
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 
 /**
@@ -39,6 +36,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
      * @param fabColor   The background color of the FAB.
      */
     public EditableMaterialSheetFab(NearbyActivity isFavoriteSheetItemNameEditInProgress, NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
+        //noinspection unchecked
         super(view, sheet, overlay, sheetColor, fabColor);
         mEditFAB = sheet.findViewById(R.id.favorite_sheet_edit_fab);
         mEditFAB.setOnClickListener(this);  //TODO: Consider making the fragment the listener ?
@@ -48,23 +46,17 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
 
         mNearbyActivityViewModel = nearbyActivityViewModel;
 
-        mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(isFavoriteSheetItemNameEditInProgress, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean isSheetEditing) {
+        mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(isFavoriteSheetItemNameEditInProgress, isSheetEditing -> {
 
-                if (mEditFAB.getVisibility() == View.INVISIBLE && mEditDoneFAB.getVisibility() == View.INVISIBLE)
-                    return;
+            if (mEditFAB.getVisibility() == View.INVISIBLE && mEditDoneFAB.getVisibility() == View.INVISIBLE)
+                return;
 
-                if(isSheetEditing != null && isSheetEditing)
-                {
-                    mEditFAB.hide();
-                    mEditDoneFAB.show();
-                }
-                else
-                {
-                    mEditDoneFAB.hide();
-                    mEditFAB.show();
-                }
+            if (isSheetEditing != null && isSheetEditing) {
+                mEditFAB.hide();
+                mEditDoneFAB.show();
+            } else {
+                mEditDoneFAB.hide();
+                mEditFAB.show();
             }
         });
 
@@ -73,7 +65,8 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
         mListener = _listener;
     }
 
-    public EditableMaterialSheetFab(FindMyBikesActivity isFavoriteSheetItemNameEditInProgress, NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
+    public EditableMaterialSheetFab(NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
+        //noinspection unchecked
         super(view, sheet, overlay, sheetColor, fabColor);
         mEditFAB = sheet.findViewById(R.id.favorite_sheet_edit_fab);
         mEditFAB.setOnClickListener(this);  //TODO: Consider making the fragment the listener ?
@@ -82,34 +75,20 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
         mEditDoneFAB.setOnClickListener(this);
 
         mNearbyActivityViewModel = nearbyActivityViewModel;
-
-        mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(isFavoriteSheetItemNameEditInProgress, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean isSheetEditing) {
-
-                if (mEditFAB.getVisibility() == View.INVISIBLE && mEditDoneFAB.getVisibility() == View.INVISIBLE)
-                    return;
-
-                if(isSheetEditing != null && isSheetEditing)
-                {
-                    mEditFAB.hide();
-                    mEditDoneFAB.show();
-                }
-                else
-                {
-                    mEditDoneFAB.hide();
-                    mEditFAB.show();
-                }
-            }
-        });
-
-
 
         mListener = _listener;
     }
 
     public void hideEditFab(){ mEditFAB.hide(); }
     public void showEditFab(){ mEditFAB.show(); }
+
+    public void showEditDoneFab() {
+        mEditDoneFAB.show();
+    }
+
+    public void hideEditDoneFab() {
+        mEditDoneFAB.hide();
+    }
     /*public void scrollToTop(){
 
         //from http://stackoverflow.com/questions/27757892/recyclerview-no-animation-on-notifyiteminsert
@@ -125,9 +104,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
 
             mListener.onFavoriteSheetEditCancel();
 
-            mNearbyActivityViewModel.favoriteSheetEditStop();
-
-            //mFavRecyclerview.getAdapter().notifyDataSetChanged();
+            mNearbyActivityViewModel.favoriteSheetEditDone();
 
             mEditDoneFAB.hide();
             mEditFAB.show();
@@ -139,26 +116,13 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
     @Override
     public void onClick(View v) {
 
-        //hide all item edit fabs
-        //show all affordance handles
-        /*if (v.getId()==R.id.favorite_list_edit_fab)
-            mNearbyActivityViewModel.favoriteSheetEditStart();
-        else
-            mNearbyActivityViewModel.favoriteSheetEditStop();*/
-
-        //mFavRecyclerview.getAdapter().notifyDataSetChanged();
-
         switch (v.getId()){
             case R.id.favorite_sheet_edit_fab:
                 mNearbyActivityViewModel.favoriteSheetEditStart();
-                //mEditFAB.hide();
-                //mEditDoneFAB.show();
 
                 break;
             case R.id.favorite_sheet_edit_done_fab:
-                //mEditDoneFAB.hide();
-                //mEditFAB.show();
-                mNearbyActivityViewModel.favoriteSheetEditStop();
+                mNearbyActivityViewModel.favoriteSheetEditDone();
 
                 //TODO : Do what was done in NearbyActivity .onFavoriteSheetEditDone()
                 //dropping all favorites

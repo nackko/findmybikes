@@ -13,6 +13,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/settings_fragment"
         android:layout_below="@id/toolbar_main"
-        android:name="com.ludoscity.findmybikes.fragments.SettingsFragment" />
+        android:name="com.ludoscity.findmybikes.ui.settings.SettingsFragment" />
 
 </RelativeLayout>
