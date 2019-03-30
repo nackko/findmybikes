@@ -61,7 +61,7 @@
         <activity
             android:name=".activities.WebViewActivity"
             android:parentActivityName=".activities.NearbyActivity" />
-        <!--TODO : https://developer.android.com/topic/performance/background-optimization.html-->
+        TODO : https://developer.android.com/topic/performance/background-optimization.html-->
         <receiver
             android:name=".utils.Utils$Connectivity"
             android:enabled="false">
