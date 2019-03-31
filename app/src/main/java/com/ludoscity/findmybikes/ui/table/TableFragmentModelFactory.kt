@@ -6,7 +6,7 @@ import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
-import com.ludoscity.findmybikes.data.database.BikeStation
+import com.ludoscity.findmybikes.data.database.station.BikeStation
 import java.text.NumberFormat
 
 /**

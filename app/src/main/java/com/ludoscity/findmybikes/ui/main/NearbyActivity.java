@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.activities;
+package com.ludoscity.findmybikes.ui.main;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -72,17 +72,15 @@ import com.google.maps.android.SphericalUtil;
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.RootApplication;
-import com.ludoscity.findmybikes.data.database.BikeStation;
-import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
-import com.ludoscity.findmybikes.data.database.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.data.database.FavoriteEntityStation;
+import com.ludoscity.findmybikes.data.database.DBHelper;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation;
+import com.ludoscity.findmybikes.data.database.station.BikeStation;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemDesc;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusAnswerRoot;
 import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI;
-import com.ludoscity.findmybikes.helpers.DBHelper;
-import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
-import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter;
 import com.ludoscity.findmybikes.ui.map.StationMapFragment;
 import com.ludoscity.findmybikes.ui.settings.SettingsActivity;
 import com.ludoscity.findmybikes.ui.sheet.EditableMaterialSheetFab;

@@ -29,8 +29,8 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.data.database.FavoriteEntityStation
-import com.ludoscity.findmybikes.helpers.DBHelper
+import com.ludoscity.findmybikes.data.database.DBHelper
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
 import com.ludoscity.findmybikes.ui.sheet.EditableMaterialSheetFab

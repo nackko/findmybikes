@@ -7,7 +7,7 @@ import android.support.v4.app.FragmentManager
 
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.data.database.BikeStation
+import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.ui.table.StationTableFragment
 import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel

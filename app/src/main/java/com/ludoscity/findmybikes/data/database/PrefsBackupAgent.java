@@ -3,8 +3,6 @@ package com.ludoscity.findmybikes.data.database;
 import android.app.backup.BackupAgentHelper;
 import android.app.backup.SharedPreferencesBackupHelper;
 
-import com.ludoscity.findmybikes.helpers.DBHelper;
-
 /**
  * Created by F8Full on 2015-10-13.
  * Class used to interface with google backup service.

@@ -7,6 +7,15 @@ import android.arch.persistence.room.TypeConverters;
 import android.arch.persistence.room.migration.Migration;
 import android.support.annotation.NonNull;
 
+import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem;
+import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityPlaceDao;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStationDao;
+import com.ludoscity.findmybikes.data.database.station.BikeStation;
+import com.ludoscity.findmybikes.data.database.station.BikeStationDao;
+
 /**
  * Created by F8Full on 2017-12-17.
  * This file is part of #findmybikes

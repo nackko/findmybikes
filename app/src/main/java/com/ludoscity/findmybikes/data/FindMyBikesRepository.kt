@@ -5,7 +5,11 @@ import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.maps.model.LatLngBounds
-import com.ludoscity.findmybikes.data.database.*
+import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
+import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao
+import com.ludoscity.findmybikes.data.database.favorite.*
+import com.ludoscity.findmybikes.data.database.station.BikeStation
+import com.ludoscity.findmybikes.data.database.station.BikeStationDao
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot

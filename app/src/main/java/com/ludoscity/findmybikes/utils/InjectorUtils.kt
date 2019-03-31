@@ -4,10 +4,10 @@ import android.app.Application
 import android.arch.lifecycle.LiveData
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
-import com.ludoscity.findmybikes.data.database.BikeStation
+import com.ludoscity.findmybikes.data.database.DBHelper
+import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
-import com.ludoscity.findmybikes.helpers.DBHelper
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
 import com.ludoscity.findmybikes.ui.sheet.FavoriteSheetListFragmentModelFactory

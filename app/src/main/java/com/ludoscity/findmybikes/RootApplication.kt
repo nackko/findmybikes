@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.support.multidex.MultiDex
 import android.util.Log
+import com.ludoscity.findmybikes.data.database.DBHelper
 import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI
-import com.ludoscity.findmybikes.helpers.DBHelper
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import twitter4j.Twitter

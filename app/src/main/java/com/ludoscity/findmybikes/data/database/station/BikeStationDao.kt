@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.data.database
+package com.ludoscity.findmybikes.data.database.station
 
 import android.arch.lifecycle.LiveData
 import android.arch.persistence.room.*

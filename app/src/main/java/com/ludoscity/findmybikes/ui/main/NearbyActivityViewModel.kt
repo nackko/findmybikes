@@ -21,9 +21,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
-import com.ludoscity.findmybikes.data.database.BikeStation
-import com.ludoscity.findmybikes.data.database.BikeSystem
-import com.ludoscity.findmybikes.data.database.FavoriteEntityBase
+import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
+import com.ludoscity.findmybikes.data.database.station.BikeStation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

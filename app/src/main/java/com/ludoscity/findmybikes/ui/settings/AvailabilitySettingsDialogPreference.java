@@ -9,7 +9,7 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.helpers.DBHelper;
+import com.ludoscity.findmybikes.data.database.DBHelper;
 
 /**
  * Created by F8Full on 2016-04-10.

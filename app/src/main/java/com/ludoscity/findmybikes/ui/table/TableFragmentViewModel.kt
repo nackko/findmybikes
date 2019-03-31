@@ -11,8 +11,8 @@ import android.os.Parcelable
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
-import com.ludoscity.findmybikes.data.database.BikeStation
-import com.ludoscity.findmybikes.helpers.DBHelper
+import com.ludoscity.findmybikes.data.database.DBHelper
+import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.utils.Utils
 import java.text.NumberFormat
 import java.util.*

@@ -17,7 +17,7 @@ import android.widget.TextView
 import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.data.database.BikeStation
+import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
 import com.ludoscity.findmybikes.ui.sheet.DividerItemDecoration
 import com.ludoscity.findmybikes.ui.sheet.ScrollingLinearLayoutManager

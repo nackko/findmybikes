@@ -158,6 +158,7 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
         for ((i, fav) in favoriteRecyclerViewAdapter.items.withIndex()) {
             favoriteSheetListViewModel!!.updateFavoriteUiIndexByFavoriteId(fav.favoriteId, i)
         }
+        nearbyActivityViewModel!!.favoriteSheetEditDone()
     }
 
     override fun onFavoriteSheetEditCancel() {

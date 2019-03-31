@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.helpers;
+package com.ludoscity.findmybikes.data.database;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;
@@ -11,10 +11,9 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.data.database.FavoriteEntityBase;
-import com.ludoscity.findmybikes.data.database.FavoriteEntityPlace;
-import com.ludoscity.findmybikes.data.database.FavoriteEntityStation;
-import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityPlace;
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation;
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemDesc;
 import com.ludoscity.findmybikes.utils.InjectorUtils;
 

@@ -5,7 +5,7 @@ import android.view.View;
 
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.activities.NearbyActivity;
+import com.ludoscity.findmybikes.ui.main.NearbyActivity;
 import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 
 /**
@@ -122,7 +122,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
 
                 break;
             case R.id.favorite_sheet_edit_done_fab:
-                mNearbyActivityViewModel.favoriteSheetEditDone();
+                //mNearbyActivityViewModel.favoriteSheetEditDone();
 
                 //TODO : Do what was done in NearbyActivity .onFavoriteSheetEditDone()
                 //dropping all favorites
