@@ -19,9 +19,6 @@ import android.widget.TextView
 import com.dinuscxj.progressbar.CircleProgressBar
 import com.dmitrymalkovich.android.ProgressFloatingActionButton
 import com.ludoscity.findmybikes.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.*
 
 /**
@@ -63,18 +60,23 @@ class FavoriteRecyclerViewAdapter(itemClickListener: OnFavoriteListItemClickList
     var items: List<FavoriteSheetItemData> = emptyList()
         private set
 
-    private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
-    private val coroutineScopeMAIN = CoroutineScope(Dispatchers.Main)
+    //private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
+    //private val coroutineScopeMAIN = CoroutineScope(Dispatchers.Main)
 
     fun loadItems(newItems: List<FavoriteSheetItemData>) {
-        coroutineScopeIO.launch {
+
+        items = newItems
+        this@FavoriteRecyclerViewAdapter.notifyDataSetChanged()
+
+        //Not using DiffUtil gives a better visual result when sheet editing is done
+        /*coroutineScopeIO.launch {
             val diffResult = DiffUtil.calculateDiff(SheetDiffCallback(items, newItems))
 
             coroutineScopeMAIN.launch {
                 diffResult.dispatchUpdatesTo(this@FavoriteRecyclerViewAdapter)
                 items = newItems
             }
-        }
+        }*/
     }
 
     override fun onBindViewHolder(holder: FavoriteListItemViewHolder, position: Int) {
