@@ -275,15 +275,16 @@ class FindMyBikesActivity : AppCompatActivity(),
         statusTextView = findViewById(R.id.status_textView)
         statusBar = findViewById<View>(R.id.app_status_bar)
 
-        //TODO: this is "debug"
-        nearbyActivityViewModel.setStationB(null)
-        //TODO: the following crashes but shouldn't
-        //nearbyActivityViewModel.setStationA(null)
+        nearbyActivityViewModel.statusBarText.observe(this, Observer {
+            statusTextView.text = it
+        })
 
-        if (nearbyActivityViewModel.isDataOutOfDate.value == true)
-            statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_accent))
-
-
+        nearbyActivityViewModel.isDataOutOfDate.observe(this, Observer {
+            if (it == true)
+                statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_accent))
+            else
+                statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_primary_dark))
+        })
 
         stationTableViewPager = findViewById(R.id.station_table_viewpager)
         stationTableViewPager.adapter = StationTablePagerAdapter(supportFragmentManager,
@@ -575,6 +576,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         return toReturn
     }
 
+    //TODO: this hole computation should happen in model
     private fun setupActionBarStrings(bs: BikeSystem?) {
 
         var hashtagableBikeSystemName: String = bs?.name ?: ""
@@ -588,7 +590,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                 hashtagableBikeSystemName,
                 resources.getString(R.string.appbar_title_postfix)))
         //doesn't scale well, but just a little touch for my fellow Montréalers
-        var cityHashtag = ""
+        @Suppress("CanBeVal") var cityHashtag = ""
         val bikeNetworkCity = bs?.city ?: ""
         /*if (bikeNetworkCity.contains("Montréal")) {
             cityHashtag = " @mtlvi"
