@@ -29,7 +29,7 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.data.database.DBHelper
+import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
@@ -50,11 +50,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         //Log.d(TAG, "onPageScrolled : position:$position, positionOffset:$positionOffset")
         if (positionOffset == 0.0f) {
 
-            //TODO: wire this in so that it doesn't crash on screen rotation
-            //Have smooth scroll request boolean live data in model that is set to false when no aciton is required
-            //setting it to true would provoke correpsonding fragment to scroll when ready ?
-            //an other way is to make code inside smothscroll... defensive
-            //getTablePagerAdapter().smoothScrollHighlightedInViewForTable(position, true)
+            getTablePagerAdapter().smoothScrollHighlightedInViewForTable(position, true)
         }
     }
 
@@ -164,12 +160,16 @@ class FindMyBikesActivity : AppCompatActivity(),
             showcaseTripTotalPlaceName = savedInstanceState.getString("onboarding_showcase_trip_total_place_name", null)
         }*/
 
-        setContentView(R.layout.activity_findmybikes)
-        setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
-        setupActionBarStrings()
-
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
+
+
+        setContentView(R.layout.activity_findmybikes)
+        setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
+
+        nearbyActivityViewModel.isLookingForBike.observe(this, Observer {
+            appBarLayout.setExpanded(it != true, true)
+        })
 
         nearbyActivityViewModel.stationData.observe(this, Observer { stationDataList ->
             Log.d(TAG, "New data has " + (stationDataList?.size ?: "") + " stations")
@@ -227,8 +227,11 @@ class FindMyBikesActivity : AppCompatActivity(),
                 directionsLocToAFab.hide()
         })
 
-        nearbyActivityViewModel.getCurrentBikeSytemId().observe(this, Observer<String> { newBikeSystemId ->
+        nearbyActivityViewModel.curBikeSystem.observe(this, Observer {
+
             setupFavoritePickerFab()
+            setupActionBarStrings(it)
+
 
             //special case for test versions in firebase lab
             //full onboarding prevents meaningful coverage (robo test don't input anything in search autocomplete widget)
@@ -361,7 +364,8 @@ class FindMyBikesActivity : AppCompatActivity(),
             nearbyActivityViewModel.addFavorite(FavoriteEntityStation(
                     nearbyActivityViewModel.getStationB().value!!.locationHash,
                     nearbyActivityViewModel.getStationB().value!!.name!!,
-                    nearbyActivityViewModel.getCurrentBikeSytemId().value!!
+                    nearbyActivityViewModel.curBikeSystem.value!!.id
+                    //nearbyActivityViewModel.getCurrentBikeSytemId().value!!
             ))
 
             nearbyActivityViewModel.hideFavoriteFab()
@@ -405,7 +409,8 @@ class FindMyBikesActivity : AppCompatActivity(),
             //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
             //I will be at the Bixi station Hutchison/beaubien in ~15min ! Shared via #findmybikes
             val message = String.format(resources.getString(R.string.trip_details_share_message_content),
-                    DBHelper.getInstance().getBikeNetworkName(applicationContext), getContentTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.DOCK_STATIONS)!!.name,
+                    nearbyActivityViewModel.curBikeSystem.value?.name,
+                    getContentTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.DOCK_STATIONS)!!.name,
                     tripDetailsProximityTotal.text.toString()) //TODO: total proximity is exposed in trip details fragment model
 
             val sendIntent = Intent()
@@ -443,17 +448,17 @@ class FindMyBikesActivity : AppCompatActivity(),
         /*if (Utils.Connectivity.isConnected(this)) {
             splashScreenTextTop.setText(getString(R.string.auto_bike_select_finding))
 
-            if (DBHelper.getInstance().isBikeNetworkIdAvailable(this)) {
+            if (SharedPrefHelper.getInstance().isBikeNetworkIdAvailable(this)) {
 
-                nearbyActivityViewModel.setCurrentBikeSytemId(DBHelper.getBikeNetworkId(this))
+                nearbyActivityViewModel.setCurrentBikeSytemId(SharedPrefHelper.getBikeNetworkId(this))
 
                 val downloadWebTask = NearbyActivity.DownloadWebTask()
                 mDownloadWebTask.execute()
 
-                Log.i("nearbyActivity", "No sortedStationList data in RootApplication but bike network id available in DBHelper- launching first download")
+                Log.i("nearbyActivity", "No sortedStationList data in RootApplication but bike network id available in SharedPrefHelper- launching first download")
             } else {
 
-                mFindNetworkTask = FindNetworkTask(DBHelper.getInstance().getBikeNetworkName(this))
+                mFindNetworkTask = FindNetworkTask(SharedPrefHelper.getInstance().getBikeNetworkName(this))
                 mFindNetworkTask.execute()
             }
         } else {
@@ -570,18 +575,24 @@ class FindMyBikesActivity : AppCompatActivity(),
         return toReturn
     }
 
-    private fun setupActionBarStrings() {
+    private fun setupActionBarStrings(bs: BikeSystem?) {
+
+        var hashtagableBikeSystemName: String = bs?.name ?: ""
+
+        hashtagableBikeSystemName = hashtagableBikeSystemName.replace("\\s".toRegex(), "")
+        hashtagableBikeSystemName = hashtagableBikeSystemName.replace("[^A-Za-z0-9 ]".toRegex(), "")
+        hashtagableBikeSystemName = hashtagableBikeSystemName.toLowerCase()
 
         supportActionBar!!.title = Utils.fromHtml(String.format(resources.getString(R.string.appbar_title_formatting),
                 resources.getString(R.string.appbar_title_prefix),
-                DBHelper.getInstance().getHashtaggableNetworkName(this),
+                hashtagableBikeSystemName,
                 resources.getString(R.string.appbar_title_postfix)))
         //doesn't scale well, but just a little touch for my fellow Montréalers
         var cityHashtag = ""
-        val bikeNetworkCity = DBHelper.getInstance().getBikeNetworkCity(this)
-        if (bikeNetworkCity.contains("Montreal")) {
+        val bikeNetworkCity = bs?.city ?: ""
+        /*if (bikeNetworkCity.contains("Montréal")) {
             cityHashtag = " @mtlvi"
-        }
+        }*/
         val hastagedEnhancedBikeNetworkCity = bikeNetworkCity + cityHashtag
         supportActionBar!!.subtitle = Utils.fromHtml(String.format(resources.getString(R.string.appbar_subtitle_formatted), hastagedEnhancedBikeNetworkCity))
     }
@@ -595,8 +606,9 @@ class FindMyBikesActivity : AppCompatActivity(),
             try {
 
                 val intent = PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
-                        .setBoundsBias(DBHelper.getInstance().getBikeNetworkBounds(this@FindMyBikesActivity,
-                                Utils.getAverageBikingSpeedKmh(this@FindMyBikesActivity).toDouble()))
+                        //TODO: replug bounds retrieving now they are in Room
+                        //.setBoundsBias(SharedPrefHelper.getInstance().getBikeNetworkBounds(this@FindMyBikesActivity,
+                        //        Utils.getAverageBikingSpeedKmh(this@FindMyBikesActivity).toDouble()))
                         .build(this@FindMyBikesActivity)
 
                 startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE)
@@ -724,8 +736,9 @@ class FindMyBikesActivity : AppCompatActivity(),
         nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
 
         //this is debug
-        nearbyActivityViewModel.setDataOutOfDate(!(nearbyActivityViewModel.isDataOutOfDate.value
-                ?: true))
+        //nearbyActivityViewModel.setDataOutOfDate(!(nearbyActivityViewModel.isDataOutOfDate.value
+        //        ?: true))
+        nearbyActivityViewModel.requestCurrentBikeSystemStatusRefresh()
 
         //TODO: act on model ?
         getTablePagerAdapter().setRefreshingAll(false)

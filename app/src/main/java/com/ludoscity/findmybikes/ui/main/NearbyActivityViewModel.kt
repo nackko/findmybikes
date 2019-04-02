@@ -29,13 +29,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.concurrent.timer
 
 /**
  * Created by F8Full on 2017-12-24. This file is part of #findmybikes
  * ViewModel for handling favoritelistFragment data prep for UI and business logic
  */
 
-class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
+class NearbyActivityViewModel(private val repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
 
     private val locationPermissionGranted = MutableLiveData<Boolean>()
 
@@ -49,7 +50,12 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     private val favoriteItemNameEditInProgress = MutableLiveData<Boolean>()
     private val favoriteSheetEditInProgress = MutableLiveData<Boolean>()
     private val favoriteSheetEditFabShown = MutableLiveData<Boolean>()
-    private val currentBikeSytemId = MutableLiveData<String>()
+
+    private val myCurBikeSystem = MutableLiveData<BikeSystem>()
+
+    val curBikeSystem: LiveData<BikeSystem>
+        get() = myCurBikeSystem
+
 
     private val nearestBikeAutoSelected = MutableLiveData<Boolean>()
     private val lastStationStatusDataUpdateTimestampEpoch = MutableLiveData<Long>()
@@ -140,10 +146,6 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     val isDataOutOfDate : LiveData<Boolean>
         get() = dataOutOfDate
 
-    fun setDataOutOfDate(toSet: Boolean) {
-        dataOutOfDate.value = toSet
-    }
-
     fun setAppBarExpanded(toSet: Boolean) {
         appBarExpanded.value = toSet
     }
@@ -154,21 +156,6 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
 
     fun clearPickedFavorite(){
         pickedFavorite.value = null
-    }
-
-    fun postCurrentBikeSytemId(toSet: String) {
-        currentBikeSytemId.postValue(toSet)
-    }
-
-    //TODO: revisit this to fix bug where you'd be asked to search for a destination after you switch network in a new city even though
-    //you already have favorites
-    fun setCurrentBikeSytemId(toSet: String) {
-        currentBikeSytemId.value = toSet
-    }
-
-
-    fun getCurrentBikeSytemId(): LiveData<String> {
-        return currentBikeSytemId
     }
 
     fun setStationA(toSet: BikeStation?) {
@@ -273,6 +260,24 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
     private lateinit var userLocObserverForOutOfBounds: Observer<LatLng>
 
     init {
+
+        //TODO: stop and relaunch on activity callbacks
+        val timer = timer(name = "uiRefresher", daemon = true, period = 1000) {
+
+            if (curBikeSystem.value != null) {
+                //Log.d("truc", "it.lastStatusUpdateLocalTimestamp : ${curBikeSystem.value?.lastStatusUpdateLocalTimestamp} \nlast update was ${(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!) / 1000L}s ago")
+                dataOutOfDate.postValue(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! > 30000)
+
+            }
+
+            //curBikeSystem.value?.let {
+
+            //}
+        }
+
+        //timer.
+
+
         ///DEBUG
         //if(dataOutOfDate.value == null)
         //    dataOutOfDate.value = true
@@ -302,7 +307,7 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
             }
         }
 
-        repo.getCurrentBikeSystem().observeForever {
+        myCurBikeSystem.observeForever {
             Log.d(TAG, "$it")
 
             if (it == null) {
@@ -310,7 +315,6 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
                     findNearestBikeSystemAndSetInRepo(bikeSystemList, userLoc.value, repo)
                 }
             } else {
-                currentBikeSytemId.value = it.id
                 //We have bounds, start watching user location to trigger new attempt at finding a bike system
                 //when getting out of bounds
                 it.boundingBoxNorthEastLatitude?.let { bbNELat ->
@@ -335,6 +339,12 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
                     userLoc.observeForever(userLocObserverForOutOfBounds)
                 }
             }
+        }
+
+        repo.getCurrentBikeSystem().observeForever {
+
+            Log.d(TAG, "new data from repo regarding bikesystem")
+            myCurBikeSystem.value = it
         }
 
         //connectivity
@@ -498,6 +508,12 @@ class NearbyActivityViewModel(repo: FindMyBikesRepository, app: Application) : A
             }
         }
     }
+
+    fun requestCurrentBikeSystemStatusRefresh() {
+        repo.invalidateBikeSystemStatus(getApplication(), curBikeSystem.value?.citybikDOTesUrl
+                ?: "")
+    }
+
 
     private fun findNearestBikeSystemAndSetInRepo(bikeSystemList: List<BikeSystem>, userLocation: LatLng?, repo: FindMyBikesRepository): Job {
         val sortedList = bikeSystemList.toMutableList()

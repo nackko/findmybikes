@@ -16,7 +16,7 @@ public class PrefsBackupAgent extends BackupAgentHelper {
     @Override
     public void onCreate() {
         SharedPreferencesBackupHelper helper =
-                new SharedPreferencesBackupHelper(this, DBHelper.SHARED_PREF_FILENAME);
+                new SharedPreferencesBackupHelper(this, SharedPrefHelper.SHARED_PREF_FILENAME);
         addHelper(PREFS_BACKUP_KEY, helper);
     }
 }

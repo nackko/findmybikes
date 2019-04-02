@@ -8,6 +8,8 @@ import android.arch.persistence.room.PrimaryKey
 data class BikeSystem(
         @PrimaryKey
         val id: String,
+        @ColumnInfo(name = "last_status_update")
+        val lastStatusUpdateLocalTimestamp: Long,
         @ColumnInfo(name = "citybik_dot_es_url")
         val citybikDOTesUrl: String,
         val name: String,

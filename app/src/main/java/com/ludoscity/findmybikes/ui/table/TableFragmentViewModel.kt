@@ -11,7 +11,7 @@ import android.os.Parcelable
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
-import com.ludoscity.findmybikes.data.database.DBHelper
+import com.ludoscity.findmybikes.data.database.SharedPrefHelper
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.utils.Utils
 import java.text.NumberFormat
@@ -373,7 +373,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
             computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
                     isDataOutOfDate.value != false, numFormat, isDockTable)
-            //smoothScrollSelectionInView()
+            smoothScrollSelectionInView()
         }
 
         stationSelectionDataSource.observeForever(stationSelectionDataSourceObserver)
@@ -455,8 +455,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                 else Typeface.DEFAULT_BOLD,
                 when {
                     outdated -> R.color.theme_accent
-                    stationToRecap?.freeBikes ?: -1 <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) -> R.color.station_recap_red
-                    stationToRecap?.freeBikes ?: -1 <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) -> R.color.station_recap_yellow
+                    stationToRecap?.freeBikes ?: -1 <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication()) -> R.color.station_recap_red
+                    stationToRecap?.freeBikes ?: -1 <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication()) -> R.color.station_recap_yellow
                     else -> R.color.station_recap_green
                 })
 
@@ -489,8 +489,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                     R.color.theme_accent
                 } else {
                     when {
-                        availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) -> R.color.stationtable_item_selected_background_red
-                        availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) -> R.color.stationtable_item_selected_background_yellow
+                        availabilityValue <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication()) -> R.color.stationtable_item_selected_background_red
+                        availabilityValue <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication()) -> R.color.stationtable_item_selected_background_yellow
                         else -> R.color.stationtable_item_selected_background_green
                     }
                 }
@@ -499,8 +499,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                     android.R.color.transparent
                 else {
                     when {
-                        availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) -> R.color.stationtable_item_background_red
-                        availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) -> R.color.stationtable_item_background_yellow
+                        availabilityValue <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication()) -> R.color.stationtable_item_background_red
+                        availabilityValue <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication()) -> R.color.stationtable_item_background_yellow
                         else -> android.R.color.transparent
                     }
                 }
@@ -509,25 +509,25 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
             val durationAlpha = when {
                 isDataOutOfDate.value == true -> 1.0f
                 station.locationHash == stationSelectionDataSource.value?.locationHash -> 1.0f
-                availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
+                availabilityValue <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
                     getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_25percent, 1, 1)
                 else -> 1.0f
             }
             val nameAlpha = when {
                 isDataOutOfDate.value == true -> 1.0f
                 station.locationHash == stationSelectionDataSource.value?.locationHash -> 1.0f
-                availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
+                availabilityValue <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
                     getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_25percent, 1, 1)
-                availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) ->
+                availabilityValue <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication()) ->
                     getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_50percent, 1, 1)
                 else -> 1.0f
             }
             val availabilityAlpha = when {
                 isDataOutOfDate.value == true -> getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_25percent, 1, 1)
                 station.locationHash == stationSelectionDataSource.value?.locationHash -> 1.0f
-                availabilityValue <= DBHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
+                availabilityValue <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication()) ->
                     getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_25percent, 1, 1)
-                availabilityValue <= DBHelper.getInstance().getBadAvailabilityMax(getApplication()) ->
+                availabilityValue <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication()) ->
                     getApplication<Application>().resources.getFraction(R.fraction.station_item_alpha_65percent, 1, 1)
                 else -> 1.0f
             }
@@ -563,10 +563,10 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                 if (!isDockTable) {
                     if (!stationItem.isLocked) {
 
-                        if (stationItem.freeBikes > DBHelper.getInstance().getCriticalAvailabilityMax(getApplication())) {
+                        if (stationItem.freeBikes > SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication())) {
 
                             if (badOrAOKStationCount == 0) {
-                                if (stationItem.freeBikes <= DBHelper.getInstance().getBadAvailabilityMax(getApplication())) {
+                                if (stationItem.freeBikes <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication())) {
 
                                     availabilityDataPostfixBuilder.insert(0, stationItem.locationHash + BAD_AVAILABILITY_POSTFIX)
                                 } else {
@@ -588,11 +588,11 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                     }
                 } else {  //A locked station accepts bike returns
 
-                    if (stationItem.emptySlots == -1 || stationItem.emptySlots > DBHelper.getInstance().getCriticalAvailabilityMax(getApplication())) {
+                    if (stationItem.emptySlots == -1 || stationItem.emptySlots > SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication())) {
 
                         if (badOrAOKStationCount == 0) {
 
-                            if (stationItem.emptySlots != -1 && stationItem.emptySlots <= DBHelper.getInstance().getBadAvailabilityMax(getApplication())) {
+                            if (stationItem.emptySlots != -1 && stationItem.emptySlots <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication())) {
 
                                 availabilityDataPostfixBuilder.insert(0, stationItem.locationHash + BAD_AVAILABILITY_POSTFIX)
                             } else {

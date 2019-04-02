@@ -4,7 +4,7 @@ import android.content.Context
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.data.database.DBHelper
+import com.ludoscity.findmybikes.data.database.SharedPrefHelper
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.utils.Utils
 
@@ -49,16 +49,15 @@ class StationMapGfx(_outdated: Boolean, private val mItem: BikeStation //corresp
                 groundOverlayOptions.image(greyIcon)
             else {
                 if (_lookingForBike) {
-                    if (mItem.freeBikes <= DBHelper.getInstance().getCriticalAvailabilityMax(_ctx))
-                        groundOverlayOptions.image(redIcon)
-                    else if (mItem.freeBikes <= DBHelper.getInstance().getBadAvailabilityMax(_ctx))
-                        groundOverlayOptions.image(yellowIcon)
-                    else
-                        groundOverlayOptions.image(greenIcon)
+                    when {
+                        mItem.freeBikes <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(_ctx) -> groundOverlayOptions.image(redIcon)
+                        mItem.freeBikes <= SharedPrefHelper.getInstance().getBadAvailabilityMax(_ctx) -> groundOverlayOptions.image(yellowIcon)
+                        else -> groundOverlayOptions.image(greenIcon)
+                    }
                 } else {
-                    if (mItem.emptySlots != -1 && mItem.emptySlots <= DBHelper.getInstance().getCriticalAvailabilityMax(_ctx))
+                    if (mItem.emptySlots != -1 && mItem.emptySlots <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(_ctx))
                         groundOverlayOptions.image(redIcon)
-                    else if (mItem.emptySlots != -1 && mItem.emptySlots <= DBHelper.getInstance().getBadAvailabilityMax(_ctx))
+                    else if (mItem.emptySlots != -1 && mItem.emptySlots <= SharedPrefHelper.getInstance().getBadAvailabilityMax(_ctx))
                         groundOverlayOptions.image(yellowIcon)
                     else
                         groundOverlayOptions.image(greenIcon)
@@ -83,19 +82,20 @@ class StationMapGfx(_outdated: Boolean, private val mItem: BikeStation //corresp
         if (!_outdated) {
             if (_isLookingForBikes) {
                 if (!mItem.isLocked) {
-                    if (mItem.freeBikes <= DBHelper.getInstance().getCriticalAvailabilityMax(_ctx))
-                        groundOverlay!!.setImage(redIcon)
-                    else if (mItem.freeBikes <= DBHelper.getInstance().getBadAvailabilityMax(_ctx))
-                        groundOverlay!!.setImage(yellowIcon)
-                    else
-                        groundOverlay!!.setImage(greenIcon)
+
+                    //TODO: going to sharedPrefHelper is horrendous
+                    when {
+                        mItem.freeBikes <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(_ctx) -> groundOverlay!!.setImage(redIcon)
+                        mItem.freeBikes <= SharedPrefHelper.getInstance().getBadAvailabilityMax(_ctx) -> groundOverlay!!.setImage(yellowIcon)
+                        else -> groundOverlay!!.setImage(greenIcon)
+                    }
                 } else
                     groundOverlay!!.setImage(greyIcon)
             } else {
                 if (!mItem.isLocked) {
-                    if (mItem.emptySlots != -1 && mItem.emptySlots <= DBHelper.getInstance().getCriticalAvailabilityMax(_ctx))
+                    if (mItem.emptySlots != -1 && mItem.emptySlots <= SharedPrefHelper.getInstance().getCriticalAvailabilityMax(_ctx))
                         groundOverlay!!.setImage(redIcon)
-                    else if (mItem.emptySlots != -1 && mItem.emptySlots <= DBHelper.getInstance().getBadAvailabilityMax(_ctx))
+                    else if (mItem.emptySlots != -1 && mItem.emptySlots <= SharedPrefHelper.getInstance().getBadAvailabilityMax(_ctx))
                         groundOverlay!!.setImage(yellowIcon)
                     else
                         groundOverlay!!.setImage(greenIcon)

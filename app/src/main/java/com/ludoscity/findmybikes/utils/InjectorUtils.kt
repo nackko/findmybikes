@@ -2,9 +2,10 @@ package com.ludoscity.findmybikes.utils
 
 import android.app.Application
 import android.arch.lifecycle.LiveData
+import android.content.Context
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
-import com.ludoscity.findmybikes.data.database.DBHelper
+import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
@@ -23,33 +24,33 @@ class InjectorUtils {
 
     companion object {
 
-        fun provideBikeSystemStatusNetworkDataSource(): BikeSystemStatusNetworkDataSource {
+        fun provideBikeSystemStatusNetworkDataSource(ctx: Context): BikeSystemStatusNetworkDataSource {
             // This call to provide repository is necessary if the app starts from a service - in this
             // case the repository will not exist unless it is specifically created.
-            provideRepository()
+            provideRepository(ctx)
             return BikeSystemStatusNetworkDataSource.getInstance()
         }
 
-        fun provideBikeSystemListNetworkDataSource(): BikeSystemListNetworkDataSource {
-            provideRepository()
+        fun provideBikeSystemListNetworkDataSource(ctx: Context): BikeSystemListNetworkDataSource {
+            provideRepository(ctx)
             return BikeSystemListNetworkDataSource.getInstance()
         }
 
-        fun provideRepository(): FindMyBikesRepository {
-            //TODO: retrieve DAO by retrieving db from here instead of going to DBHelper class
-            //val database = d.getInstance(context.applicationContext)
+        fun provideRepository(ctx: Context): FindMyBikesRepository {
+            val database = FindMyBikesDatabase.getDatabase(ctx)
+
             val systemListNetworkDataSource = BikeSystemListNetworkDataSource.getInstance()
             val systemStatusNetworkDataSource = BikeSystemStatusNetworkDataSource.getInstance()
-            return FindMyBikesRepository.getInstance(DBHelper.getInstance().database.bikeSystemDao(),
-                    DBHelper.getInstance().database.bikeStationDao(),
-                    DBHelper.getInstance().database.favoriteEntityPlaceDao(),
-                    DBHelper.getInstance().database.favoriteEntityStationDao(),
+            return FindMyBikesRepository.getInstance(database.bikeSystemDao(),
+                    database.bikeStationDao(),
+                    database.favoriteEntityPlaceDao(),
+                    database.favoriteEntityStationDao(),
                     systemListNetworkDataSource,
                     systemStatusNetworkDataSource)
         }
 
         fun provideMainActivityViewModelFactory(app: Application): FindMyBikesModelFactory {
-            val repository = provideRepository()
+            val repository = provideRepository(app.applicationContext)
             return FindMyBikesModelFactory(repository, app)
         }
 
@@ -63,7 +64,7 @@ class InjectorUtils {
                                                finalDestinationLoc: LiveData<LatLng>,
                                                isFinalDestinationFavorite: LiveData<Boolean>
         ): MapFragmentModelFactory {
-            val repository = provideRepository()
+            val repository = provideRepository(app.applicationContext)
             return MapFragmentModelFactory(
                     repository,
                     app,
@@ -86,7 +87,7 @@ class InjectorUtils {
                                                  stationSelectionDatasource: LiveData<BikeStation>,
                                                  userLoc: LiveData<LatLng>,
                                                  numFormat: NumberFormat): TableFragmentModelFactory {
-            val repository = provideRepository()
+            val repository = provideRepository(app.applicationContext)
             return TableFragmentModelFactory(repository, app, isDockTable,
                     appBarExpanded,
                     stationRecapDatasource,
@@ -98,7 +99,7 @@ class InjectorUtils {
 
         fun provideFavoriteSheetListFragmentViewModelFactory(app: Application,
                                                              isSheetEditInProgress: LiveData<Boolean>): FavoriteSheetListFragmentModelFactory {
-            val repo = provideRepository()
+            val repo = provideRepository(app.applicationContext)
 
             return FavoriteSheetListFragmentModelFactory(repo, app, isSheetEditInProgress)
         }

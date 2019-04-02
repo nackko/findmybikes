@@ -9,7 +9,7 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import com.ludoscity.findmybikes.R;
-import com.ludoscity.findmybikes.data.database.DBHelper;
+import com.ludoscity.findmybikes.data.database.SharedPrefHelper;
 
 /**
  * Created by F8Full on 2016-04-10.
@@ -42,8 +42,8 @@ public class AvailabilitySettingsDialogPreference extends DialogPreference {
         mGreatMinText = view.findViewById(R.id.pref_availability_great_min_text);
         mCriticalHint = view.findViewById(R.id.pref_availability_critical_hint);
 
-        int redUpperValue = DBHelper.getInstance().getCriticalAvailabilityMax(getContext());
-        int yellowUpperValue = DBHelper.getInstance().getBadAvailabilityMax(getContext());
+        int redUpperValue = SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getContext());
+        int yellowUpperValue = SharedPrefHelper.getInstance().getBadAvailabilityMax(getContext());
 
 
         mCriticalMaxPicker.setMinValue(0);
@@ -98,8 +98,8 @@ public class AvailabilitySettingsDialogPreference extends DialogPreference {
     protected void onDialogClosed(boolean positiveResult) {
 
         if (positiveResult) {
-            DBHelper.getInstance().saveCriticalAvailabilityMax(getContext(), mCriticalMaxPicker.getValue());
-            DBHelper.getInstance().saveBadAvailabilityMax(getContext(), mBadMaxPicker.getValue());
+            SharedPrefHelper.getInstance().saveCriticalAvailabilityMax(getContext(), mCriticalMaxPicker.getValue());
+            SharedPrefHelper.getInstance().saveBadAvailabilityMax(getContext(), mBadMaxPicker.getValue());
         }
         super.onDialogClosed(positiveResult);
     }

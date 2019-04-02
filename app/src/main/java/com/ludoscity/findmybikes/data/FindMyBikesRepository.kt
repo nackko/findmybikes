@@ -35,6 +35,15 @@ class FindMyBikesRepository private constructor(
     //transient local list of all bike systems available. Model determine nearest one for DB saving with bounds of current bike system
     private val availableBikeSystemList: MutableLiveData<List<BikeSystem>> = MutableLiveData()
 
+    //For some reason, those copies are required for LiveData from Room to correctly trigger
+    //when db is updated.
+    //COULD NOT RETURN THEM DIRECTLY FROM ACCESSOR
+    private val curBikeSystemData: LiveData<BikeSystem> = currentBikeSystemDao.single
+    private val favoritePlaceList: LiveData<List<FavoriteEntityPlace>> = favoriteEntityPlaceDao.all
+    private val favoriteStationList: LiveData<List<FavoriteEntityStation>> = favoriteEntityStationDao.all
+    private val curBikeSystemStatusData: LiveData<List<BikeStation>> = stationDao.all
+
+
     init {
 
         networkBikeSystemStatusData.observeForever { newStatusDataFromNetwork ->
@@ -42,6 +51,8 @@ class FindMyBikesRepository private constructor(
             newStatusDataFromNetwork?.let {
 
                 coroutineScopeIO.launch {
+
+                    currentBikeSystemDao.updateLastUpdateTimestamp(it.id, System.currentTimeMillis())
 
                     Log.d(TAG, "New data from network, begin processing of " +
                             "${newStatusDataFromNetwork.bikeStationList?.size} stations for saving in Room")
@@ -104,6 +115,7 @@ class FindMyBikesRepository private constructor(
 
                         bikeSystemList.add(BikeSystem(
                                 it.id,
+                                System.currentTimeMillis(),
                                 it.href,
                                 it.name,
                                 it.location.latitude,
@@ -155,11 +167,11 @@ class FindMyBikesRepository private constructor(
     }
 
     fun getFavoriteStationList(): LiveData<List<FavoriteEntityStation>> {
-        return favoriteEntityStationDao.all
+        return favoriteStationList
     }
 
     fun getFavoritePlaceList(): LiveData<List<FavoriteEntityPlace>> {
-        return favoriteEntityPlaceDao.all
+        return favoritePlaceList
     }
 
     fun addOrUpdateFavorite(toAddOrUpdate: FavoriteEntityBase) {
@@ -222,7 +234,7 @@ class FindMyBikesRepository private constructor(
 
     fun getBikeSystemStationData(ctx: Context): LiveData<List<BikeStation>>{
         initializeData(ctx)
-        return stationDao.all
+        return curBikeSystemStatusData
     }
 
     fun getBikeSystemListData(ctx: Context): LiveData<List<BikeSystem>> {
@@ -231,7 +243,7 @@ class FindMyBikesRepository private constructor(
     }
 
     fun getCurrentBikeSystem(): LiveData<BikeSystem> {
-        return currentBikeSystemDao.single
+        return curBikeSystemData
     }
 
     fun setCurrentBikeSystem(ctx: Context, toSet: BikeSystem, alsoFetchStatus: Boolean = false) {
@@ -244,6 +256,10 @@ class FindMyBikesRepository private constructor(
 
     fun invalidateCurrentBikeSystem(ctx: Context) {
         startFetchBikeSystemListDataService(ctx)
+    }
+
+    fun invalidateBikeSystemStatus(ctx: Context, systemHRef: String) {
+        startFetchBikeSystemStatusDataService(ctx, systemHRef)
     }
 
     private fun isFetchNeeded(): Boolean {

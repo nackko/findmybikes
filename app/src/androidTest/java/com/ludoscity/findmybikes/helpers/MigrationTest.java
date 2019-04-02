@@ -14,11 +14,6 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 
-import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_1_2;
-import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_2_3;
-import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_3_4;
-import static com.ludoscity.findmybikes.data.database.FindMyBikesDatabase.MIGRATION_4_5;
-
 
 /**
  * Created by F8Full on 2017-12-30. This file is part of #findmybikes
@@ -58,7 +53,7 @@ public class MigrationTest {
 
         // Re-open the database with version 2 and provide
         // MIGRATION_1_2 as the migration process.
-        db = helper.runMigrationsAndValidate(TEST_DB, 2, true, MIGRATION_1_2);
+        db = helper.runMigrationsAndValidate(TEST_DB, 2, true, FindMyBikesDatabase.Companion.getMIGRATION_1_2());
 
         // MigrationTestHelper automatically verifies the schema changes,
         // but you need to validate that the data was migrated properly.
@@ -84,7 +79,7 @@ public class MigrationTest {
 
         // Re-open the database with version 2 and provide
         // MIGRATION_1_2 as the migration process.
-        db = helper.runMigrationsAndValidate(TEST_DB, 3, true, MIGRATION_2_3);
+        db = helper.runMigrationsAndValidate(TEST_DB, 3, true, FindMyBikesDatabase.Companion.getMIGRATION_2_3());
 
         // MigrationTestHelper automatically verifies the schema changes,
         // but you need to validate that the data was migrated properly.
@@ -110,7 +105,7 @@ public class MigrationTest {
 
         // Re-open the database with version 2 and provide
         // MIGRATION_1_2 as the migration process.
-        db = helper.runMigrationsAndValidate(TEST_DB, 4, true, MIGRATION_3_4);
+        db = helper.runMigrationsAndValidate(TEST_DB, 4, true, FindMyBikesDatabase.Companion.getMIGRATION_3_4());
         // MigrationTestHelper automatically verifies the schema changes
 
         db.execSQL("INSERT into favoriteentityplace(id, custom_name, default_name, ui_index, location, attributions)"
@@ -145,7 +140,7 @@ public class MigrationTest {
 
         // Re-open the database with version 5 and provide
         // MIGRATION_4_5 as the migration process.
-        db = helper.runMigrationsAndValidate(TEST_DB, 5, true, MIGRATION_4_5);
+        db = helper.runMigrationsAndValidate(TEST_DB, 5, true, FindMyBikesDatabase.Companion.getMIGRATION_4_5());
         // MigrationTestHelper automatically verifies the schema changes
 
         db.close();

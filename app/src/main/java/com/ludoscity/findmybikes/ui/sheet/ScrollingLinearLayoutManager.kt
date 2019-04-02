@@ -13,7 +13,8 @@ import android.support.v7.widget.RecyclerView
 class ScrollingLinearLayoutManager(context: Context, orientation: Int, reverseLayout: Boolean, private val mDuration: Int) : LinearLayoutManager(context, orientation, reverseLayout) {
 
     override fun smoothScrollToPosition(recyclerView: RecyclerView, state: RecyclerView.State?, position: Int) {
-        val firstVisibleChild = recyclerView.getChildAt(0)
+        val firstVisibleChild = recyclerView.getChildAt(0) ?: return
+
         val itemHeight = firstVisibleChild.height
         val currentPosition = recyclerView.getChildLayoutPosition(firstVisibleChild)
         var distanceInPixels = Math.abs((currentPosition - position) * itemHeight)

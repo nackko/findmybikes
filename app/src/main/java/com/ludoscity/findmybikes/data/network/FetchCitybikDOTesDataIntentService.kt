@@ -16,8 +16,8 @@ class FetchCitybikDOTesDataIntentService : JobIntentService() {
         val action = intent.action
 
         when (action) {
-            ACTION_FETCH_SYSTEM_STATUS -> InjectorUtils.provideBikeSystemStatusNetworkDataSource().fetchBikeSystemStatus(api, intent.getStringExtra("system_href"))
-            ACTION_FETCH_SYSTEM_LIST -> InjectorUtils.provideBikeSystemListNetworkDataSource().fetchBikeSystemList(api)
+            ACTION_FETCH_SYSTEM_STATUS -> InjectorUtils.provideBikeSystemStatusNetworkDataSource(applicationContext).fetchBikeSystemStatus(api, intent.getStringExtra("system_href"))
+            ACTION_FETCH_SYSTEM_LIST -> InjectorUtils.provideBikeSystemListNetworkDataSource(applicationContext).fetchBikeSystemList(api)
         }
 
         Log.i(TAG, "Completed service @ " + SystemClock.elapsedRealtime())

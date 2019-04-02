@@ -13,7 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Response
-import java.io.IOException
 import java.util.*
 
 class BikeSystemStatusNetworkDataSource private constructor() {
@@ -58,9 +57,10 @@ class BikeSystemStatusNetworkDataSource private constructor() {
                 statusAnswer = call.execute()
 
                 //TODO: record a copy for working when API is down
+                //TODO: better handling of API down
                 downloadedBikeSystemStatus.postValue(statusAnswer.body()!!.network)
 
-            } catch (e: IOException) {
+            } catch (e: Exception) {
 
                 //server level error, could not retrieve bike system data
                 Log.w(TAG, "Exception raised trying to fetch bike system status -- Aborted")

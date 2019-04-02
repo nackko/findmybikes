@@ -13,7 +13,7 @@ import android.arch.persistence.room.Query
 @Dao
 interface BikeSystemDao {
 
-    @get:Query("SELECT * FROM bikesystem")
+    @get:Query("SELECT * FROM bikeSystem")
     val single: LiveData<BikeSystem>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -22,9 +22,12 @@ interface BikeSystemDao {
     @Query("DELETE FROM bikeSystem")
     fun deleteCurrentBikeSystem()
 
-    @Query("SELECT COUNT(id) FROM bikesystem")
+    @Query("SELECT COUNT(id) FROM bikeSystem")
     fun countCurrentBikeSystem(): Int
 
-    @Query("UPDATE bikesystem SET bbox_north_east_lat =:bBoxNELat, bbox_north_east_lng = :bBoxNELng, bbox_south_west_lat =:bBoxSWLat, bbox_south_west_lng = :bBoxSWLng WHERE id LIKE :id")
+    @Query("UPDATE bikeSystem SET last_status_update = :newUpdateTimestamp WHERE id = :id")
+    fun updateLastUpdateTimestamp(id: String, newUpdateTimestamp: Long)
+
+    @Query("UPDATE bikeSystem SET bbox_north_east_lat =:bBoxNELat, bbox_north_east_lng = :bBoxNELng, bbox_south_west_lat =:bBoxSWLat, bbox_south_west_lng = :bBoxSWLng WHERE id = :id")
     fun updateBounds(id: String, bBoxNELat: Double, bBoxNELng: Double, bBoxSWLat: Double, bBoxSWLng: Double)
 }

@@ -124,10 +124,6 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
             case R.id.favorite_sheet_edit_done_fab:
                 //mNearbyActivityViewModel.favoriteSheetEditDone();
 
-                //TODO : Do what was done in NearbyActivity .onFavoriteSheetEditDone()
-                //dropping all favorites
-                //adding them all back from the DBHelper (!)
-                //or modelView will allow update live one element by element
                 mListener.onFavoriteSheetEditDone();
                 break;
         }
