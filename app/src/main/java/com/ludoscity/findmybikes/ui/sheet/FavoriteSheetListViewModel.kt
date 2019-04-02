@@ -143,20 +143,34 @@ class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
         favoritePlaceListDataSource = repo.getFavoritePlaceList()
 
         favoriteStationDataObserver = Observer {
-            coroutineScopeIO.launch {
-                //TODO: do merging
+            it?.let {
+                coroutineScopeIO.launch {
+                    val merged = emptyList<FavoriteEntityBase>().toMutableList()
 
-                mergeFavoriteEntityList.postValue(it)
+                    merged.addAll(it)
+                    merged.addAll(favoritePlaceListDataSource.value ?: emptyList())
+
+                    merged.sortBy { it.uiIndex }
+
+                    mergeFavoriteEntityList.postValue(it)
+                }
             }
         }
 
         favoriteStationListDataSource.observeForever(favoriteStationDataObserver)
 
         favoritePlaceDataObserver = Observer {
-            coroutineScopeIO.launch {
-                //TODO: merging
+            it?.let {
+                coroutineScopeIO.launch {
+                    val merged = emptyList<FavoriteEntityBase>().toMutableList()
 
-                mergeFavoriteEntityList.postValue(it)
+                    merged.addAll(it)
+                    merged.addAll(favoriteStationListDataSource.value ?: emptyList())
+
+                    merged.sortBy { it.uiIndex }
+
+                    mergeFavoriteEntityList.postValue(merged)
+                }
             }
         }
 
