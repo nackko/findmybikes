@@ -285,62 +285,63 @@ class NearbyActivityViewModel(private val repo: FindMyBikesRepository, app: Appl
         now.observeForever {
             it?.let { now ->
 
-                val lastUpdatetimestamp = curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!
-                val timeDeltaMillis = now - lastUpdatetimestamp
+                coroutineScopeIO.launch {
 
-                //first the past
-                if (timeDeltaMillis < DateUtils.MINUTE_IN_MILLIS)
-                    pastStringBuilder.append(getApplication<Application>().getString(R.string.moments))
-                else
-                    pastStringBuilder.append(getApplication<Application>().getString(R.string.il_y_a))
-                            .append(nf.format(timeDeltaMillis / DateUtils.MINUTE_IN_MILLIS))
-                            .append(" ").append(getApplication<Application>().getString(R.string.min_abbreviated))
+                    val lastUpdateTimestamp = curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!
+                    val timeDeltaMillis = now - lastUpdateTimestamp
 
-                //then the future
-                if (isConnectivityAvailable.value == true) {
-                    searchFabShown.postValue(true)
+                    //first the past
+                    if (timeDeltaMillis < DateUtils.MINUTE_IN_MILLIS)
+                        pastStringBuilder.append(getApplication<Application>().getString(R.string.moments))
+                    else
+                        pastStringBuilder.append(getApplication<Application>().getString(R.string.il_y_a))
+                                .append(nf.format(timeDeltaMillis / DateUtils.MINUTE_IN_MILLIS))
+                                .append(" ").append(getApplication<Application>().getString(R.string.min_abbreviated))
 
-                    //TODO: reimplement manual or auto refresh
-                    //manual
-                    //futureStringBuilder.append(getApplication<Application>().getString(R.string.pull_to_refresh))
+                    //then the future
+                    if (isConnectivityAvailable.value == true) {
 
-                    //auto
-                    val wishedUpdatetime = lastUpdatetimestamp +
-                            1 *
-                            //getApplication<Application>().resources.getInteger(R.integer.update_auto_interval_minute) *
-                            1000 *
-                            60
+                        //TODO: reimplement manual or auto refresh
+                        //manual
+                        //futureStringBuilder.append(getApplication<Application>().getString(R.string.pull_to_refresh))
 
-                    //Model should keep time since last update
-                    //someone should observe and request Bike system status refresh
-                    if (now >= wishedUpdatetime)
-                        requestCurrentBikeSystemStatusRefresh()
-                    else {
-                        futureStringBuilder.append(getApplication<Application>().getString(R.string.nextUpdate))
-                                .append(" ")
-                        val deltaSeconds = (wishedUpdatetime - now) / DateUtils.SECOND_IN_MILLIS
+                        //auto
+                        val wishedUpdatetime = lastUpdateTimestamp +
+                                1 *
+                                //getApplication<Application>().resources.getInteger(R.integer.update_auto_interval_minute) *
+                                1000 *
+                                60
 
-                        // formatted will be HH:MM:SS or MM:SS
-                        futureStringBuilder.append(DateUtils.formatElapsedTime(deltaSeconds))
+                        //Model should keep time since last update
+                        //someone should observe and request Bike system status refresh
+                        if (now >= wishedUpdatetime)
+                            requestCurrentBikeSystemStatusRefresh()
+                        else {
+                            futureStringBuilder.append(getApplication<Application>().getString(R.string.nextUpdate))
+                                    .append(" ")
+                            val deltaSeconds = (wishedUpdatetime - now) / DateUtils.SECOND_IN_MILLIS
+
+                            // formatted will be HH:MM:SS or MM:SS
+                            futureStringBuilder.append(DateUtils.formatElapsedTime(deltaSeconds))
+                        }
+                    } else {
+
+                        futureStringBuilder.append(getApplication<Application>().getString(R.string.no_connectivity))
+
+                        //TODO: block refresh gesture in tables
+                        //NO : table model observes connectivity
                     }
-                } else {
 
-                    futureStringBuilder.append(getApplication<Application>().getString(R.string.no_connectivity))
+                    statusBarTxt.postValue(String.format(getApplication<Application>().getString(R.string.status_string),
+                            pastStringBuilder.toString(), futureStringBuilder.toString()))
 
-                    //TODO: block refresh gesture in tables
-                    //TODO: disable search Fab
-                    searchFabShown.postValue(false)
+                    pastStringBuilder.clear()
+                    futureStringBuilder.clear()
+
+                    //Log.d("truc", "it.lastStatusUpdateLocalTimestamp : ${curBikeSystem.value?.lastStatusUpdateLocalTimestamp} \nlast update was ${(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!) / 1000L}s ago")
+                    dataOutOfDate.postValue(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! > 30000)
+
                 }
-
-                statusBarTxt.value = String.format(getApplication<Application>().getString(R.string.status_string),
-                        pastStringBuilder.toString(), futureStringBuilder.toString())
-
-                pastStringBuilder.clear()
-                futureStringBuilder.clear()
-
-                //Log.d("truc", "it.lastStatusUpdateLocalTimestamp : ${curBikeSystem.value?.lastStatusUpdateLocalTimestamp} \nlast update was ${(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!) / 1000L}s ago")
-                dataOutOfDate.value = System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! > 30000
-
             }
         }
 
