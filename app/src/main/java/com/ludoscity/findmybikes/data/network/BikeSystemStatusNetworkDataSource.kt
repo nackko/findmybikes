@@ -19,6 +19,8 @@ class BikeSystemStatusNetworkDataSource private constructor() {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
+    private var workInProgress = false
+
     // The number of days we want our API to return, set to 14 days or two weeks
 
 
@@ -32,10 +34,17 @@ class BikeSystemStatusNetworkDataSource private constructor() {
         get() = downloadedBikeSystemStatus
 
     fun startFetchBikeSystemStatusService(ctx: Context, systemHRef: String) {
+        if (workInProgress) {
+            Log.d(TAG, "Called startFetchBikeSystemStatusService while work was in progress -- aborted")
+            return
+        }
+
         val intentToFetch = Intent(ctx, FetchCitybikDOTesDataIntentService::class.java)
         intentToFetch.action = ACTION_FETCH_SYSTEM_STATUS
         intentToFetch.putExtra("system_href", systemHRef)
 
+        workInProgress = true
+        Log.d(TAG, "Enqueuing work")
         FetchCitybikDOTesDataIntentService.enqueueWork(ctx, intentToFetch)
     }
 
@@ -63,8 +72,9 @@ class BikeSystemStatusNetworkDataSource private constructor() {
             } catch (e: Exception) {
 
                 //server level error, could not retrieve bike system data
-                Log.w(TAG, "Exception raised trying to fetch bike system status -- Aborted")
+                Log.w(TAG, "Exception raised trying to fetch bike system status -- Aborted\n $e")
             }
+            workInProgress = false
         }
     }
 
