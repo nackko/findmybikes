@@ -36,17 +36,17 @@ class SplashScreenFragment : Fragment() {
         viewModel = ViewModelProviders.of(this).get(SplashScreenViewModel::class.java)
         // TODO: Use the ViewModel
         /*val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!)
-        val findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
+        val findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         findMyBikesActivityViewModel.currentBckState.observe(this, Observer {
 
 
             when(it){
-                NearbyActivityViewModel.BackgroundState.STATE_NETWORK_DOWNLOAD ->{
+                FindMyBikesActivityViewModel.BackgroundState.STATE_NETWORK_DOWNLOAD ->{
                     splashScreenTextTop.text = getString(R.string.downloading)
 
                 }
-                NearbyActivityViewModel.BackgroundState.STATE_MAP_REFRESH ->{
+                FindMyBikesActivityViewModel.BackgroundState.STATE_MAP_REFRESH ->{
 
                 }
                 else -> {

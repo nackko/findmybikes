@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import java.text.NumberFormat
 
@@ -64,7 +64,7 @@ class TripDetailsFragment : Fragment() {
 
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         //TODO: pass prebuilt factories to fragment (like table fragment ?)
         val modelFactory = InjectorUtils.provideTripFragmentViewModelFactory(activity!!.application,

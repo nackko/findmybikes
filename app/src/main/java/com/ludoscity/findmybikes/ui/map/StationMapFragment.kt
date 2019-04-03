@@ -21,7 +21,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
 
@@ -86,7 +86,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         init {
             val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-            val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+            val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(FindMyBikesActivityViewModel::class.java)
 
             //TODO: pass prebuilt factories to fragment (like table fragment ?)
             val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
@@ -137,7 +137,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         //TODO: pass prebuilt factories to fragment (like table fragment ?)
         val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
@@ -219,7 +219,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         //TODO: pass prebuilt factories to fragment (like table fragment ?)
         val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,
@@ -392,7 +392,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
-        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+        val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         //TODO: pass prebuilt factories to fragment (like table fragment ?)
         val modelFactory = InjectorUtils.provideMapFragmentViewModelFactory(activity!!.application,

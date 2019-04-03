@@ -5,8 +5,8 @@ import android.view.View;
 
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.ludoscity.findmybikes.R;
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel;
 import com.ludoscity.findmybikes.ui.main.NearbyActivity;
-import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel;
 
 /**
  * Created by F8Full on 2016-06-03.
@@ -25,7 +25,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
     private FloatingActionButton mEditFAB;
     private FloatingActionButton mEditDoneFAB;
 
-    private NearbyActivityViewModel mNearbyActivityViewModel;
+    private FindMyBikesActivityViewModel findMyBikesActivityViewModel;
     /**
      * Creates a MaterialSheetFab instance and sets up the necessary click listeners.
      *
@@ -35,7 +35,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
      * @param sheetColor The background color of the material sheet.
      * @param fabColor   The background color of the FAB.
      */
-    public EditableMaterialSheetFab(NearbyActivity isFavoriteSheetItemNameEditInProgress, NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
+    public EditableMaterialSheetFab(NearbyActivity isFavoriteSheetItemNameEditInProgress, FindMyBikesActivityViewModel findMyBikesActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
         //noinspection unchecked
         super(view, sheet, overlay, sheetColor, fabColor);
         mEditFAB = sheet.findViewById(R.id.favorite_sheet_edit_fab);
@@ -44,9 +44,9 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
         mEditDoneFAB = sheet.findViewById(R.id.favorite_sheet_edit_done_fab);
         mEditDoneFAB.setOnClickListener(this);
 
-        mNearbyActivityViewModel = nearbyActivityViewModel;
+        this.findMyBikesActivityViewModel = findMyBikesActivityViewModel;
 
-        mNearbyActivityViewModel.isFavoriteSheetEditInProgress().observe(isFavoriteSheetItemNameEditInProgress, isSheetEditing -> {
+        this.findMyBikesActivityViewModel.isFavoriteSheetEditInProgress().observe(isFavoriteSheetItemNameEditInProgress, isSheetEditing -> {
 
             if (mEditFAB.getVisibility() == View.INVISIBLE && mEditDoneFAB.getVisibility() == View.INVISIBLE)
                 return;
@@ -65,7 +65,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
         mListener = _listener;
     }
 
-    public EditableMaterialSheetFab(NearbyActivityViewModel nearbyActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
+    public EditableMaterialSheetFab(FindMyBikesActivityViewModel findMyBikesActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
         //noinspection unchecked
         super(view, sheet, overlay, sheetColor, fabColor);
         mEditFAB = sheet.findViewById(R.id.favorite_sheet_edit_fab);
@@ -74,7 +74,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
         mEditDoneFAB = sheet.findViewById(R.id.favorite_sheet_edit_done_fab);
         mEditDoneFAB.setOnClickListener(this);
 
-        mNearbyActivityViewModel = nearbyActivityViewModel;
+        this.findMyBikesActivityViewModel = findMyBikesActivityViewModel;
 
         mListener = _listener;
     }
@@ -104,7 +104,7 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
 
             mListener.onFavoriteSheetEditCancel();
 
-            mNearbyActivityViewModel.favoriteSheetEditDone();
+            findMyBikesActivityViewModel.favoriteSheetEditDone();
 
             mEditDoneFAB.hide();
             mEditFAB.show();
@@ -118,11 +118,11 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
 
         switch (v.getId()){
             case R.id.favorite_sheet_edit_fab:
-                mNearbyActivityViewModel.favoriteSheetEditStart();
+                findMyBikesActivityViewModel.favoriteSheetEditStart();
 
                 break;
             case R.id.favorite_sheet_edit_done_fab:
-                //mNearbyActivityViewModel.favoriteSheetEditDone();
+                //findMyBikesActivityViewModel.favoriteSheetEditDone();
 
                 mListener.onFavoriteSheetEditDone();
                 break;

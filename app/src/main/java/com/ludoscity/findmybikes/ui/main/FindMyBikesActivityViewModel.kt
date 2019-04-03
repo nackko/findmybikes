@@ -40,7 +40,7 @@ import kotlin.concurrent.timer
  * ViewModel for handling favoritelistFragment data prep for UI and business logic
  */
 
-class NearbyActivityViewModel(private val repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
+class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
 
     private val locationPermissionGranted = MutableLiveData<Boolean>()
 
@@ -634,7 +634,7 @@ class NearbyActivityViewModel(private val repo: FindMyBikesRepository, app: Appl
     }
 
     companion object {
-        private val TAG = NearbyActivityViewModel::class.java.simpleName
+        private val TAG = FindMyBikesActivityViewModel::class.java.simpleName
         private const val NEW_YORK_HUDSON_BIKESHARE_ID = "hudsonbikeshare-hoboken"
     }
 

@@ -165,7 +165,7 @@ public class NearbyActivity extends AppCompatActivity
     private FloatingActionButton mAddFavoriteFAB;
     private EditableMaterialSheetFab mFavoritesSheetFab;
     private FavoriteSheetListViewModel mFavoriteSheetListViewModel;
-    private NearbyActivityViewModel mNearbyActivityViewModel;
+    private FindMyBikesActivityViewModel findMyBikesActivityViewModel;
     //private boolean mFavoriteSheetVisible = false;
     private FloatingActionButton mClearFAB;
     private Fab mFavoritePickerFAB;
@@ -311,11 +311,11 @@ public class NearbyActivity extends AppCompatActivity
         setSupportActionBar(findViewById(R.id.toolbar_main));
         setupActionBarStrings();
 
-        mNearbyActivityViewModel = ViewModelProviders.of(this).get(NearbyActivityViewModel.class);
-        //FavoriteSheetListViewModel.Companion.setNearbyActivityModel(mNearbyActivityViewModel);
+        findMyBikesActivityViewModel = ViewModelProviders.of(this).get(FindMyBikesActivityViewModel.class);
+        //FavoriteSheetListViewModel.Companion.setNearbyActivityModel(findMyBikesActivityViewModel);
         //mFavoriteSheetListViewModel = ViewModelProviders.of(this).get(FavoriteSheetListViewModel.class);
 
-        mNearbyActivityViewModel.isFavoriteFabShown().observe(this, new Observer<Boolean>() {
+        findMyBikesActivityViewModel.isFavoriteFabShown().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 if(aBoolean == null || aBoolean)
@@ -325,7 +325,7 @@ public class NearbyActivity extends AppCompatActivity
             }
         });
 
-        /*mNearbyActivityViewModel.getCurrentBikeSytemId().observe(this, new Observer<String>() {
+        /*findMyBikesActivityViewModel.getCurrentBikeSytemId().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String newBikeSystemId) {
 
@@ -378,19 +378,19 @@ public class NearbyActivity extends AppCompatActivity
 
                 InjectorUtils.Companion.provideTableFragmentViewModelFactory(getApplication(),
                         true,
-                        mNearbyActivityViewModel.isAppBarExpanded(),
-                        mNearbyActivityViewModel.isDataOutOfDate(),
-                        mNearbyActivityViewModel.getStationA(),
-                        mNearbyActivityViewModel.getStationB(),
-                        mNearbyActivityViewModel.getUserLocation(),
+                        findMyBikesActivityViewModel.isAppBarExpanded(),
+                        findMyBikesActivityViewModel.isDataOutOfDate(),
+                        findMyBikesActivityViewModel.getStationA(),
+                        findMyBikesActivityViewModel.getStationB(),
+                        findMyBikesActivityViewModel.getUserLocation(),
                         NumberFormat.getInstance()),
                 InjectorUtils.Companion.provideTableFragmentViewModelFactory(getApplication(),
                         false,
-                        mNearbyActivityViewModel.isAppBarExpanded(),
-                        mNearbyActivityViewModel.isDataOutOfDate(),
-                        mNearbyActivityViewModel.getStationA(),
-                        mNearbyActivityViewModel.getStationA(),
-                        mNearbyActivityViewModel.getUserLocation(),
+                        findMyBikesActivityViewModel.isAppBarExpanded(),
+                        findMyBikesActivityViewModel.isDataOutOfDate(),
+                        findMyBikesActivityViewModel.getStationA(),
+                        findMyBikesActivityViewModel.getStationA(),
+                        findMyBikesActivityViewModel.getUserLocation(),
                         NumberFormat.getInstance())
 
 
@@ -543,7 +543,7 @@ public class NearbyActivity extends AppCompatActivity
 
             if (true) {//SharedPrefHelper.getInstance().isBikeNetworkIdAvailable(this)) {
 
-                //mNearbyActivityViewModel.setCurrentBikeSytemId(SharedPrefHelper.getBikeNetworkId(this));
+                //findMyBikesActivityViewModel.setCurrentBikeSytemId(SharedPrefHelper.getBikeNetworkId(this));
 
                 mDownloadWebTask = new DownloadWebTask();
                 mDownloadWebTask.execute();
@@ -750,7 +750,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
 
-                    mNearbyActivityViewModel.hideFavoriteFab();
+                    findMyBikesActivityViewModel.hideFavoriteFab();
 
                     mSearchFAB.setBackgroundTintList(ContextCompat.getColorStateList(NearbyActivity.this, R.color.light_gray));
 
@@ -799,7 +799,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 FavoriteEntityPlace newFavForPlace = new FavoriteEntityPlace(place.getId(),
                         place.getName().toString(),
-                        "",//mNearbyActivityViewModel.getCurrentBikeSytemId().getValue(),
+                        "",//findMyBikesActivityViewModel.getCurrentBikeSytemId().getValue(),
                         place.getLatLng(),
                         attrString);
 
@@ -850,7 +850,7 @@ public class NearbyActivity extends AppCompatActivity
                 }
             } else { //user pressed back, there's no search result available
 
-                mNearbyActivityViewModel.showFavoriteFab();
+                findMyBikesActivityViewModel.showFavoriteFab();
                 //mFavoritesSheetFab.showFab();
                 mAddFavoriteFAB.hide();
                 mSearchFAB.show();
@@ -1114,7 +1114,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //To setup correct name
         final BikeStation closestBikeStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
-        mNearbyActivityViewModel.setStationA(closestBikeStation);
+        findMyBikesActivityViewModel.setStationA(closestBikeStation);
 
         if (_toAdd instanceof FavoriteEntityStation)
             getTablePagerAdapter().notifyStationChangedAll(_toAdd.getId());
@@ -1130,7 +1130,7 @@ public class NearbyActivity extends AppCompatActivity
                         public void onClick(View v) {
 
                             removeFavorite(_toAdd.getId(), false);
-                            mNearbyActivityViewModel.setStationA(closestBikeStation);
+                            findMyBikesActivityViewModel.setStationA(closestBikeStation);
                         }
                     }).show();
         }
@@ -1159,7 +1159,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //Caused by: java.lang.NullPointerException (sheetView)
         // Create material sheet FAB
-        mFavoritesSheetFab = new EditableMaterialSheetFab(this, mNearbyActivityViewModel, mFavoritePickerFAB, sheetView, overlay, sheetColor, fabColor, newFavListFragment);
+        mFavoritesSheetFab = new EditableMaterialSheetFab(this, findMyBikesActivityViewModel, mFavoritePickerFAB, sheetView, overlay, sheetColor, fabColor, newFavListFragment);
 
 
 
@@ -1223,7 +1223,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //TODO: handle this through activity ViewModel
         BikeStation closestBikeStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
-        mNearbyActivityViewModel.setStationA(closestBikeStation);
+        findMyBikesActivityViewModel.setStationA(closestBikeStation);
         getTablePagerAdapter().notifyStationChangedAll(favoriteId);
     }
 
@@ -1232,7 +1232,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //To setup correct name
         final BikeStation closestBikeStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
-        mNearbyActivityViewModel.setStationA(closestBikeStation);
+        findMyBikesActivityViewModel.setStationA(closestBikeStation);
 
         //TODO: this should be done by observing the list of favorite stations
         //if (_toRemove instanceof FavoriteEntityStation)
@@ -1254,7 +1254,7 @@ public class NearbyActivity extends AppCompatActivity
 
                             addFavorite(toReAdd, false);
                             //mFavoritesSheetFab.scrollToTop();
-                            mNearbyActivityViewModel.setStationA(closestBikeStation);
+                            findMyBikesActivityViewModel.setStationA(closestBikeStation);
                         }
                     }).show();
         }
@@ -1270,7 +1270,7 @@ public class NearbyActivity extends AppCompatActivity
             findViewById(R.id.favorite_sheet_edit_fab).setVisibility(View.INVISIBLE);
             findViewById(R.id.favorite_sheet_edit_done_fab).setVisibility(View.INVISIBLE);
 
-             mNearbyActivityViewModel.favoriteSheetEditDone();
+             findMyBikesActivityViewModel.favoriteSheetEditDone();
         }
         else{
             ((TextView)findViewById(R.id.favorites_sheet_header_textview)).setText(
@@ -1344,8 +1344,8 @@ public class NearbyActivity extends AppCompatActivity
             mFavoritesSheetFab.hideSheet();
             dismissOnboardingHint();
         }*/
-        if (mNearbyActivityViewModel.isFavoriteSheetShown().getValue()) {
-            mNearbyActivityViewModel.hideFavoriteSheet();
+        if (findMyBikesActivityViewModel.isFavoriteSheetShown().getValue()) {
+            findMyBikesActivityViewModel.hideFavoriteSheet();
             dismissOnboardingHint();
         } else //noinspection StatementWithEmptyBody
             if(mOnboardingShowcaseView != null){
@@ -1428,7 +1428,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 FavoriteEntityBase newFavForStation = new FavoriteEntityStation(highlighthedDockStation.getLocationHash(),
                         highlighthedDockStation.getName(),
-                        ""//mNearbyActivityViewModel.getCurrentBikeSytemId().getValue()
+                        ""//findMyBikesActivityViewModel.getCurrentBikeSytemId().getValue()
                 );
 
                 boolean showFavoriteAddFab = false;
@@ -1551,7 +1551,7 @@ public class NearbyActivity extends AppCompatActivity
                                     mRefreshMarkers = true;
                                     refreshMap();
                                     mStatusBar.setBackgroundColor(ContextCompat.getColor(NearbyActivity.this, R.color.theme_accent));
-                                    //mNearbyActivityViewModel.setDataOutOfDate(true);
+                                    //findMyBikesActivityViewModel.setDataOutOfDate(true);
                                 }
 
                             }
@@ -1589,7 +1589,7 @@ public class NearbyActivity extends AppCompatActivity
                         //mStationMapFragment.setPinOnStation(true, closestBikeStation.getLocationHash());
                         getTablePagerAdapter().notifyStationAUpdate(closestBikeStation.getLocation(), mCurrentUserLatLng);
                         hideSetupShowTripDetailsWidget();
-                        mNearbyActivityViewModel.setStationA(closestBikeStation);
+                        findMyBikesActivityViewModel.setStationA(closestBikeStation);
 
                         if (isLookingForBike()) {
                             if (mTripDetailsWidget.getVisibility() == View.INVISIBLE) {
@@ -1604,7 +1604,7 @@ public class NearbyActivity extends AppCompatActivity
 
 
                                 //mFavoritesSheetFab.showFab();
-                                mNearbyActivityViewModel.showFavoriteFab();
+                                findMyBikesActivityViewModel.showFavoriteFab();
                                 //mFavoriteSheetListViewModel.showFab();
 
                                 //if onboarding not happening...
@@ -1618,7 +1618,7 @@ public class NearbyActivity extends AppCompatActivity
                                         public void run() {
 
                                             if (!mFavoritePickerFAB.isShowRunning()){
-                                                mNearbyActivityViewModel.showFavoriteSheet();
+                                                findMyBikesActivityViewModel.showFavoriteSheet();
                                                 //mFavoritesSheetFab.showSheet();
                                             }
                                             else
@@ -1717,7 +1717,7 @@ public class NearbyActivity extends AppCompatActivity
 
             /*if(mFavoritesSheetFab.isSheetVisible())
                 mFavoritesSheetFab.hideSheet();*/
-            mNearbyActivityViewModel.hideFavoriteSheet();
+            findMyBikesActivityViewModel.hideFavoriteSheet();
 
 
             if (mOnboardingShowcaseView == null) {
@@ -1884,7 +1884,7 @@ public class NearbyActivity extends AppCompatActivity
                         //TODO: re implement fully, though it should be that updating statA, statB, pickedfav, dest make it happen
                         //mStationMapFragment.setPinOnStation(true,
                         //        uri.getQueryParameter(StationMapFragment.Companion.getMARKER_CLICK_TITLE_PARAM()));
-                        mNearbyActivityViewModel.setStationA(getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS()));
+                        findMyBikesActivityViewModel.setStationA(getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS()));
 
                         if (mStationMapFragment.getMarkerBVisibleLatLng() != null) {
                             LatLng newALatLng = mStationMapFragment.getMarkerALatLng();
@@ -1917,7 +1917,7 @@ public class NearbyActivity extends AppCompatActivity
                             showFavoriteAddFab = true;  //Don't setup the fab as it's been done in OnActivityResult
                         else if (setupAddFavoriteFab(new FavoriteEntityStation(clickedStationId,
                                 getStation(clickedStationId).getName(),
-                                mNearbyActivityViewModel.getCurrentBikeSytemId().getValue())))
+                                findMyBikesActivityViewModel.getCurrentBikeSytemId().getValue())))
                             showFavoriteAddFab = true;
                     }
 
@@ -1970,7 +1970,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
         mClearFAB.show();
-        mNearbyActivityViewModel.hideFavoriteFab();
+        findMyBikesActivityViewModel.hideFavoriteFab();
         mSearchFAB.hide();
 
         final Handler handler = new Handler();
@@ -2060,7 +2060,7 @@ public class NearbyActivity extends AppCompatActivity
 
         //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
         mClearFAB.show();
-        mNearbyActivityViewModel.hideFavoriteFab();
+        findMyBikesActivityViewModel.hideFavoriteFab();
         mSearchFAB.hide();
 
         final Handler handler = new Handler();
@@ -2203,7 +2203,7 @@ public class NearbyActivity extends AppCompatActivity
             if (!_silent) {
                 //mStationMapFragment.setMapPaddingRight((int) getResources().getDimension(R.dimen.map_fab_padding));
                 mClearFAB.show();
-                mNearbyActivityViewModel.hideFavoriteFab();
+                findMyBikesActivityViewModel.hideFavoriteFab();
                 mSearchFAB.hide();
             }
 
@@ -2441,7 +2441,7 @@ public class NearbyActivity extends AppCompatActivity
         if (!isLookingForBike()) {
             //mStationMapFragment.animateCamera(CameraUpdateFactory.newLatLngZoom(mStationMapFragment.getMarkerALatLng(), 13));
             //mFavoritesSheetFab.showFab();
-            mNearbyActivityViewModel.showFavoriteFab();
+            findMyBikesActivityViewModel.showFavoriteFab();
             //mFavoriteSheetListViewModel.showFab();
             if (Utils.Connectivity.Companion.isConnected(NearbyActivity.this))
                 mSearchFAB.show();
@@ -2519,7 +2519,7 @@ public class NearbyActivity extends AppCompatActivity
                     }
 
                     mStationMapFragment.setPinOnStation(true, clickedStation.getLocationHash());
-                    mNearbyActivityViewModel.setStationA(clickedStation);
+                    findMyBikesActivityViewModel.setStationA(clickedStation);
                 } else {
 
                     if (mStationMapFragment.isPickedFavoriteMarkerVisible()) {
@@ -2538,7 +2538,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     FavoriteEntityStation newFavForStation = new FavoriteEntityStation(clickedStation.getLocationHash(),
                             clickedStation.getName(),
-                            mNearbyActivityViewModel.getCurrentBikeSytemId().getValue());
+                            findMyBikesActivityViewModel.getCurrentBikeSytemId().getValue());
 
                     boolean showFavoriteAddFab = false;
 
@@ -2575,10 +2575,10 @@ public class NearbyActivity extends AppCompatActivity
                     }
 
                     if (mStationMapFragment.getMarkerPickedPlaceVisibleName().isEmpty()) {
-                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName(), mNearbyActivityViewModel.getCurrentBikeSytemId().getValue()), false);
+                        addFavorite(new FavoriteEntityStation(clickedStation.getLocationHash(), clickedStation.getName(), findMyBikesActivityViewModel.getCurrentBikeSytemId().getValue()), false);
                     }
                     else {   //there's a third destination
-                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName(), mNearbyActivityViewModel.getCurrentBikeSytemId().getValue());
+                        FavoriteEntityStation toAdd = new FavoriteEntityStation(clickedStation.getLocationHash(), mStationMapFragment.getMarkerPickedPlaceVisibleName(), findMyBikesActivityViewModel.getCurrentBikeSytemId().getValue());
                         toAdd.setCustomName(mStationMapFragment.getMarkerPickedPlaceVisibleName());
                         addFavorite(toAdd, false);
                     }
@@ -2737,7 +2737,7 @@ public class NearbyActivity extends AppCompatActivity
 
                 mSearchFAB.hide();
                 mAddFavoriteFAB.hide();
-                mNearbyActivityViewModel.hideFavoriteFab();
+                findMyBikesActivityViewModel.hideFavoriteFab();
                 mClearFAB.hide();
                 //mStationMapFragment.setMapPaddingRight(0);
 
@@ -2785,7 +2785,7 @@ public class NearbyActivity extends AppCompatActivity
                     }
                     else {
                         mDirectionsLocToAFab.hide();
-                        mNearbyActivityViewModel.showFavoriteFab();
+                        findMyBikesActivityViewModel.showFavoriteFab();
                         //mFavoritesSheetFab.showFab();
                         if (Utils.Connectivity.Companion.isConnected(NearbyActivity.this))
                             mSearchFAB.show();
@@ -3104,7 +3104,7 @@ public class NearbyActivity extends AppCompatActivity
                 mDataOutdated = false;
                 mStatusBar.setBackgroundColor(ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark));
 
-                //mNearbyActivityViewModel.setDataOutOfDate(false);
+                //findMyBikesActivityViewModel.setDataOutOfDate(false);
 
                 mRefreshMarkers = true;
                 mRefreshTabs = true;
@@ -3192,7 +3192,7 @@ public class NearbyActivity extends AppCompatActivity
 
                     toReturn.put("new_network_city", closestNetwork.getLocation().getCity());
 
-                    //mNearbyActivityViewModel.postCurrentBikeSytemId(closestNetwork.getId());
+                    //findMyBikesActivityViewModel.postCurrentBikeSytemId(closestNetwork.getId());
 
                     //all handled by Room now
                     //SharedPrefHelper.getInstance().saveBikeNetworkDesc(closestNetwork, NearbyActivity.this);
@@ -3591,7 +3591,7 @@ public class NearbyActivity extends AppCompatActivity
                     mRefreshMarkers = true;
                     refreshMap();
                     mStatusBar.setBackgroundColor(ContextCompat.getColor(NearbyActivity.this, R.color.theme_accent));
-                    //mNearbyActivityViewModel.setDataOutOfDate(true);
+                    //findMyBikesActivityViewModel.setDataOutOfDate(true);
                 }
 
                 SharedPrefHelper.getInstance().pauseAutoUpdate(); //Must be done in all cases : getAutoUpdate factorizes in the suspend flag
@@ -3657,7 +3657,7 @@ public class NearbyActivity extends AppCompatActivity
                 mDataOutdated = false;
                 mStatusBar.setBackgroundColor(ContextCompat.getColor(NearbyActivity.this, R.color.theme_primary_dark));
 
-                //mNearbyActivityViewModel.setDataOutOfDate(false);
+                //findMyBikesActivityViewModel.setDataOutOfDate(false);
 
                 mRefreshMarkers = true;
                 mRefreshTabs = true;

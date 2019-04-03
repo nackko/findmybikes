@@ -18,7 +18,7 @@ import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.station.BikeStation
-import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.ui.sheet.DividerItemDecoration
 import com.ludoscity.findmybikes.ui.sheet.ScrollingLinearLayoutManager
 import com.ludoscity.findmybikes.utils.InjectorUtils
@@ -56,7 +56,7 @@ class StationTableFragment : Fragment() {
         mStationRecapName = inflatedView.findViewById(R.id.station_recap_name)
         mStationRecapAvailability = inflatedView.findViewById(R.id.station_recap_availability)
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
-        val nearbyActivityViewModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+        val nearbyActivityViewModel = ViewModelProviders.of(activity!!, activityModelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         val isDockTable = arguments?.getBoolean("isDockTable") ?: true
         val modelFactory = InjectorUtils.provideTableFragmentViewModelFactory(activity!!.application,
@@ -119,7 +119,7 @@ class StationTableFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
-        val nearbyActivityViewModel = ViewModelProviders.of(activity!!, activityModelFactory).get(NearbyActivityViewModel::class.java)
+        val nearbyActivityViewModel = ViewModelProviders.of(activity!!, activityModelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         val isDockTable = arguments?.getBoolean("isDockTable") ?: true
 

@@ -12,14 +12,14 @@ import android.view.View
 import android.view.ViewGroup
 
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.ui.main.NearbyActivityViewModel
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.utils.InjectorUtils
 
 class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteListItemStartDragListener, //TODO: investigate making the sheet listening and forwarding
         FavoriteRecyclerViewAdapter.OnFavoriteListItemClickListener, EditableMaterialSheetFab.OnFavoriteSheetEventListener {
 
     //private EditableMaterialSheetFab mFavoritesSheetFab;
-    private var nearbyActivityViewModel: NearbyActivityViewModel? = null
+    private var findMyBikesActivityViewModel: FindMyBikesActivityViewModel? = null
     private var favoriteSheetListViewModel: FavoriteSheetListViewModel? = null
     private var favoriteItemTouchHelper: ItemTouchHelper? = null
     private lateinit var favoriteRecyclerViewAdapter: FavoriteRecyclerViewAdapter
@@ -42,15 +42,15 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        nearbyActivityViewModel = ViewModelProviders.of(activity!!).get(NearbyActivityViewModel::class.java)
+        findMyBikesActivityViewModel = ViewModelProviders.of(activity!!).get(FindMyBikesActivityViewModel::class.java)
 
-        nearbyActivityViewModel!!.isFavoriteSheetItemNameEditInProgress.observe(
+        findMyBikesActivityViewModel!!.isFavoriteSheetItemNameEditInProgress.observe(
                 this,
                 Observer { favItemNameEditInProgress ->
                     isFavoriteSheetItemNameEditInProgress = favItemNameEditInProgress!!
                 })
 
-        val facto = InjectorUtils.provideFavoriteSheetListFragmentViewModelFactory(activity!!.application, nearbyActivityViewModel!!.isFavoriteSheetEditInProgress)
+        val facto = InjectorUtils.provideFavoriteSheetListFragmentViewModelFactory(activity!!.application, findMyBikesActivityViewModel!!.isFavoriteSheetEditInProgress)
 
         favoriteSheetListViewModel = ViewModelProviders.of(this, facto).get(FavoriteSheetListViewModel::class.java)
 
@@ -75,7 +75,7 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
             }
 
             override fun isLongPressDragEnabled(): Boolean {
-                return nearbyActivityViewModel!!.isFavoriteSheetEditInProgress.value!!
+                return findMyBikesActivityViewModel!!.isFavoriteSheetEditInProgress.value!!
             }
 
             override fun isItemViewSwipeEnabled(): Boolean {
@@ -122,7 +122,7 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
 
     override fun onFavoriteListItemClick(favoriteId: String) {
 
-        //TODO: act on NearbyActivityViewModel instead of a direct callback
+        //TODO: act on FindMyBikesActivityViewModel instead of a direct callback
         listener!!.onFavoriteListItemClicked(favoriteId)
     }
 
@@ -133,16 +133,16 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
 
         listener!!.onFavoriteItemEditDone(favoriteId)
 
-        nearbyActivityViewModel!!.showFavoriteSheetEditFab()
-        nearbyActivityViewModel!!.favoriteItemNameEditStop()
+        findMyBikesActivityViewModel!!.showFavoriteSheetEditFab()
+        findMyBikesActivityViewModel!!.favoriteItemNameEditStop()
     }
 
     override fun onFavoriteListItemNameEditBegin() {
-        nearbyActivityViewModel!!.favoriteItemNameEditStart()
+        findMyBikesActivityViewModel!!.favoriteItemNameEditStart()
     }
 
     override fun onFavoristeListItemNameEditAbort() {
-        nearbyActivityViewModel!!.favoriteItemNameEditStop()
+        findMyBikesActivityViewModel!!.favoriteItemNameEditStop()
     }
 
     override fun onFavoriteListItemDelete(favoriteId: String, adapterPosition: Int) {
@@ -158,7 +158,7 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
         for ((i, fav) in favoriteRecyclerViewAdapter.items.withIndex()) {
             favoriteSheetListViewModel!!.updateFavoriteUiIndexByFavoriteId(fav.favoriteId, i)
         }
-        nearbyActivityViewModel!!.favoriteSheetEditDone()
+        findMyBikesActivityViewModel!!.favoriteSheetEditDone()
     }
 
     override fun onFavoriteSheetEditCancel() {

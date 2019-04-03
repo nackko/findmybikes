@@ -61,7 +61,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     override fun onPageSelected(position: Int) {
-        nearbyActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
+        findMyBikesActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
     }
 
     override fun onPageScrollStateChanged(state: Int) {
@@ -73,7 +73,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     override fun onFavoriteItemDeleted(favoriteId: String, showUndo: Boolean) {
-        nearbyActivityViewModel.removeFavoriteByFavoriteId(favoriteId)
+        findMyBikesActivityViewModel.removeFavoriteByFavoriteId(favoriteId)
     }
 
     override fun onFavoriteListChanged(noFavorite: Boolean) {
@@ -118,7 +118,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     private lateinit var tripDetailsFragment: View
     private lateinit var tripDetailsProximityTotal: TextView
 
-    private lateinit var nearbyActivityViewModel: NearbyActivityViewModel
+    private lateinit var findMyBikesActivityViewModel: FindMyBikesActivityViewModel
 
     private val TABS_ICON_RES_ID = intArrayOf(R.drawable.ic_pin_a_36dp_white, R.drawable.ic_pin_b_36dp_white)
 
@@ -169,23 +169,23 @@ class FindMyBikesActivity : AppCompatActivity(),
         }*/
 
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
-        nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
+        findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(FindMyBikesActivityViewModel::class.java)
 
 
         setContentView(R.layout.activity_findmybikes)
         setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
 
-        nearbyActivityViewModel.lastStartActivityForResultIntent.observe(this, Observer {
+        findMyBikesActivityViewModel.lastStartActivityForResultIntent.observe(this, Observer {
             it?.let { data ->
                 startActivityForResult(data.first, data.second)
             }
         })
 
-        nearbyActivityViewModel.isLookingForBike.observe(this, Observer {
+        findMyBikesActivityViewModel.isLookingForBike.observe(this, Observer {
             appBarLayout.setExpanded(it != true, true)
         })
 
-        nearbyActivityViewModel.stationData.observe(this, Observer { stationDataList ->
+        findMyBikesActivityViewModel.stationData.observe(this, Observer { stationDataList ->
             Log.d(TAG, "New data has " + (stationDataList?.size ?: "") + " stations")
 
             stationDataList?.let {
@@ -195,7 +195,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             }
         })
 
-        nearbyActivityViewModel.isFavoritePickerFabShown.observe(this, Observer {
+        findMyBikesActivityViewModel.isFavoritePickerFabShown.observe(this, Observer {
 
             if (it == true)
                 favoritesSheetFab.showFab()
@@ -203,7 +203,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                 favoritesSheetFab.hideSheetThenFab()
         })
 
-        nearbyActivityViewModel.isFavoriteSheetShown.observe(this, Observer {
+        findMyBikesActivityViewModel.isFavoriteSheetShown.observe(this, Observer {
             if (it == true)
                 favoritesSheetFab.showSheet()
             else
@@ -211,7 +211,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         })
 
-        nearbyActivityViewModel.isFavoriteFabShown.observe(this, Observer {
+        findMyBikesActivityViewModel.isFavoriteFabShown.observe(this, Observer {
             if (it == true) {
                 addFavoriteFAB.show()
             } else {
@@ -219,7 +219,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             }
         })
 
-        nearbyActivityViewModel.isClearBSelectionFabShown.observe(this, Observer {
+        findMyBikesActivityViewModel.isClearBSelectionFabShown.observe(this, Observer {
             if (it == true) {
                 clearFAB.show()
             } else {
@@ -227,21 +227,21 @@ class FindMyBikesActivity : AppCompatActivity(),
             }
         })
 
-        nearbyActivityViewModel.isSearchFabShown.observe(this, Observer {
+        findMyBikesActivityViewModel.isSearchFabShown.observe(this, Observer {
             if (it == true)
                 searchFAB.show()
             else
                 searchFAB.hide()
         })
 
-        nearbyActivityViewModel.isDirectionsToStationAFabShown.observe(this, Observer {
+        findMyBikesActivityViewModel.isDirectionsToStationAFabShown.observe(this, Observer {
             if (it == true)
                 directionsLocToAFab.show()
             else
                 directionsLocToAFab.hide()
         })
 
-        nearbyActivityViewModel.curBikeSystem.observe(this, Observer {
+        findMyBikesActivityViewModel.curBikeSystem.observe(this, Observer {
 
             setupFavoritePickerFab()
             setupActionBarStrings(it)
@@ -275,7 +275,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             }*/
         })
 
-        nearbyActivityViewModel.isFavoriteSheetEditInProgress.observe(this, Observer {
+        findMyBikesActivityViewModel.isFavoriteSheetEditInProgress.observe(this, Observer {
             if (it == true) {
                 favoritesSheetFab.hideEditFab()
                 favoritesSheetFab.showEditDoneFab()
@@ -289,11 +289,11 @@ class FindMyBikesActivity : AppCompatActivity(),
         statusTextView = findViewById(R.id.status_textView)
         statusBar = findViewById<View>(R.id.app_status_bar)
 
-        nearbyActivityViewModel.statusBarText.observe(this, Observer {
+        findMyBikesActivityViewModel.statusBarText.observe(this, Observer {
             statusTextView.text = it
         })
 
-        nearbyActivityViewModel.isDataOutOfDate.observe(this, Observer {
+        findMyBikesActivityViewModel.isDataOutOfDate.observe(this, Observer {
             if (it == true)
                 statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_accent))
             else
@@ -304,23 +304,23 @@ class FindMyBikesActivity : AppCompatActivity(),
         stationTableViewPager.adapter = StationTablePagerAdapter(supportFragmentManager,
                 InjectorUtils.provideTableFragmentViewModelFactory(application,
                         false,
-                        nearbyActivityViewModel.isAppBarExpanded(),
-                        nearbyActivityViewModel.isDataOutOfDate,
-                        nearbyActivityViewModel.getStationA(),
-                        nearbyActivityViewModel.getStationA(),
-                        nearbyActivityViewModel.userLocation,
+                        findMyBikesActivityViewModel.isAppBarExpanded(),
+                        findMyBikesActivityViewModel.isDataOutOfDate,
+                        findMyBikesActivityViewModel.getStationA(),
+                        findMyBikesActivityViewModel.getStationA(),
+                        findMyBikesActivityViewModel.userLocation,
                         NumberFormat.getInstance()),
                 InjectorUtils.provideTableFragmentViewModelFactory(application,
                         true,
-                        nearbyActivityViewModel.isAppBarExpanded(),
-                        nearbyActivityViewModel.isDataOutOfDate,
-                        nearbyActivityViewModel.getStationA(),
-                        nearbyActivityViewModel.getStationB(),
-                        nearbyActivityViewModel.userLocation,
+                        findMyBikesActivityViewModel.isAppBarExpanded(),
+                        findMyBikesActivityViewModel.isDataOutOfDate,
+                        findMyBikesActivityViewModel.getStationA(),
+                        findMyBikesActivityViewModel.getStationB(),
+                        findMyBikesActivityViewModel.userLocation,
                         NumberFormat.getInstance()
                 ))
         stationTableViewPager.addOnPageChangeListener(this)
-        nearbyActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
+        findMyBikesActivityViewModel.setSelectedTable(stationTableViewPager.currentItem == BIKE_STATIONS)
 
         // Give the TabLayout the ViewPager
         tabLayout = findViewById(R.id.sliding_tabs)
@@ -342,9 +342,9 @@ class FindMyBikesActivity : AppCompatActivity(),
         appBarLayout.addOnOffsetChangedListener { appBarLayout: AppBarLayout, verticalOffset: Int ->
 
             if (Math.abs(verticalOffset) - appBarLayout.totalScrollRange == 0)
-                nearbyActivityViewModel.setAppBarExpanded(false)
-            else if (nearbyActivityViewModel.isAppBarExpanded().value != true)
-                nearbyActivityViewModel.setAppBarExpanded(true)
+                findMyBikesActivityViewModel.setAppBarExpanded(false)
+            else if (findMyBikesActivityViewModel.isAppBarExpanded().value != true)
+                findMyBikesActivityViewModel.setAppBarExpanded(true)
         }
 
 
@@ -360,10 +360,10 @@ class FindMyBikesActivity : AppCompatActivity(),
         val layoutListener = object : View.OnLayoutChangeListener {
             override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
                 v?.removeOnLayoutChangeListener(this)
-                nearbyActivityViewModel.isTripDetailsFragmentShown.observe(this@FindMyBikesActivity, Observer {
+                findMyBikesActivityViewModel.isTripDetailsFragmentShown.observe(this@FindMyBikesActivity, Observer {
                     //We start hide animation on show status change. At the end of the hide anim, callback will launch
                     //show animation if show status is true then
-                    hideTripDetailsFragment(nearbyActivityViewModel)
+                    hideTripDetailsFragment(findMyBikesActivityViewModel)
                 })
             }
         }
@@ -376,14 +376,14 @@ class FindMyBikesActivity : AppCompatActivity(),
         placeAutocompleteLoadingProgressBar = findViewById(R.id.place_autocomplete_loading)
 
         addFavoriteFAB.setOnClickListener {
-            nearbyActivityViewModel.addFavorite(FavoriteEntityStation(
-                    nearbyActivityViewModel.getStationB().value!!.locationHash,
-                    nearbyActivityViewModel.getStationB().value!!.name!!,
-                    nearbyActivityViewModel.curBikeSystem.value!!.id
-                    //nearbyActivityViewModel.getCurrentBikeSytemId().value!!
+            findMyBikesActivityViewModel.addFavorite(FavoriteEntityStation(
+                    findMyBikesActivityViewModel.getStationB().value!!.locationHash,
+                    findMyBikesActivityViewModel.getStationB().value!!.name!!,
+                    findMyBikesActivityViewModel.curBikeSystem.value!!.id
+                    //findMyBikesActivityViewModel.getCurrentBikeSytemId().value!!
             ))
 
-            nearbyActivityViewModel.hideFavoriteFab()
+            findMyBikesActivityViewModel.hideFavoriteFab()
         }
 
         //TODO: add splashscreen back
@@ -405,26 +405,26 @@ class FindMyBikesActivity : AppCompatActivity(),
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_loc_to_a).setOnClickListener {
             //TODO: this is wrong as userLoc and station values are captured at setup time
-            nearbyActivityViewModel.stationALatLng.value?.let {
-                launchGoogleMapsForDirections(nearbyActivityViewModel.userLocation.value, nearbyActivityViewModel.stationALatLng.value, true)
+            findMyBikesActivityViewModel.stationALatLng.value?.let {
+                launchGoogleMapsForDirections(findMyBikesActivityViewModel.userLocation.value, findMyBikesActivityViewModel.stationALatLng.value, true)
             }
 
         }
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_a_to_b).setOnClickListener {
             //TODO: this is wrong as userLoc and station values are captured at setup time
-            launchGoogleMapsForDirections(nearbyActivityViewModel.stationALatLng.value, nearbyActivityViewModel.stationBLatLng.value, false)
+            launchGoogleMapsForDirections(findMyBikesActivityViewModel.stationALatLng.value, findMyBikesActivityViewModel.stationBLatLng.value, false)
         }
         //noinspection ConstantConditions
         findViewById<View>(R.id.trip_details_directions_b_to_destination).setOnClickListener {
             //TODO: this is wrong as userLoc and station values are captured at setup time
-            launchGoogleMapsForDirections(nearbyActivityViewModel.stationBLatLng.value, nearbyActivityViewModel.finalDestinationLatLng.value, true)
+            launchGoogleMapsForDirections(findMyBikesActivityViewModel.stationBLatLng.value, findMyBikesActivityViewModel.finalDestinationLatLng.value, true)
         }
         findViewById<View>(R.id.trip_details_share).setOnClickListener {
             //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
             //I will be at the Bixi station Hutchison/beaubien in ~15min ! Shared via #findmybikes
             val message = String.format(resources.getString(R.string.trip_details_share_message_content),
-                    nearbyActivityViewModel.curBikeSystem.value?.name,
+                    findMyBikesActivityViewModel.curBikeSystem.value?.name,
                     getContentTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.DOCK_STATIONS)!!.name,
                     tripDetailsProximityTotal.text.toString()) //TODO: total proximity is exposed in trip details fragment model
 
@@ -448,7 +448,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.settings_menu_item -> {
-                nearbyActivityViewModel.requestStartActivityForResult(
+                findMyBikesActivityViewModel.requestStartActivityForResult(
                         Intent(this, SettingsActivity::class.java), SETTINGS_ACTIVITY_REQUEST_CODE)
                 return true
             }
@@ -552,15 +552,15 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     override fun onResume() {
 
-        if (nearbyActivityViewModel.hasLocationPermission.value != true) {
+        if (findMyBikesActivityViewModel.hasLocationPermission.value != true) {
             val request = permissionsBuilder(android.Manifest.permission.ACCESS_FINE_LOCATION).build()
 
             request.send()
 
             request.listeners {
-                onAccepted { nearbyActivityViewModel.setLocationPermissionGranted(true) }
-                onDenied { nearbyActivityViewModel.setLocationPermissionGranted(false) }
-                onPermanentlyDenied { nearbyActivityViewModel.setLocationPermissionGranted(false) }
+                onAccepted { findMyBikesActivityViewModel.setLocationPermissionGranted(true) }
+                onDenied { findMyBikesActivityViewModel.setLocationPermissionGranted(false) }
+                onPermanentlyDenied { findMyBikesActivityViewModel.setLocationPermissionGranted(false) }
                 onShouldShowRationale { perms, nonce ->
                 }
             }
@@ -577,7 +577,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
             if (SharedPrefHelper.getInstance().isBikeNetworkIdAvailable(this)) {
 
-                nearbyActivityViewModel.setCurrentBikeSytemId(SharedPrefHelper.getBikeNetworkId(this))
+                findMyBikesActivityViewModel.setCurrentBikeSytemId(SharedPrefHelper.getBikeNetworkId(this))
 
                 val downloadWebTask = NearbyActivity.DownloadWebTask()
                 mDownloadWebTask.execute()
@@ -626,18 +626,18 @@ class FindMyBikesActivity : AppCompatActivity(),
         //isConnectivityAvailable
         //isFavoritePicked/getPickedFavorite
         //currentSelectedTab (index or BIKELIST or STATIONLIST IDs ?)
-        autoSelectBikeFab.setOnClickListener({ nearbyActivityViewModel.setNearestBikeAutoselected(false) })
+        autoSelectBikeFab.setOnClickListener({ findMyBikesActivityViewModel.setNearestBikeAutoselected(false) })
     }
 
     private fun setupClearFab() {
         clearFAB = findViewById(R.id.clear_fab)
 
-        clearFAB.setOnClickListener { nearbyActivityViewModel.setStationB(null) }
+        clearFAB.setOnClickListener { findMyBikesActivityViewModel.setStationB(null) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
-        nearbyActivityViewModel.onActivityResult(requestCode, resultCode, data)
+        findMyBikesActivityViewModel.onActivityResult(requestCode, resultCode, data)
 
     }
 
@@ -648,7 +648,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         buildTripDetailsWidgetAnimators(true, ((resources.getInteger(R.integer.camera_animation_duration) / 3) * 2).toLong(), 0.23f)!!.start()
     }
 
-    private fun hideTripDetailsFragment(model: NearbyActivityViewModel) {
+    private fun hideTripDetailsFragment(model: FindMyBikesActivityViewModel) {
 
 
         val hideAnimator = buildTripDetailsWidgetAnimators(false, (resources.getInteger(R.integer.camera_animation_duration) / 3).toLong(), 0.23f)
@@ -733,7 +733,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
                 startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE)
 
-                nearbyActivityViewModel.hideFavoritePickerFab()
+                findMyBikesActivityViewModel.hideFavoritePickerFab()
 
                 searchFAB.backgroundTintList = ContextCompat.getColorStateList(this@FindMyBikesActivity, R.color.light_gray)
 
@@ -756,9 +756,9 @@ class FindMyBikesActivity : AppCompatActivity(),
             // Seen NullPointerException in crash report.
             if (null != curSelectedStation) {
 
-                val tripLegOrigin = if (nearbyActivityViewModel.isLookingForBike.value == true) DEBUG_FAKE_USER_CUR_LOC else stationMapFragment.markerALatLng
+                val tripLegOrigin = if (findMyBikesActivityViewModel.isLookingForBike.value == true) DEBUG_FAKE_USER_CUR_LOC else stationMapFragment.markerALatLng
                 val tripLegDestination = curSelectedStation.location
-                val walkMode = nearbyActivityViewModel.isLookingForBike.value
+                val walkMode = findMyBikesActivityViewModel.isLookingForBike.value
 
                 if (walkMode != null) {
                     launchGoogleMapsForDirections(tripLegOrigin!!, tripLegDestination, walkMode)
@@ -829,7 +829,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         //Caused by: java.lang.NullPointerException (sheetView)
         // Create material sheet FAB
         favoritesSheetFab = EditableMaterialSheetFab(
-                nearbyActivityViewModel, favoritePickerFAB,
+                findMyBikesActivityViewModel, favoritePickerFAB,
                 sheetView, overlay, sheetColor, fabColor,
                 newFavListFragment)
 
@@ -837,28 +837,28 @@ class FindMyBikesActivity : AppCompatActivity(),
         favoritesSheetFab.setEventListener(object : MaterialSheetFabEventListener() {
             override fun onShowSheet() {
 
-                nearbyActivityViewModel.hideSearchFab()
+                findMyBikesActivityViewModel.hideSearchFab()
             }
 
             override fun onSheetHidden() {
 
-                if (nearbyActivityViewModel.isLookingForBike.value == false &&
-                        nearbyActivityViewModel.getStationB().value == null &&
-                        nearbyActivityViewModel.isConnectivityAvailable.value == true)
+                if (findMyBikesActivityViewModel.isLookingForBike.value == false &&
+                        findMyBikesActivityViewModel.getStationB().value == null &&
+                        findMyBikesActivityViewModel.isConnectivityAvailable.value == true)
 
-                    nearbyActivityViewModel.showSearchFab()
+                    findMyBikesActivityViewModel.showSearchFab()
             }
         })
     }
 
     override fun onRefresh() {
         //val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
-        //nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
+        //findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         //this is debug
-        //nearbyActivityViewModel.setDataOutOfDate(!(nearbyActivityViewModel.isDataOutOfDate.value
+        //findMyBikesActivityViewModel.setDataOutOfDate(!(findMyBikesActivityViewModel.isDataOutOfDate.value
         //        ?: true))
-        nearbyActivityViewModel.requestCurrentBikeSystemStatusRefresh()
+        findMyBikesActivityViewModel.requestCurrentBikeSystemStatusRefresh()
 
         //TODO: act on model ?
         getTablePagerAdapter().setRefreshingAll(false)

@@ -10,6 +10,6 @@ class FindMyBikesModelFactory(private val repository: FindMyBikesRepository,
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
-        return NearbyActivityViewModel(repository, app) as T
+        return FindMyBikesActivityViewModel(repository, app) as T
     }
 }
