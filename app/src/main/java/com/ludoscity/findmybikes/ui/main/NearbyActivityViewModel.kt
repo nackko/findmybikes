@@ -7,6 +7,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
@@ -268,6 +269,29 @@ class NearbyActivityViewModel(private val repo: FindMyBikesRepository, app: Appl
         get() = statusBarTxt
 
     private val now = MutableLiveData<Long>()
+
+    private val lastStartActForResultData = MutableLiveData<Pair<Intent, Int>>()
+
+    val lastStartActivityForResultIntent: LiveData<Pair<Intent, Int>>
+        get() = lastStartActForResultData
+
+    fun requestStartActivityForResult(int: Intent, requestCode: Int) {
+        lastStartActForResultData.value = Pair(int, requestCode)
+    }
+
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        /*when (requestCode) {
+            PLACE_AUTOCOMPLETE_REQUEST_CODE -> {
+                showFavoritePickerFab()
+                showSearchFab()
+                placeAutocompleteLoadingProgressBar.visibility = View.GONE
+                searchFAB.backgroundTintList = ContextCompat.getColorStateList(this, R.color.theme_primary_dark)
+                //mFavoritesSheetFab.showFab();
+                //TODO: model shall control visibility through addToFavFabShown
+                addFavoriteFAB.hide()
+            }
+        }*/
+    }
 
     init {
 

@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.*
@@ -14,12 +15,15 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.animation.AnimationUtils
 import android.view.animation.Interpolator
 import android.widget.ProgressBar
 import android.widget.TextView
+import com.afollestad.materialdialogs.MaterialDialog
 import com.fondesa.kpermissions.extension.listeners
 import com.fondesa.kpermissions.extension.permissionsBuilder
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
@@ -33,12 +37,14 @@ import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
+import com.ludoscity.findmybikes.ui.settings.SettingsActivity
 import com.ludoscity.findmybikes.ui.sheet.EditableMaterialSheetFab
 import com.ludoscity.findmybikes.ui.sheet.Fab
 import com.ludoscity.findmybikes.ui.sheet.FavoriteListFragment
 import com.ludoscity.findmybikes.ui.webview.WebViewActivity
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import com.ludoscity.findmybikes.utils.Utils
+import de.psdev.licensesdialog.LicensesDialog
 import java.text.NumberFormat
 
 class FindMyBikesActivity : AppCompatActivity(),
@@ -129,6 +135,8 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     companion object {
         private val TAG = FindMyBikesActivity::class.java.simpleName
+
+        const val SETTINGS_ACTIVITY_REQUEST_CODE: Int = 2
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -166,6 +174,12 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         setContentView(R.layout.activity_findmybikes)
         setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
+
+        nearbyActivityViewModel.lastStartActivityForResultIntent.observe(this, Observer {
+            it?.let { data ->
+                startActivityForResult(data.first, data.second)
+            }
+        })
 
         nearbyActivityViewModel.isLookingForBike.observe(this, Observer {
             appBarLayout.setExpanded(it != true, true)
@@ -424,6 +438,118 @@ class FindMyBikesActivity : AppCompatActivity(),
         circularRevealInterpolator = AnimationUtils.loadInterpolator(this, R.interpolator.msf_interpolator)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.menu_findmybikes, menu)
+
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.settings_menu_item -> {
+                nearbyActivityViewModel.requestStartActivityForResult(
+                        Intent(this, SettingsActivity::class.java), SETTINGS_ACTIVITY_REQUEST_CODE)
+                return true
+            }
+            R.id.about_menu_item -> {
+                ContextCompat.getDrawable(this@FindMyBikesActivity, R.drawable.logo_48dp)?.let {
+                    MaterialDialog.Builder(this)
+                            .title("${getString(R.string.app_name)} - ${getString(R.string.app_version_name)} ©2015–2019     F8Full")//http://stackoverflow.com/questions/4471025/how-can-you-get-the-manifest-version-number-from-the-apps-layout-xml-variable-->
+                            .items(R.array.about_dialog_items)
+                            .icon(it)
+                            .autoDismiss(false)
+                            .itemsCallback { _: MaterialDialog, _: View, which: Int, text: CharSequence ->
+                                when (which) {
+                                    0 -> {
+                                        val intent = Intent(this@FindMyBikesActivity, WebViewActivity::class.java)
+                                        intent.putExtra(WebViewActivity.EXTRA_URL, "http://www.citybik.es")
+                                        intent.putExtra(WebViewActivity.EXTRA_ACTIONBAR_SUBTITLE, text.toString())
+                                        intent.putExtra(WebViewActivity.EXTRA_JAVASCRIPT_ENABLED, true)
+                                        startActivity(intent)
+                                    }
+                                    1 -> {
+                                        val intent = Intent(Intent.ACTION_VIEW)
+                                        intent.data = Uri.parse("market://details?id=com.ludoscity.findmybikes")
+                                        if (intent.resolveActivity(packageManager) != null) {
+                                            startActivity(intent)
+                                        }
+                                    }
+                                    2 -> {
+                                        val url = "https://www.facebook.com/findmybikes/"
+                                        val uri: Uri
+                                        try {
+                                            packageManager.getPackageInfo("com.facebook.katana", 0)
+                                            // http://stackoverflow.com/questions/24526882/open-facebook-page-from-android-app-in-facebook-version-v11
+                                            uri = Uri.parse("fb://facewebmodal/f?href=$url")
+                                            intent = Intent(Intent.ACTION_VIEW, uri)
+                                        } catch (e: PackageManager.NameNotFoundException) {
+                                            intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                        }
+
+
+                                        //Seen ActivityNotFoundException in firebase cloud lab (FB package found but can't be launched)
+                                        if (intent.resolveActivity(packageManager) == null)
+                                            intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+
+                                        startActivity(intent)
+                                    }
+                                    3 -> {
+                                        intent = Intent(Intent.ACTION_SENDTO)
+                                        intent.data = Uri.parse("mailto:") // only email apps should handle this
+                                        intent.putExtra(Intent.EXTRA_EMAIL, arrayOf("ludos+findmybikesfeedback" + getString(R.string.app_version_name) + "@ludoscity.com"))
+                                        intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject))
+                                        if (intent.resolveActivity(packageManager) != null) {
+                                            startActivity(intent)
+                                        }
+                                    }
+                                    4 -> {
+                                        LicensesDialog.Builder(this@FindMyBikesActivity)
+                                                .setNotices(R.raw.notices)
+                                                .build()
+                                                .show()
+                                    }
+                                    5 -> {
+                                        intent = Intent(this@FindMyBikesActivity, WebViewActivity::class.java)
+                                        intent.putExtra(WebViewActivity.EXTRA_URL, "file:///android_res/raw/privacy_policy.html")
+                                        intent.putExtra(WebViewActivity.EXTRA_ACTIONBAR_SUBTITLE, getString(R.string.hashtag_privacy))
+                                        startActivity(intent)
+                                    }
+                                    6 -> {
+                                        try {
+                                            // get the Twitter app if possible
+                                            packageManager.getPackageInfo("com.twitter.android", 0)
+                                            intent = Intent(Intent.ACTION_VIEW, Uri.parse("twitter://user?screen_name=findmybikesdata"))
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        } catch (e: PackageManager.NameNotFoundException) {
+                                            // no Twitter app, revert to browser
+                                            intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/findmybikesdata"))
+                                        }
+
+
+                                        if (intent.resolveActivity(packageManager) == null)
+                                            intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/findmybikesdata"))
+
+                                        startActivity(intent)
+                                    }
+                                    7 -> {
+                                        intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/f8full/findmybikes"))
+                                        startActivity(intent)
+                                    }
+                                }
+                            }
+                            .show()
+                }
+
+                return true
+            }
+
+        }
+
+        return super.onOptionsItemSelected(item)
+
+    }
+
     override fun onResume() {
 
         if (nearbyActivityViewModel.hasLocationPermission.value != true) {
@@ -510,17 +636,9 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            PLACE_AUTOCOMPLETE_REQUEST_CODE -> {
-                placeAutocompleteLoadingProgressBar.visibility = View.GONE
-                searchFAB.backgroundTintList = ContextCompat.getColorStateList(this, R.color.theme_primary_dark)
-                nearbyActivityViewModel.showFavoritePickerFab()
-                //mFavoritesSheetFab.showFab();
-                //TODO: model shall control visibility through addToFavFabShown
-                addFavoriteFAB.hide()
-                nearbyActivityViewModel.showSearchFab()
-            }
-        }
+
+        nearbyActivityViewModel.onActivityResult(requestCode, resultCode, data)
+
     }
 
     private fun showTripDetailsFragment() {
@@ -734,8 +852,8 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     override fun onRefresh() {
-        val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
-        nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
+        //val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
+        //nearbyActivityViewModel = ViewModelProviders.of(this, modelFactory).get(NearbyActivityViewModel::class.java)
 
         //this is debug
         //nearbyActivityViewModel.setDataOutOfDate(!(nearbyActivityViewModel.isDataOutOfDate.value
