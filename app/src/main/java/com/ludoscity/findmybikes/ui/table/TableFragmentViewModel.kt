@@ -369,7 +369,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         }
 
         stationSelectionDataSourceObserver = android.arch.lifecycle.Observer {
-            recapVisibility.value = stationSelectionDataSource.value == null
+            recapVisibility.value = it == null
 
             computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
                     isDataOutOfDate.value != false, numFormat, isDockTable)

@@ -31,6 +31,7 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.location.places.ui.PlaceAutocomplete
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
@@ -113,14 +114,14 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     private lateinit var splashScreen: View
 
-    private val PLACE_AUTOCOMPLETE_REQUEST_CODE = 1
-
     private lateinit var tripDetailsFragment: View
     private lateinit var tripDetailsProximityTotal: TextView
 
     private lateinit var findMyBikesActivityViewModel: FindMyBikesActivityViewModel
 
     private val TABS_ICON_RES_ID = intArrayOf(R.drawable.ic_pin_a_36dp_white, R.drawable.ic_pin_b_36dp_white)
+
+    private lateinit var searchAutocompleteIntent: Intent
 
     //Places favorites stressed the previous design
     //TODO: explore refactoring with the following considerations
@@ -136,6 +137,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     companion object {
         private val TAG = FindMyBikesActivity::class.java.simpleName
 
+        const val PLACE_AUTOCOMPLETE_REQUEST_CODE: Int = 1
         const val SETTINGS_ACTIVITY_REQUEST_CODE: Int = 2
     }
 
@@ -177,6 +179,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         findMyBikesActivityViewModel.lastStartActivityForResultIntent.observe(this, Observer {
             it?.let { data ->
+                findMyBikesActivityViewModel.clearLastStartActivityForResultRequest()
                 startActivityForResult(data.first, data.second)
             }
         })
@@ -241,10 +244,23 @@ class FindMyBikesActivity : AppCompatActivity(),
                 directionsLocToAFab.hide()
         })
 
-        findMyBikesActivityViewModel.curBikeSystem.observe(this, Observer {
+        findMyBikesActivityViewModel.curBikeSystem.observe(this, Observer { newBikeSystem ->
 
             setupFavoritePickerFab()
-            setupActionBarStrings(it)
+            setupActionBarStrings(newBikeSystem)
+
+            newBikeSystem?.let {
+                searchAutocompleteIntent = PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+
+                        .setBoundsBias(Utils.getBikeSpeedPaddedBounds(this,
+                                LatLngBounds(LatLng(it.boundingBoxSouthWestLatitude ?: 0.0,
+                                        it.boundingBoxSouthWestLongitude ?: 0.0),
+                                        LatLng(it.boundingBoxNorthEastLatitude ?: 0.0,
+                                                it.boundingBoxNorthEastLongitude ?: 0.0))))
+                        .build(this)
+
+
+            }
 
 
             //special case for test versions in firebase lab
@@ -282,6 +298,18 @@ class FindMyBikesActivity : AppCompatActivity(),
             } else {
                 favoritesSheetFab.showEditFab()
                 favoritesSheetFab.hideEditDoneFab()
+            }
+        })
+
+        findMyBikesActivityViewModel.autocompleteLoadingProgressBarVisibility.observe(this, Observer {
+            if (it != null) {
+                placeAutocompleteLoadingProgressBar.visibility = it
+            }
+        })
+
+        findMyBikesActivityViewModel.searchFabBackgroundtintListColorResId.observe(this, Observer {
+            it?.let { colorResId ->
+                searchFAB.backgroundTintList = ContextCompat.getColorStateList(this, colorResId)
             }
         })
 
@@ -719,34 +747,17 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     private fun setupSearchFab() {
 
-        searchFAB.setOnClickListener(View.OnClickListener {
-            if (placeAutocompleteLoadingProgressBar.visibility != View.GONE)
-                return@OnClickListener
-
+        searchFAB.setOnClickListener {
             try {
-
-                val intent = PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
-                        //TODO: replug bounds retrieving now they are in Room
-                        //.setBoundsBias(SharedPrefHelper.getInstance().getBikeNetworkBounds(this@FindMyBikesActivity,
-                        //        Utils.getAverageBikingSpeedKmh(this@FindMyBikesActivity).toDouble()))
-                        .build(this@FindMyBikesActivity)
-
-                startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE)
-
-                findMyBikesActivityViewModel.hideFavoritePickerFab()
-
-                searchFAB.backgroundTintList = ContextCompat.getColorStateList(this@FindMyBikesActivity, R.color.light_gray)
-
-                placeAutocompleteLoadingProgressBar.visibility = View.VISIBLE
-
+                findMyBikesActivityViewModel.requestStartActivityForResult(searchAutocompleteIntent, PLACE_AUTOCOMPLETE_REQUEST_CODE)
                 getContentTablePagerAdapter().hideStationRecap()
 
             } catch (e: GooglePlayServicesRepairableException) {
-                Log.d("mPlacePickerFAB onClick", "oops", e)
+                Log.d(TAG, "oops", e)
             } catch (e: GooglePlayServicesNotAvailableException) {
-                Log.d("mPlacePickerFAB onClick", "oops", e)
+                Log.d(TAG, "oops", e)
             }
-        })
+        }
     }
 
     private fun setupDirectionsLocToAFab() {

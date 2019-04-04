@@ -15,6 +15,7 @@ import android.net.NetworkRequest
 import android.support.v4.content.ContextCompat
 import android.text.format.DateUtils
 import android.util.Log
+import android.view.View
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -48,6 +49,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val tripDetailsWidgetShown = MutableLiveData<Boolean>()
     private val favoritePickerFabShown = MutableLiveData<Boolean>()
     private val searchFabShown = MutableLiveData<Boolean>()
+    private val searchFabBckgTintListColorResId = MutableLiveData<Int>()
     private val directionsToStationAFabShown = MutableLiveData<Boolean>()
     private val clearBSelectionFabShown = MutableLiveData<Boolean>()
     private val favoriteSheetShown = MutableLiveData<Boolean>()
@@ -114,6 +116,9 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     val isSearchFabShown: LiveData<Boolean>
         get() = searchFabShown
 
+    val searchFabBackgroundtintListColorResId: LiveData<Int>
+        get() = searchFabBckgTintListColorResId
+
     val isDirectionsToStationAFabShown: LiveData<Boolean>
         get() = directionsToStationAFabShown
 
@@ -149,6 +154,10 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
     val isDataOutOfDate : LiveData<Boolean>
         get() = dataOutOfDate
+
+    private val autocompleteLoadProgBarVis = MutableLiveData<Int>()
+    val autocompleteLoadingProgressBarVisibility: LiveData<Int>
+        get() = autocompleteLoadProgBarVis
 
     fun setAppBarExpanded(toSet: Boolean) {
         appBarExpanded.value = toSet
@@ -276,24 +285,35 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         get() = lastStartActForResultData
 
     fun requestStartActivityForResult(int: Intent, requestCode: Int) {
+        if (requestCode == FindMyBikesActivity.PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+            hideFavoritePickerFab()
+            searchFabBckgTintListColorResId.value = R.color.light_gray
+            autocompleteLoadProgBarVis.value = View.VISIBLE
+        }
+
         lastStartActForResultData.value = Pair(int, requestCode)
     }
 
+    fun clearLastStartActivityForResultRequest() {
+        lastStartActForResultData.value = null
+    }
+
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        /*when (requestCode) {
-            PLACE_AUTOCOMPLETE_REQUEST_CODE -> {
+        when (requestCode) {
+            FindMyBikesActivity.PLACE_AUTOCOMPLETE_REQUEST_CODE -> {
                 showFavoritePickerFab()
                 showSearchFab()
-                placeAutocompleteLoadingProgressBar.visibility = View.GONE
-                searchFAB.backgroundTintList = ContextCompat.getColorStateList(this, R.color.theme_primary_dark)
-                //mFavoritesSheetFab.showFab();
-                //TODO: model shall control visibility through addToFavFabShown
-                addFavoriteFAB.hide()
+                autocompleteLoadProgBarVis.value = View.GONE
+                searchFabBckgTintListColorResId.value = R.color.theme_primary_dark
+                hideFavoriteFab()
             }
-        }*/
+        }
     }
 
     init {
+
+        //Initialy we have no selection in B tab
+        setStationB(null)
 
         val nf = NumberFormat.getInstance()
         val pastStringBuilder = StringBuilder()

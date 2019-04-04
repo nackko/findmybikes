@@ -18,6 +18,7 @@ import android.view.View
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel
@@ -31,6 +32,24 @@ import java.util.*
  * Class with static utilities
  */
 object Utils {
+
+    fun getBikeSpeedPaddedBounds(ctx: Context, boundsToPad: LatLngBounds): LatLngBounds {
+        return padLatLngBounds(boundsToPad, getAverageBikingSpeedKmh(ctx).toDouble())
+    }
+
+    private fun padLatLngBounds(boundsIn: LatLngBounds, paddingKm: Double): LatLngBounds {
+
+        //http://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
+        //http://stackoverflow.com/questions/29478463/offset-latlng-by-some-amount-of-meters-in-android
+        //Latitude : easy, 1 degree = 111111m (historically because of the French :D)
+        //Longitude : 1 degree = 111111 * cos (latitude)m
+        val southwestPadded = LatLng(boundsIn.southwest.latitude - (paddingKm * 1000.0) / 111111.0,
+                boundsIn.southwest.longitude - (paddingKm * 1000.0) / 111111.0 * Math.cos(boundsIn.southwest.latitude))
+        val northeastPadded = LatLng(boundsIn.northeast.latitude + (paddingKm * 1000.0) / 111111.0,
+                boundsIn.northeast.longitude + (paddingKm * 1000.0) / 111111.0 * Math.cos(boundsIn.northeast.latitude))
+
+        return LatLngBounds(southwestPadded, northeastPadded)
+    }
 
     fun extractNearestAvailableStationIdFromDataString(_processedString: String): String {
 
