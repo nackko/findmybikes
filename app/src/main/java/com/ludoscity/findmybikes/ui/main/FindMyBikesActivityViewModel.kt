@@ -25,6 +25,7 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
+import com.ludoscity.findmybikes.data.database.SharedPrefHelper
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
@@ -62,6 +63,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     val curBikeSystem: LiveData<BikeSystem>
         get() = myCurBikeSystem
 
+    private val bikeSystemStatusAutoUpdate = MutableLiveData<Boolean>()
 
     private val nearestBikeAutoSelected = MutableLiveData<Boolean>()
     private val lastStationStatusDataUpdateTimestampEpoch = MutableLiveData<Long>()
@@ -273,9 +275,13 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private lateinit var userLocObserverForOutOfBounds: Observer<LatLng>
 
     private val statusBarTxt = MutableLiveData<String>()
+    private val statusBarBckColorResId = MutableLiveData<Int>()
 
     val statusBarText: LiveData<String>
         get() = statusBarTxt
+
+    val statusBarBackgroundColorResId: LiveData<Int>
+        get() = statusBarBckColorResId
 
     private val now = MutableLiveData<Long>()
 
@@ -298,6 +304,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         lastStartActForResultData.value = null
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             FindMyBikesActivity.PLACE_AUTOCOMPLETE_REQUEST_CODE -> {
@@ -307,13 +314,22 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 searchFabBckgTintListColorResId.value = R.color.theme_primary_dark
                 hideFavoriteFab()
             }
+            FindMyBikesActivity.SETTINGS_ACTIVITY_REQUEST_CODE -> {
+                coroutineScopeIO.launch {
+                    bikeSystemStatusAutoUpdate.postValue(SharedPrefHelper.getInstance().getAutoUpdate(getApplication()))
+                }
+            }
         }
     }
 
     init {
 
-        //Initialy we have no selection in B tab
+        //Initially we have no selection in B tab
         setStationB(null)
+
+        coroutineScopeIO.launch {
+            bikeSystemStatusAutoUpdate.postValue(SharedPrefHelper.getInstance().getAutoUpdate(getApplication()))
+        }
 
         val nf = NumberFormat.getInstance()
         val pastStringBuilder = StringBuilder()
@@ -345,28 +361,28 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     //then the future
                     if (isConnectivityAvailable.value == true) {
 
-                        //TODO: reimplement manual or auto refresh
-                        //manual
-                        //futureStringBuilder.append(getApplication<Application>().getString(R.string.pull_to_refresh))
+                        if (bikeSystemStatusAutoUpdate.value != true) {
+                            futureStringBuilder.append(getApplication<Application>().getString(R.string.pull_to_refresh))
+                        } else {
+                            //auto
+                            val wishedUpdateTime = lastUpdateTimestamp +
+                                    1 *
+                                    getApplication<Application>().resources.getInteger(R.integer.update_auto_interval_minute) *
+                                    1000 *
+                                    60
 
-                        //auto
-                        val wishedUpdatetime = lastUpdateTimestamp +
-                                1 *
-                                //getApplication<Application>().resources.getInteger(R.integer.update_auto_interval_minute) *
-                                1000 *
-                                60
+                            //Model should keep time since last update
+                            //someone should observe and request Bike system status refresh
+                            if (now >= wishedUpdateTime)
+                                requestCurrentBikeSystemStatusRefresh()
+                            else {
+                                futureStringBuilder.append(getApplication<Application>().getString(R.string.nextUpdate))
+                                        .append(" ")
+                                val deltaSeconds = (wishedUpdateTime - now) / DateUtils.SECOND_IN_MILLIS
 
-                        //Model should keep time since last update
-                        //someone should observe and request Bike system status refresh
-                        if (now >= wishedUpdatetime)
-                            requestCurrentBikeSystemStatusRefresh()
-                        else {
-                            futureStringBuilder.append(getApplication<Application>().getString(R.string.nextUpdate))
-                                    .append(" ")
-                            val deltaSeconds = (wishedUpdatetime - now) / DateUtils.SECOND_IN_MILLIS
-
-                            // formatted will be HH:MM:SS or MM:SS
-                            futureStringBuilder.append(DateUtils.formatElapsedTime(deltaSeconds))
+                                // formatted will be HH:MM:SS or MM:SS
+                                futureStringBuilder.append(DateUtils.formatElapsedTime(deltaSeconds))
+                            }
                         }
                     } else {
 
@@ -383,8 +399,14 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     futureStringBuilder.clear()
 
                     //Log.d("truc", "it.lastStatusUpdateLocalTimestamp : ${curBikeSystem.value?.lastStatusUpdateLocalTimestamp} \nlast update was ${(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!) / 1000L}s ago")
-                    dataOutOfDate.postValue(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! > 30000)
-
+                    if (isConnectivityAvailable.value == false || System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! >
+                            getApplication<Application>().resources.getInteger(R.integer.outdated_data_time_minute) * 60 * 1000) {
+                        dataOutOfDate.postValue(true)
+                        statusBarBckColorResId.postValue(R.color.theme_accent)
+                    } else {
+                        dataOutOfDate.postValue(false)
+                        statusBarBckColorResId.postValue(R.color.theme_primary_dark)
+                    }
                 }
             }
         }

@@ -321,11 +321,10 @@ class FindMyBikesActivity : AppCompatActivity(),
             statusTextView.text = it
         })
 
-        findMyBikesActivityViewModel.isDataOutOfDate.observe(this, Observer {
-            if (it == true)
-                statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_accent))
-            else
-                statusBar.setBackgroundColor(ContextCompat.getColor(this@FindMyBikesActivity, R.color.theme_primary_dark))
+        findMyBikesActivityViewModel.statusBarBackgroundColorResId.observe(this, Observer { colorResId ->
+            colorResId?.let {
+                statusBar.setBackgroundColor(ContextCompat.getColor(this, it))
+            }
         })
 
         stationTableViewPager = findViewById(R.id.station_table_viewpager)
