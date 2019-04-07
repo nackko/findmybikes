@@ -6,9 +6,6 @@ import android.content.pm.PackageManager
 import android.support.multidex.MultiDex
 import android.util.Log
 import com.ludoscity.findmybikes.data.database.SharedPrefHelper
-import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import twitter4j.Twitter
 import twitter4j.TwitterFactory
 import twitter4j.conf.ConfigurationBuilder
@@ -21,8 +18,6 @@ import java.io.IOException
  */
 class RootApplication : Application() {
 
-    lateinit var citybik_esApi: Citybik_esAPI
-        internal set
     lateinit var twitterApi: Twitter
         internal set
     //TODO: refactor with MVC in mind. This is model
@@ -38,18 +33,7 @@ class RootApplication : Application() {
             Log.d(TAG, "Error initializing database", e)
         }
 
-        citybik_esApi = buildCitybik_esAPI()
         twitterApi = buildTwitterAPI()
-    }
-
-    private fun buildCitybik_esAPI(): Citybik_esAPI {
-
-        val retrofit = Retrofit.Builder()
-                .baseUrl(ENDPOINT)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-
-        return retrofit.create(Citybik_esAPI::class.java)
     }
 
     //They are packaged indeed, but at least they don't show up on github ^^
@@ -72,7 +56,5 @@ class RootApplication : Application() {
     companion object {
 
         private val TAG = "RootApplication"
-
-        internal val ENDPOINT = "http://api.citybik.es"
     }
 }

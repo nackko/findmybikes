@@ -3152,7 +3152,7 @@ public class NearbyActivity extends AppCompatActivity
 
             Map<String,String> toReturn = new HashMap<>();
 
-            Citybik_esAPI api = ((RootApplication) getApplication()).getCitybik_esApi();
+            Citybik_esAPI api = null;//((RootApplication) getApplication()).getCitybik_esApi();
 
             final Call<BikeSystemListAnswerRoot> call = api.getBikeNetworkList();
 
@@ -3513,7 +3513,7 @@ public class NearbyActivity extends AppCompatActivity
             Map<String, String> UrlParams = new HashMap<>();
             UrlParams.put("fields", "stations");
 
-            Citybik_esAPI api = ((RootApplication) getApplication()).getCitybik_esApi();
+            Citybik_esAPI api = null;//((RootApplication) getApplication()).getCitybik_esApi();
 
             final Call<BikeSystemStatusAnswerRoot> call = api.getBikeNetworkStatus("",//SharedPrefHelper.getInstance().getBikeNetworkHRef(NearbyActivity.this),
                     UrlParams);

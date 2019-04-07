@@ -5,13 +5,15 @@ import android.content.Intent
 import android.os.SystemClock
 import android.support.v4.app.JobIntentService
 import android.util.Log
-import com.ludoscity.findmybikes.RootApplication
+import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI
 import com.ludoscity.findmybikes.utils.InjectorUtils
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class FetchCitybikDOTesDataIntentService : JobIntentService() {
+    private val api: Citybik_esAPI
     override fun onHandleWork(intent: Intent) {
         Log.i(TAG, "Executing work: $intent")
-        val api = (application as RootApplication).citybik_esApi
 
         val action = intent.action
 
@@ -28,10 +30,20 @@ class FetchCitybikDOTesDataIntentService : JobIntentService() {
         Log.i(TAG, "All work completed")
     }
 
+    init {
+        Log.d(TAG, "Building a citybik.es API instance")
+        val retrofit = Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+        api = retrofit.create(Citybik_esAPI::class.java)
+    }
+
     companion object {
 
         const val ACTION_FETCH_SYSTEM_STATUS = "systemStatus"
         const val ACTION_FETCH_SYSTEM_LIST = "systemList"
+        internal const val BASE_URL = "http://api.citybik.es"
 
 
         private const val JOB_ID = 1000

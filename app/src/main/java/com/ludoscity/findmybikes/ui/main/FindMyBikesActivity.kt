@@ -121,7 +121,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     private val TABS_ICON_RES_ID = intArrayOf(R.drawable.ic_pin_a_36dp_white, R.drawable.ic_pin_b_36dp_white)
 
-    private lateinit var searchAutocompleteIntent: Intent
+    private var searchAutocompleteIntent: Intent? = null
 
     //Places favorites stressed the previous design
     //TODO: explore refactoring with the following considerations
@@ -747,14 +747,16 @@ class FindMyBikesActivity : AppCompatActivity(),
     private fun setupSearchFab() {
 
         searchFAB.setOnClickListener {
-            try {
-                findMyBikesActivityViewModel.requestStartActivityForResult(searchAutocompleteIntent, PLACE_AUTOCOMPLETE_REQUEST_CODE)
-                getContentTablePagerAdapter().hideStationRecap()
+            if (searchAutocompleteIntent != null) {
+                try {
+                    findMyBikesActivityViewModel.requestStartActivityForResult(searchAutocompleteIntent!!, PLACE_AUTOCOMPLETE_REQUEST_CODE)
+                    getContentTablePagerAdapter().hideStationRecap()
 
-            } catch (e: GooglePlayServicesRepairableException) {
-                Log.d(TAG, "oops", e)
-            } catch (e: GooglePlayServicesNotAvailableException) {
-                Log.d(TAG, "oops", e)
+                } catch (e: GooglePlayServicesRepairableException) {
+                    Log.d(TAG, "oops", e)
+                } catch (e: GooglePlayServicesNotAvailableException) {
+                    Log.d(TAG, "oops", e)
+                }
             }
         }
     }

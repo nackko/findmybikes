@@ -78,7 +78,7 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
                 }
             }
         } else {
-            this@StationTableRecyclerViewAdapter.notifyDataSetChanged()
+            notifyDataSetChanged()
             items = newItems
         }
     }
