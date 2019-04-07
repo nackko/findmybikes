@@ -4,7 +4,8 @@ import android.graphics.Typeface
 
 data class StationTableItemData(
         val itemBackgroundResId: Int,
-        val durationText: String?, val proximityAlpha: Float,
+        val durationTextVisibility: Int,
+        val durationText: String, val proximityAlpha: Float,
         val name: String, val nameAlpha: Float,
         val availabilityText: String, val availabilityAlpha: Float,
         val isAvailabilityPaintStrikeThru: Boolean,

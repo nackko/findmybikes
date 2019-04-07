@@ -224,9 +224,9 @@ object Utils {
         return toReturn
     }
 
-    fun computeTimeBetweenInMinutes(from: LatLng?, to: LatLng?, speedKmH: Float): Int? {
+    fun computeTimeBetweenInMinutes(from: LatLng?, to: LatLng?, speedKmH: Float): Int {
 
-        var toReturn: Int? = null
+        var toReturn = 0
 
         from?.let {
             to?.let {
@@ -239,7 +239,7 @@ object Utils {
 
                 val timeInMs = (timeInS * 1000).toLong()
 
-                return (timeInMs / 1000 / 60).toInt()
+                toReturn = (timeInMs / 1000 / 60).toInt()
             }
         }
 

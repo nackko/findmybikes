@@ -65,7 +65,8 @@ class StationTableFragment : Fragment() {
                 nearbyActivityViewModel.isDataOutOfDate,
                 nearbyActivityViewModel.getStationA(),
                 if (!isDockTable) nearbyActivityViewModel.getStationA() else nearbyActivityViewModel.getStationB(),
-                nearbyActivityViewModel.userLocation,
+                nearbyActivityViewModel.distanceToUserComparator,
+                nearbyActivityViewModel.totalTripTimeComparator,
                 arguments?.getSerializable("numFormat") as NumberFormat
         )
 

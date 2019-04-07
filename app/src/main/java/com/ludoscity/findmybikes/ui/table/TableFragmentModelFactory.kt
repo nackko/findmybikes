@@ -4,9 +4,9 @@ import android.app.Application
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
-import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.station.BikeStation
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import java.text.NumberFormat
 
 /**
@@ -20,7 +20,8 @@ class TableFragmentModelFactory(private val repository: FindMyBikesRepository,
                                 private val stationRecapDataSource: LiveData<BikeStation>,
                                 private val stationSelectionDataSource: LiveData<BikeStation>,
                                 private val dataOutOfDate: LiveData<Boolean>,
-                                private val userLoc: LiveData<LatLng>,
+                                private val distToUserComparatorSource: LiveData<FindMyBikesActivityViewModel.DistanceComparator>,
+                                private val totalTripComparatorSource: LiveData<FindMyBikesActivityViewModel.TotalTripTimeComparator>,
                                 private val numFormat: NumberFormat) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -32,7 +33,8 @@ class TableFragmentModelFactory(private val repository: FindMyBikesRepository,
                 stationRecapDataSource,
                 stationSelectionDataSource,
                 dataOutOfDate,
-                userLoc,
+                distToUserComparatorSource,
+                totalTripComparatorSource,
                 numFormat) as T
     }
 }

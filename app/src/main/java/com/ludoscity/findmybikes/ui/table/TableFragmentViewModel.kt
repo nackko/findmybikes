@@ -4,15 +4,14 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.content.Context
 import android.graphics.Typeface
-import android.os.Parcel
-import android.os.Parcelable
+import android.view.View
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.SharedPrefHelper
 import com.ludoscity.findmybikes.data.database.station.BikeStation
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.utils.Utils
 import java.text.NumberFormat
 import java.util.*
@@ -33,12 +32,14 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                              private val stationRecapDataSource: LiveData<BikeStation>,
                              private val stationSelectionDataSource: LiveData<BikeStation>,
                              private val isDataOutOfDate: LiveData<Boolean>,
-                             private val userloc: LiveData<LatLng>,//TODO: might be encapsulated in a comparator, we'll see
+                             distToUserComparatorSource: LiveData<FindMyBikesActivityViewModel.DistanceComparator>,
+                             totalTripComparatorSource: LiveData<FindMyBikesActivityViewModel.TotalTripTimeComparator>,
                              numFormat: NumberFormat) : AndroidViewModel(app) {
 
     //TODO: header setup should happen by observing app state instead of being explicitly called on the model ?
     //at the same time, it is business logic directly related to the table
 
+    private var comparator: FindMyBikesActivityViewModel.BaseBikeStationComparator? = null
 
     val tableItemDataList: LiveData<List<StationTableItemData>>
         get() = tableItemList
@@ -131,8 +132,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
     private val repository: FindMyBikesRepository = repo
 
-    private var comparator: BaseBikeStationComparator
-
     private val sortedAvailabilityDataStr: MutableLiveData<String>
     private val nearestAvailabilityLatLong: MutableLiveData<LatLng>
     private val recapVisibility: MutableLiveData<Boolean> = MutableLiveData()
@@ -145,13 +144,14 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
     private val showProx: MutableLiveData<Boolean> = MutableLiveData()
 
+    private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>>
+    private val bikeSystemAvailabilityDataObserver: android.arch.lifecycle.Observer<List<BikeStation>>
+
+    private val totalTripComparatorObserver: android.arch.lifecycle.Observer<FindMyBikesActivityViewModel.TotalTripTimeComparator>
+    private val distanceComparatorObserver: android.arch.lifecycle.Observer<FindMyBikesActivityViewModel.DistanceComparator>
     private val stationRecapDataSourceObserver: android.arch.lifecycle.Observer<BikeStation>
     private val stationSelectionDataSourceObserver: android.arch.lifecycle.Observer<BikeStation>
     private val dataOutdatedObserver: android.arch.lifecycle.Observer<Boolean>
-    private val userLocObserver: android.arch.lifecycle.Observer<LatLng>
-
-    private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>>
-    private val bikeSystemAvailabilityDataObserver: android.arch.lifecycle.Observer<List<BikeStation>>
 
     companion object {
         val AVAILABILITY_POSTFIX_START_SEQUENCE = "_AVAILABILITY_"
@@ -165,183 +165,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     }
 
 
-    //TODO: come up with a design that doesn't require dynamic casting
-    //Have a base comparator class that calculates durationText String
-    abstract class BaseBikeStationComparator : Comparator<BikeStation> {
-        abstract fun getProximityString(station: BikeStation, lookingForBike: Boolean,
-                                        numFormat: NumberFormat,
-                                        ctx: Context): String?
-    }
-
-
-    class DistanceComparator : BaseBikeStationComparator, Parcelable {
-        override fun getProximityString(station: BikeStation, lookingForBike: Boolean,
-                                        numFormat: NumberFormat,
-                                        ctx: Context): String? {
-            return if (lookingForBike) {
-                Utils.getWalkingProximityString(
-                        station.location, distanceRef, false, numFormat, ctx)
-            } else {
-                //TODO: use LiveData from model
-                Utils.getBikingProximityString(
-                        station.location, distanceRef, false, numFormat, ctx)
-            }
-        }
-
-        private var distanceRef: LatLng
-
-        constructor(_fromLatLng: LatLng) {
-            distanceRef = _fromLatLng
-        }
-
-        override fun compare(lhs: BikeStation, rhs: BikeStation): Int {
-            return (lhs.getMeterFromLatLng(distanceRef) - rhs.getMeterFromLatLng(distanceRef)).toInt()
-        }
-
-        private constructor(`in`: Parcel) {
-
-            val latitude = `in`.readDouble()
-            val longitude = `in`.readDouble()
-            distanceRef = LatLng(latitude, longitude)
-        }
-
-        override fun describeContents(): Int {
-            return 0
-        }
-
-        override fun writeToParcel(dest: Parcel, flags: Int) {
-            dest.writeDouble(distanceRef.latitude)
-            dest.writeDouble(distanceRef.longitude)
-        }
-
-        companion object CREATOR : Parcelable.Creator<DistanceComparator> {
-            override fun createFromParcel(parcel: Parcel): DistanceComparator {
-                return DistanceComparator(parcel)
-            }
-
-            override fun newArray(size: Int): Array<DistanceComparator?> {
-                return arrayOfNulls(size)
-            }
-        }
-    }
-
-    /*class TotalTripTimeComparator : BaseBikeStationComparator, Parcelable {
-        override fun getProximityString(station: BikeStation,
-                                        lookingForBike: Boolean,
-                                        numFormat: NumberFormat,
-                                        ctx: Context): String? {
-            val totalTime = calculateWalkTimeMinute(station) + calculateBikeTimeMinute(station)
-
-            return Utils.durationToProximityString(totalTime, false, numFormat, ctx)
-        }
-
-        private val mStationALatLng: LatLng
-        private val mDestinationLatLng: LatLng?
-        private val mWalkingSpeedKmh: Float
-        private val mBikingSpeedKmh: Float
-
-        private val mTimeUserToAMinutes: Int?
-
-        constructor(_walkingSpeedKmh: Float, _bikingSpeedKmh: Float, _userLatLng: LatLng,
-                    _stationALatLng: LatLng, _destinationLatLng: LatLng) {
-
-            mWalkingSpeedKmh = _walkingSpeedKmh
-            mBikingSpeedKmh = _bikingSpeedKmh
-
-            mTimeUserToAMinutes = Utils.computeTimeBetweenInMinutes(_userLatLng, _stationALatLng, mWalkingSpeedKmh)
-
-            mStationALatLng = _stationALatLng
-            mDestinationLatLng = _destinationLatLng
-        }
-
-        private constructor(`in`: Parcel) {
-
-            var latitude = `in`.readDouble()
-            var longitude = `in`.readDouble()
-            mStationALatLng = LatLng(latitude, longitude)
-
-            latitude = `in`.readDouble()
-            longitude = `in`.readDouble()
-            mDestinationLatLng = LatLng(latitude, longitude)
-
-            mWalkingSpeedKmh = `in`.readFloat()
-            mBikingSpeedKmh = `in`.readFloat()
-            mTimeUserToAMinutes = `in`.readInt()
-        }
-
-        internal fun getUpdatedComparatorFor(_userLatLng: LatLng, _stationALatLng: LatLng?,
-                                             numFormat: NumberFormat): TotalTripTimeComparator {
-            return TotalTripTimeComparator(mWalkingSpeedKmh, mBikingSpeedKmh, _userLatLng,
-                    _stationALatLng ?: mStationALatLng, mDestinationLatLng!!)
-        }
-
-        override fun compare(lhs: BikeStation, rhs: BikeStation): Int {
-
-            val lhsWalkTime = calculateWalkTimeMinute(lhs)
-            val rhsWalkTime = calculateWalkTimeMinute(rhs)
-
-            val lhsBikeTime = calculateBikeTimeMinute(lhs)
-            val rhsBikeTime = calculateBikeTimeMinute(rhs)
-
-            val totalTimeDiff = lhsWalkTime + lhsBikeTime - (rhsWalkTime + rhsBikeTime)
-
-            return if (totalTimeDiff != 0)
-                totalTimeDiff
-            else
-                lhsWalkTime - rhsWalkTime
-        }
-
-        internal fun calculateWalkTimeMinute(_stationB: BikeStation): Int? {
-
-            var timeBtoDestMinutes = 0
-
-            if (mDestinationLatLng != null)
-                timeBtoDestMinutes = Utils.computeTimeBetweenInMinutes(_stationB.location,
-                        mDestinationLatLng, mWalkingSpeedKmh)
-
-            return mTimeUserToAMinutes + timeBtoDestMinutes
-
-        }
-
-        internal fun calculateBikeTimeMinute(_stationB: BikeStation): Int {
-
-            return Utils.computeTimeBetweenInMinutes(mStationALatLng, _stationB.location,
-                    mBikingSpeedKmh)
-        }
-
-        override fun describeContents(): Int {
-            return 0
-        }
-
-        override fun writeToParcel(dest: Parcel, flags: Int) {
-            dest.writeDouble(mStationALatLng.latitude)
-            dest.writeDouble(mStationALatLng.longitude)
-            dest.writeDouble(mDestinationLatLng!!.latitude)
-            dest.writeDouble(mDestinationLatLng.longitude)
-            dest.writeFloat(mWalkingSpeedKmh)
-            dest.writeFloat(mBikingSpeedKmh)
-            dest.writeInt(mTimeUserToAMinutes)
-        }
-
-        companion object CREATOR : Parcelable.Creator<TotalTripTimeComparator> {
-            override fun createFromParcel(parcel: Parcel): TotalTripTimeComparator {
-                return TotalTripTimeComparator(parcel)
-            }
-
-            override fun newArray(size: Int): Array<TotalTripTimeComparator?> {
-                return arrayOfNulls(size)
-            }
-        }
-    }*/
-
     init {
-
-        //TODO: add user location livedata as constructor parameter and observe it to update comparator
-        //comparator = DistanceComparator(LatLng(-73.567256, 45.5016889)) //mtl
-        //comparator = DistanceComparator(LatLng(45.76404, 4.83566)) //lyon
-        comparator = DistanceComparator(userloc.value ?: LatLng(0.0, 0.0))
-
-
 
         sortedAvailabilityDataStr = MutableLiveData()
         nearestAvailabilityLatLong = MutableLiveData()
@@ -365,11 +189,35 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                 computeAndEmitTableDisplayData(newData, isDataOutOfDate.value != false,
                         numFormat, isDockTable)
             }
-
         }
 
-        stationSelectionDataSourceObserver = android.arch.lifecycle.Observer {
-            recapVisibility.value = it == null
+        distanceComparatorObserver = android.arch.lifecycle.Observer {
+            if (!isDockTable) {
+                comparator = it
+
+                computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
+                        isDataOutOfDate.value != false, numFormat, isDockTable)
+            }
+        }
+
+        distToUserComparatorSource.observeForever(distanceComparatorObserver)
+
+        totalTripComparatorObserver = android.arch.lifecycle.Observer {
+            if (isDockTable) {
+                comparator = it
+                computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
+                        isDataOutOfDate.value != false, numFormat, isDockTable)
+            }
+        }
+
+        totalTripComparatorSource.observeForever(totalTripComparatorObserver)
+
+        stationSelectionDataSourceObserver = android.arch.lifecycle.Observer { newSelection ->
+            recapVisibility.value = newSelection == null
+
+            if (isDockTable && (comparator as? FindMyBikesActivityViewModel.TotalTripTimeComparator)?.hasFinalDest() == false) {
+                showProx.value = false
+            }
 
             computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
                     isDataOutOfDate.value != false, numFormat, isDockTable)
@@ -387,22 +235,14 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         stationRecapDataSource.observeForever(stationRecapDataSourceObserver)
 
-        userLocObserver = android.arch.lifecycle.Observer {
-            comparator = DistanceComparator(userloc.value ?: LatLng(0.0, 0.0))
-
-            computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value, isDataOutOfDate.value == true, numFormat, isDockTable)
-        }
-
-        userloc.observeForever(userLocObserver)
-
         dataOutdatedObserver = android.arch.lifecycle.Observer {
 
 
             computeAndEmitStationRecapDisplayData(stationRecapDataSource.value, it != false)
 
-            computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value, it != false,
+            computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
+                    it != false,
                     numFormat, isDockTable)
-
         }
 
         isDataOutOfDate.observeForever(dataOutdatedObserver)
@@ -414,7 +254,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         isDataOutOfDate.removeObserver(dataOutdatedObserver)
         bikeSystemAvailabilityDataSource.removeObserver(bikeSystemAvailabilityDataObserver)
         stationSelectionDataSource.removeObserver(stationSelectionDataSourceObserver)
-        userloc.removeObserver(userLocObserver)
 
         super.onCleared()
     }
@@ -462,12 +301,12 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
     }
 
-    private fun computeAndEmitTableDisplayData(availabilityData: List<BikeStation>?,
-                                               oudated: Boolean, numFormat: NumberFormat, isDockTable: Boolean) {
+    private fun computeAndEmitTableDisplayData(availabilityData: List<BikeStation>?, oudated: Boolean, numFormat: NumberFormat, isDockTable: Boolean) {
 
         val sortedStationList = availabilityData?.toMutableList() ?: emptyList<BikeStation>()
 
-        Collections.sort(sortedStationList, comparator)
+        if (comparator != null)
+            Collections.sort(sortedStationList, comparator)
 
         val newDisplayData = ArrayList<StationTableItemData>()
 
@@ -475,8 +314,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         sortedStationList.forEach { station ->
 
 
-            val proximityText = if (showProximity.value != false) comparator.getProximityString(station, !isDockTable,
-                    numFormat, getApplication()) else null
+            val proximityText = if (showProximity.value != false) comparator?.getProximityString(station, !isDockTable,
+                    numFormat, getApplication()) ?: "" else ""
 
 
             val availabilityValue = when {
@@ -535,6 +374,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
             newDisplayData.add(StationTableItemData(
                     backgroundResId,
+                    if (isDockTable && (comparator as? FindMyBikesActivityViewModel.TotalTripTimeComparator)?.hasFinalDest() == false) View.INVISIBLE else View.VISIBLE,
                     proximityText,
                     durationAlpha,
                     station.name ?: "null", //TODO: replug having favorite name if it is a favorite

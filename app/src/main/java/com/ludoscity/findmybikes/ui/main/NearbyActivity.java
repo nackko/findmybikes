@@ -382,7 +382,8 @@ public class NearbyActivity extends AppCompatActivity
                         findMyBikesActivityViewModel.isDataOutOfDate(),
                         findMyBikesActivityViewModel.getStationA(),
                         findMyBikesActivityViewModel.getStationB(),
-                        findMyBikesActivityViewModel.getUserLocation(),
+                        findMyBikesActivityViewModel.getDistanceToUserComparator(),
+                        findMyBikesActivityViewModel.getTotalTripTimeComparator(),
                         NumberFormat.getInstance()),
                 InjectorUtils.Companion.provideTableFragmentViewModelFactory(getApplication(),
                         false,
@@ -390,7 +391,8 @@ public class NearbyActivity extends AppCompatActivity
                         findMyBikesActivityViewModel.isDataOutOfDate(),
                         findMyBikesActivityViewModel.getStationA(),
                         findMyBikesActivityViewModel.getStationA(),
-                        findMyBikesActivityViewModel.getUserLocation(),
+                        findMyBikesActivityViewModel.getDistanceToUserComparator(),
+                        findMyBikesActivityViewModel.getTotalTripTimeComparator(),
                         NumberFormat.getInstance())
 
 

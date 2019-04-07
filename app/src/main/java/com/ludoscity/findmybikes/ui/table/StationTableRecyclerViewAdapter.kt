@@ -129,12 +129,8 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
 
             stationId = item.locationHash
 
-            if (item.durationText != null) {
-                durationText.visibility = View.VISIBLE
-                durationText.text = item.durationText
-            } else {
-                durationText.visibility = View.GONE
-            }
+            durationText.visibility = item.durationTextVisibility
+            durationText.text = item.durationText
 
             durationText.alpha = item.proximityAlpha
 

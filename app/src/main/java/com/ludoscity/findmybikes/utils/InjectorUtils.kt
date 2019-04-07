@@ -9,6 +9,7 @@ import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
+import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
 import com.ludoscity.findmybikes.ui.sheet.FavoriteSheetListFragmentModelFactory
@@ -85,7 +86,8 @@ class InjectorUtils {
                                                  dataOutOfDate: LiveData<Boolean>,
                                                  stationRecapDatasource: LiveData<BikeStation>,
                                                  stationSelectionDatasource: LiveData<BikeStation>,
-                                                 userLoc: LiveData<LatLng>,
+                                                 distToUserComparatorSource: LiveData<FindMyBikesActivityViewModel.DistanceComparator>,
+                                                 totalTripComparatorSource: LiveData<FindMyBikesActivityViewModel.TotalTripTimeComparator>,
                                                  numFormat: NumberFormat): TableFragmentModelFactory {
             val repository = provideRepository(app.applicationContext)
             return TableFragmentModelFactory(repository, app, isDockTable,
@@ -93,7 +95,8 @@ class InjectorUtils {
                     stationRecapDatasource,
                     stationSelectionDatasource,
                     dataOutOfDate,
-                    userLoc,
+                    distToUserComparatorSource,
+                    totalTripComparatorSource,
                     numFormat)
         }
 
