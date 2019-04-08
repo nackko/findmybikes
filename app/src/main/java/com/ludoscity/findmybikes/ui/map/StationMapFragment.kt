@@ -96,8 +96,8 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                     findMyBikesActivityModel.userLocation,
                     findMyBikesActivityModel.getStationA(),
                     findMyBikesActivityModel.getStationB(),
-                    findMyBikesActivityModel.finalDestinationLatLng,
-                    findMyBikesActivityModel.isFinalDestinationFavorite)
+                    findMyBikesActivityModel.finalDestinationPlace,
+                    findMyBikesActivityModel.finalDestinationFavorite)
 
             fragmentModel = ViewModelProviders.of(this@StationMapFragment, modelFactory).get(MapFragmentViewModel::class.java)
         }
@@ -147,8 +147,8 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 findMyBikesActivityModel.userLocation,
                 findMyBikesActivityModel.getStationA(),
                 findMyBikesActivityModel.getStationB(),
-                findMyBikesActivityModel.finalDestinationLatLng,
-                findMyBikesActivityModel.isFinalDestinationFavorite)
+                findMyBikesActivityModel.finalDestinationPlace,
+                findMyBikesActivityModel.finalDestinationFavorite)
 
         val fragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
 
@@ -229,8 +229,8 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 findMyBikesActivityModel.userLocation,
                 findMyBikesActivityModel.getStationA(),
                 findMyBikesActivityModel.getStationB(),
-                findMyBikesActivityModel.finalDestinationLatLng,
-                findMyBikesActivityModel.isFinalDestinationFavorite)
+                findMyBikesActivityModel.finalDestinationPlace,
+                findMyBikesActivityModel.finalDestinationFavorite)
 
         val fragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
 
@@ -365,6 +365,13 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             }
         })
 
+        fragmentModel.finalDestinationTitle.observe(this, Observer {
+            it?.let { title ->
+                finalDestinationMarker?.title = title
+                finalDestinationMarker?.showInfoWindow()
+            }
+        })
+
         fragmentModel.isScrollGesturesEnabled.observe(this, Observer {
             mGoogleMap!!.uiSettings.isScrollGesturesEnabled = it == true
         })
@@ -390,6 +397,11 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
+        if (marker.title == finalDestinationMarker?.title) {
+            marker.showInfoWindow()
+            return true
+        }
+
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
         val findMyBikesActivityModel = ViewModelProviders.of(activity!!, activityModelFactory).get(FindMyBikesActivityViewModel::class.java)
@@ -402,39 +414,12 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 findMyBikesActivityModel.userLocation,
                 findMyBikesActivityModel.getStationA(),
                 findMyBikesActivityModel.getStationB(),
-                findMyBikesActivityModel.finalDestinationLatLng,
-                findMyBikesActivityModel.isFinalDestinationFavorite)
+                findMyBikesActivityModel.finalDestinationPlace,
+                findMyBikesActivityModel.finalDestinationFavorite)
 
         val fragmentModel = ViewModelProviders.of(this, modelFactory).get(MapFragmentViewModel::class.java)
 
-        //TODO: this is the beginning of going full model
         fragmentModel.setLastClickedStationById(marker.title)
-
-        //following code is "legacy"
-        //TODO: in model
-        if (fragmentModel.finalDestinationLatLng.value != null)
-            finalDestinationMarker?.showInfoWindow()
-
-
-        if (marker.title.equals(pinAMarker.title, ignoreCase = true) ||
-                pinAMarker.isVisible &&
-                pinAMarker.position.latitude == marker.position.latitude &&
-                pinAMarker.position.longitude == marker.position.longitude ||
-                pinBMarker!!.position.latitude == marker.position.latitude &&
-                pinBMarker!!.position.longitude == marker.position.longitude || false
-        /*mMarkerPickedPlace!!.isVisible && //except if picked destination is favorite
-
-        mMarkerPickedPlace!!.position.latitude == marker.position.latitude &&
-        mMarkerPickedPlace!!.position.longitude == marker.position.longitude*/)
-            return true
-
-        /*if (mMarkerPickedFavorite!!.isVisible &&
-                //TODO: the following seems a bit patterny, checking if B pin and Favorite one are not on the same station
-                //check connection with NearbyActivity::setupBTabSelection refactor ideas
-                mMarkerPickedFavorite!!.position.latitude == marker.position.latitude &&
-                mMarkerPickedFavorite!!.position.longitude == marker.position.longitude) {
-            mMarkerPickedFavorite!!.hideInfoWindow()
-        }*/
 
         //So that info window will not be showed
         return true

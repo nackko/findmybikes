@@ -187,7 +187,7 @@
                 app:srcCompat="@drawable/ic_action_maps_directions_and_walk_24dp" />
 
             <ImageView
-                android:id="@+id/trip_details_to_search"
+                android:id="@+id/trip_details_final_dest"
                 style="@style/trip_details_row_imageview_end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -195,16 +195,6 @@
                 android:layout_toEndOf="@id/trip_details_directions_b_to_destination"
                 android:layout_toRightOf="@id/trip_details_directions_b_to_destination"
                 app:srcCompat="@drawable/ic_pin_search_24dp_black" />
-
-            <ImageView
-                android:id="@+id/trip_details_to_favorite"
-                style="@style/trip_details_row_imageview_end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBottom="@id/trip_details_directions_b_to_destination"
-                android:layout_toEndOf="@id/trip_details_directions_b_to_destination"
-                android:layout_toRightOf="@id/trip_details_directions_b_to_destination"
-                app:srcCompat="@drawable/ic_pin_favorite_24dp_black" />
 
             <TextView
                 android:id="@+id/trip_details_proximity_search"

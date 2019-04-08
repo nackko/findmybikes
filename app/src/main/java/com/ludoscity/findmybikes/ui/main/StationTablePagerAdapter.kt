@@ -4,14 +4,11 @@ import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
-
 import com.google.android.gms.maps.model.LatLng
-import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.ui.table.StationTableFragment
 import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel
-
 import java.text.NumberFormat
 
 /**
@@ -22,11 +19,6 @@ class StationTablePagerAdapter(
         fm: FragmentManager,
         private val bikeTableFragmentModelFactory: TableFragmentModelFactory,
         private val dockTableFragmentModelFactory: TableFragmentModelFactory) : SmartFragmentPagerAdapter(fm) {
-
-    val closestBikeLatLng: LatLng?
-        get() =
-            ViewModelProviders.of(retrieveListFragment(BIKE_STATIONS), bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-                    .nearestAvailabilityLatLng.value
 
     val isHighlightedVisibleInRecyclerView: Boolean
         get() = false//retrieveListFragment(BIKE_STATIONS).isHighlightedVisibleInRecyclerView
@@ -65,8 +57,8 @@ class StationTablePagerAdapter(
         }
 
         tableModel.setShowProximity(showProximity)
-        tableModel.setHeaderFromIconResId(headerFromIconResId)
-        tableModel.setHeaderToIconResId(headerToIconResId)
+        //tableModel.setHeaderFromIconResId(headerFromIconResId)
+        //tableModel.setHeaderToIconResId(headerToIconResId)
         tableModel.setStringIfEmpty(stringIfEmpty)
     }
 
@@ -198,7 +190,7 @@ class StationTablePagerAdapter(
         val dockTableModel =
                 ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
 
-        dockTableModel.setHeaderToIconResId((R.drawable.ic_pin_favorite_24dp_white))
+        //dockTableModel.setHeaderToIconResId((R.drawable.ic_pin_favorite_24dp_white))
     }
 
     companion object {

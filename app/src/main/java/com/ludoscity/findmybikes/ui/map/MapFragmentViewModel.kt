@@ -6,12 +6,14 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.util.Log
+import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,9 +32,21 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                            private val userLoc: LiveData<LatLng>,
                            private val stationA: LiveData<BikeStation>,
                            private val stationB: LiveData<BikeStation>,
-                           val finalDestinationLatLng: LiveData<LatLng>,
-                           val isFinalDestinationFavorite: LiveData<Boolean>)
+                           private val finalDestPlace: LiveData<Place>,
+                           private val finalDestFavorite: LiveData<FavoriteEntityBase>)//,
     : AndroidViewModel(application) {
+
+    private val finalDestLatLng = MutableLiveData<LatLng>()
+    val finalDestinationLatLng: LiveData<LatLng>
+        get() = finalDestLatLng
+
+    private val finalDestTitle = MutableLiveData<String>()
+    val finalDestinationTitle: LiveData<String>
+        get() = finalDestTitle
+
+    private val isFinalDestFavorite = MutableLiveData<Boolean>()
+    val isFinalDestinationFavorite: LiveData<Boolean>
+        get() = isFinalDestFavorite
 
     val cameraAnimationTarget: LiveData<CameraUpdate>
         get() = camAnimTarget
@@ -105,15 +119,15 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
     private val stationBObserver: android.arch.lifecycle.Observer<BikeStation>
     private val isDataOutOfDateObserver: android.arch.lifecycle.Observer<Boolean>
     private val isLookingForBikeObserver: Observer<Boolean>
-    private val finalDestinationLatLngObserver: Observer<LatLng>
+
+    private val finalDestinationPlaceObserver: Observer<Place>
+    private val finalDestinationFavoriteObserver: Observer<FavoriteEntityBase>
 
 
-    private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>>
+    private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>> = repo.getBikeSystemStationData(getApplication())
     private val bikeSystemAvailabilityDataObserver: android.arch.lifecycle.Observer<List<BikeStation>>
 
     init {
-
-        bikeSystemAvailabilityDataSource = repo.getBikeSystemStationData(getApplication())
 
         bikeSystemAvailabilityDataObserver = android.arch.lifecycle.Observer { newData ->
 
@@ -162,7 +176,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                         latLngBoundbuilder.include(userLocation)
 
                         val camPaddingResId = when {
-                            finalDestinationLatLng.value != null -> R.dimen.camera_search_infowindow_padding
+                            finalDestPlace.value != null || finalDestFavorite.value != null -> R.dimen.camera_search_infowindow_padding
                             stationB.value == null -> R.dimen.camera_fab_padding
                             else -> R.dimen.camera_ab_pin_padding
                         }
@@ -184,7 +198,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                 if (stationB != null) {
                     hideMapItems()
 
-                    if (finalDestinationLatLng.value == null) {
+                    if (finalDestPlace.value == null && finalDestFavorite.value == null) {
                         mapPaddingRight.value = getApplication<Application>().resources.getDimension(
                                 R.dimen.map_fab_padding).toInt()
 
@@ -195,7 +209,12 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                         val latLngBoundBuilder = LatLngBounds.builder()
 
                         latLngBoundBuilder.include(stationB.location)
-                        latLngBoundBuilder.include(finalDestinationLatLng.value)
+                        finalDestPlace.value?.let { place ->
+                            latLngBoundBuilder.include(place.latLng)
+                        }
+                        finalDestFavorite.value?.let { favorite ->
+                            latLngBoundBuilder.include(favorite.location)
+                        }
 
                         camAnimTarget.value = CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
                                 getApplication<Application>().resources.getDimension(R.dimen.camera_ab_pin_padding).toInt())
@@ -239,7 +258,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
                         latLngBoundbuilder.include(stationALoc).include(it)
                         val camPaddingResId = when {
-                            finalDestinationLatLng.value != null -> R.dimen.camera_search_infowindow_padding
+                            finalDestPlace.value != null || finalDestFavorite.value != null -> R.dimen.camera_search_infowindow_padding
                             stationB.value == null -> R.dimen.camera_fab_padding
                             else -> R.dimen.camera_ab_pin_padding
                         }
@@ -276,7 +295,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                         latLngBoundbuilder.include(userLocation)
 
                         val camPaddingResId = when {
-                            finalDestinationLatLng.value != null -> R.dimen.camera_search_infowindow_padding
+                            finalDestPlace.value != null || finalDestFavorite.value != null -> R.dimen.camera_search_infowindow_padding
                             stationB.value == null -> R.dimen.camera_fab_padding
                             else -> R.dimen.camera_ab_pin_padding
                         }
@@ -310,9 +329,12 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                     //looking for a dock, center zoom on B station
                     hideMapItems()
 
+                    mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
+                            R.dimen.trip_details_widget_width).toInt()
+
                     //TODO: this block is same code as one block in is isLookingForBikeObserver
                     //if (finalDestinationLatLng.value == null) { <-- look for that in isLookingForBikeObserver
-                    if (finalDestinationLatLng.value == null) {
+                    if (finalDestPlace.value == null && finalDestFavorite.value == null) {
 
                         Log.d(MapFragmentViewModel::class.java.simpleName, "no final destination, zooming on B")
                         mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
@@ -328,18 +350,21 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                         val latLngBoundBuilder = LatLngBounds.builder()
 
                         latLngBoundBuilder.include(it.location)
-                        latLngBoundBuilder.include(finalDestinationLatLng.value)
-
-                        camAnimTarget.value = CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
-                                getApplication<Application>().resources.getDimension(R.dimen.camera_ab_pin_padding).toInt())
+                        finalDestPlace.value?.let { place ->
+                            latLngBoundBuilder.include(place.latLng)
+                        }
+                        finalDestFavorite.value?.let { favorite ->
+                            latLngBoundBuilder.include(favorite.location)
+                        }
 
                         mapPaddingRight.value = getApplication<Application>().resources.getDimension(
                                 R.dimen.map_infowindow_padding).toInt()
 
+                        camAnimTarget.value = CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
+                                getApplication<Application>().resources.getDimension(R.dimen.camera_search_infowindow_padding).toInt())
                     }
 
-                    mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
-                            R.dimen.trip_details_widget_width).toInt()
+
 
                 } else {
                     mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
@@ -377,25 +402,28 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
         stationB.observeForever(stationBObserver)
 
-        finalDestinationLatLngObserver = Observer {
+        finalDestinationPlaceObserver = Observer {
             if (it != null) {
-                mapPaddingRight.value = getApplication<Application>().resources.getDimension(
-                        R.dimen.map_infowindow_padding).toInt()
-
-                hideMapItems()
-
-                val latLngBoundBuilder = LatLngBounds.builder()
-
-                latLngBoundBuilder.include(it)
-                if (stationB.value?.location != null)
-                    latLngBoundBuilder.include(stationB.value?.location)
-
-                camAnimTarget.value = CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
-                        getApplication<Application>().resources.getDimension(R.dimen.camera_ab_pin_padding).toInt())
+                isFinalDestFavorite.value = false
+                finalDestLatLng.value = it.latLng
+                finalDestTitle.value = it.name.toString()
+            } else if (finalDestFavorite.value == null) {
+                //TODO: have explicit visibility flag final dest pin visibility
+                finalDestLatLng.value = null
             }
         }
 
-        finalDestinationLatLng.observeForever(finalDestinationLatLngObserver)
+        finalDestPlace.observeForever(finalDestinationPlaceObserver)
+
+        finalDestinationFavoriteObserver = Observer {
+            if (it != null) {
+                isFinalDestFavorite.value = true
+                finalDestLatLng.value = it.location
+                finalDestTitle.value = it.displayName
+            }
+        }
+
+        finalDestFavorite.observeForever(finalDestinationFavoriteObserver)
     }
 
     override fun onCleared() {
@@ -406,7 +434,6 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
         stationB.removeObserver(stationBObserver)
         isDataOutOfDate.removeObserver(isDataOutOfDateObserver)
         isLookingForBike.removeObserver(isLookingForBikeObserver)
-        finalDestinationLatLng.removeObserver(finalDestinationLatLngObserver)
         bikeSystemAvailabilityDataSource.removeObserver(bikeSystemAvailabilityDataObserver)
 
         super.onCleared()

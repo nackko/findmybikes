@@ -3,9 +3,11 @@ package com.ludoscity.findmybikes.utils
 import android.app.Application
 import android.arch.lifecycle.LiveData
 import android.content.Context
+import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
@@ -62,8 +64,8 @@ class InjectorUtils {
                                                userLoc: LiveData<LatLng>,
                                                stationA: LiveData<BikeStation>,
                                                stationB: LiveData<BikeStation>,
-                                               finalDestinationLoc: LiveData<LatLng>,
-                                               isFinalDestinationFavorite: LiveData<Boolean>
+                                               finalDestPlace: LiveData<Place>,
+                                               finalDestFavorite: LiveData<FavoriteEntityBase>
         ): MapFragmentModelFactory {
             val repository = provideRepository(app.applicationContext)
             return MapFragmentModelFactory(
@@ -75,8 +77,8 @@ class InjectorUtils {
                     userLoc,
                     stationA,
                     stationB,
-                    finalDestinationLoc,
-                    isFinalDestinationFavorite
+                    finalDestPlace,
+                    finalDestFavorite
             )
         }
 
@@ -84,6 +86,9 @@ class InjectorUtils {
                                                  isDockTable: Boolean,
                                                  appBarExpanded: LiveData<Boolean>,
                                                  dataOutOfDate: LiveData<Boolean>,
+                                                 showProximityColumn: LiveData<Boolean>,
+                                                 proximityHeaderFromResId: LiveData<Int>,
+                                                 proximityHeaderToResId: LiveData<Int>,
                                                  stationRecapDatasource: LiveData<BikeStation>,
                                                  stationSelectionDatasource: LiveData<BikeStation>,
                                                  distToUserComparatorSource: LiveData<FindMyBikesActivityViewModel.DistanceComparator>,
@@ -95,6 +100,9 @@ class InjectorUtils {
                     stationRecapDatasource,
                     stationSelectionDatasource,
                     dataOutOfDate,
+                    showProximityColumn,
+                    proximityHeaderFromResId,
+                    proximityHeaderToResId,
                     distToUserComparatorSource,
                     totalTripComparatorSource,
                     numFormat)

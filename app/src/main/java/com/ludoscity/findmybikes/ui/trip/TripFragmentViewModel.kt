@@ -6,6 +6,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import com.google.android.gms.maps.model.LatLng
+import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.utils.Utils
 import java.text.NumberFormat
 
@@ -14,7 +15,7 @@ class TripFragmentViewModel(app: Application,
                             private val stationALatLng: LiveData<LatLng>,
                             private val stationBLatLng: LiveData<LatLng>,
                             private val finalDestination: LiveData<LatLng>,
-                            private val isFinalDestFavorite: LiveData<Boolean>,
+                            isFinalDestFavorite: LiveData<Boolean>,
                             numFormat: NumberFormat) : AndroidViewModel(app) {
 
     //convenience
@@ -27,11 +28,13 @@ class TripFragmentViewModel(app: Application,
     private val stationBLatLngObserver: Observer<LatLng>
     private val userLocObserver: Observer<LatLng>
     private val finalDestObserver: Observer<LatLng>
+    private val isFinalDestFavoriteObserver: Observer<Boolean>
 
     private val locToStationADurationString = MutableLiveData<String>()
     private val stationAToStationBDurationString = MutableLiveData<String>()
     private val stationBToFinalDestDurationString = MutableLiveData<String>()
     private val totalTripDurationString = MutableLiveData<String>()
+    private val finalDestIconResId = MutableLiveData<Int>()
 
     val locToStationAText: LiveData<String>
         get() = locToStationADurationString
@@ -44,6 +47,9 @@ class TripFragmentViewModel(app: Application,
 
     val totalTripText: LiveData<String>
         get() = totalTripDurationString
+
+    val finalDestinationIconResId: LiveData<Int>
+        get() = finalDestIconResId
 
 
     init {
@@ -127,6 +133,15 @@ class TripFragmentViewModel(app: Application,
 
         finalDestination.observeForever(finalDestObserver)
 
+        isFinalDestFavoriteObserver = Observer {
+            if (it == true) {
+                finalDestIconResId.value = R.drawable.ic_pin_favorite_24dp_black
+            } else {
+                finalDestIconResId.value = R.drawable.ic_pin_search_24dp_black
+            }
+        }
+
+        isFinalDestFavorite.observeForever(isFinalDestFavoriteObserver)
 
         userLocToStationAWalkingDurationMin.observeForever {
             locToStationADurationString.value = Utils.durationToProximityString(it, true, numFormat, getApplication())

@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.ui.main
 
 import android.Manifest
+import android.app.Activity.RESULT_OK
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
@@ -20,6 +21,8 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.places.Place
+import com.google.android.gms.location.places.ui.PlaceAutocomplete
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.SphericalUtil
@@ -67,6 +70,10 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val bikeSystemStatusAutoUpdate = MutableLiveData<Boolean>()
 
     private val nearestBikeAutoSelected = MutableLiveData<Boolean>()
+
+    private val optimalDockStationId = MutableLiveData<String>()
+    private val optimalBikeStationId = MutableLiveData<String>()
+
     private val lastStationStatusDataUpdateTimestampEpoch = MutableLiveData<Long>()
     private val userLoc = MutableLiveData<LatLng>()
     private val stationA = MutableLiveData<BikeStation>()
@@ -74,7 +81,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val stationB = MutableLiveData<BikeStation>()
     private val statBLatLng = MutableLiveData<LatLng>()
 
-    private val finalDest = MutableLiveData<LatLng>()
+    private val finalDestLatLng = MutableLiveData<LatLng>()
     private val pickedFavorite = MutableLiveData<FavoriteEntityBase>()
     private val isFinalDestFav = MutableLiveData<Boolean>()
 
@@ -103,9 +110,16 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         get() = userLoc
 
     val finalDestinationLatLng: LiveData<LatLng>
-        get() = finalDest
+        get() = finalDestLatLng
 
-    //TODO: Maybe use an enum instead. eSEARCH, eFAVORITE
+    private val finalDestPlace = MutableLiveData<Place>()
+    val finalDestinationPlace: LiveData<Place>
+        get() = finalDestPlace
+
+    private val finalDestFavorite = MutableLiveData<FavoriteEntityBase>()
+    val finalDestinationFavorite: LiveData<FavoriteEntityBase>
+        get() = finalDestFavorite
+
     val isFinalDestinationFavorite: LiveData<Boolean>
         get() = isFinalDestFav
 
@@ -186,6 +200,14 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         stationA.value = toSet
     }
 
+    private fun setStationAById(idToSet: String?) {
+        idToSet?.let {
+            coroutineScopeIO.launch {
+                stationA.postValue(repo.getStationForId(idToSet))
+            }
+        }
+    }
+
     fun getStationA(): LiveData<BikeStation> {
         return stationA
     }
@@ -196,8 +218,26 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     fun setStationB(toSet: BikeStation?) {
         stationB.value = toSet
     }
+
+    private fun setStationBById(idToSet: String?) {
+        idToSet?.let {
+            coroutineScopeIO.launch {
+                stationB.postValue(repo.getStationForId(idToSet))
+                Log.d(TAG, "Selecting : ${repo.getStationForId(idToSet)}")
+            }
+        }
+    }
+
     fun getStationB(): LiveData<BikeStation>{
         return stationB
+    }
+
+    fun setOptimalDockStationId(toSet: String?) {
+        optimalDockStationId.value = toSet
+    }
+
+    fun setOptimalBikeStationId(toSet: String?) {
+        optimalBikeStationId.value = toSet
     }
 
     val stationBLatLng: LiveData<LatLng>
@@ -280,9 +320,38 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val repository : FindMyBikesRepository = repo
     val stationData: LiveData<List<BikeStation>>
 
+    private val bikeTableProxColumnShown = MutableLiveData<Boolean>()
+    private val dockTableProxColumnShown = MutableLiveData<Boolean>()
+
+    val bikeTableProximityShown: LiveData<Boolean>
+        get() = bikeTableProxColumnShown
+
+    val dockTableProximityShown: LiveData<Boolean>
+        get() = dockTableProxColumnShown
+
+    //TODO: have table model observe on finaldestPlace/FavEntityBase
+    //and do the icons figuring out
+    //could also use isfav like trip details fragment
+    private val bikeTableProxHeaderFromResId = MutableLiveData<Int>()
+    private val dockTableProxHeaderFromResId = MutableLiveData<Int>()
+    private val bikeTableProxHeaderToResId = MutableLiveData<Int>()
+    private val dockTableProxHeaderToResId = MutableLiveData<Int>()
+
+    val bikeTableProximityHeaderFromResId: LiveData<Int>
+        get() = bikeTableProxHeaderFromResId
+    val dockTableProximityHeaderFromResId: LiveData<Int>
+        get() = dockTableProxHeaderFromResId
+    val bikeTableProximityHeaderToResId: LiveData<Int>
+        get() = bikeTableProxHeaderToResId
+    val dockTableProximityHeaderToResId: LiveData<Int>
+        get() = dockTableProxHeaderToResId
+
+
     private lateinit var userLocObserverForInitialDownload: Observer<LatLng>
     private lateinit var userLocObserverForOutOfBounds: Observer<LatLng>
     private val userLocObserverForComparatorUpdate: Observer<LatLng>
+
+    private val optimalDockStationIdObserver: Observer<String>
 
     private val statusBarTxt = MutableLiveData<String>()
     private val statusBarBckColorResId = MutableLiveData<Int>()
@@ -314,15 +383,36 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         lastStartActForResultData.value = null
     }
 
-    @Suppress("UNUSED_PARAMETER")
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             FindMyBikesActivity.PLACE_AUTOCOMPLETE_REQUEST_CODE -> {
-                showFavoritePickerFab()
-                showSearchFab()
-                autocompleteLoadProgBarVis.value = View.GONE
-                searchFabBckgTintListColorResId.value = R.color.theme_primary_dark
-                hideFavoriteFab()
+
+                if (resultCode == RESULT_OK) {
+
+                    val place = PlaceAutocomplete.getPlace(getApplication(), data)
+
+                    finalDestPlace.value = place
+
+                    //TODO: have table model observe on finaldestPlace/FavEntityBase
+                    //and do the icons figuring out
+                    //could also use isfav like trip details fragment
+                    dockTableProxHeaderFromResId.value = R.drawable.ic_destination_arrow_white_24dp
+                    dockTableProxHeaderToResId.value = R.drawable.ic_pin_search_24dp_white
+
+
+                    hideSearchFab()
+                    autocompleteLoadProgBarVis.value = View.INVISIBLE
+                    clearBSelectionFabShown.value = true
+                    showFavoriteFab()
+                    //hideFavoritePickerFab()
+                    hideSearchFab()
+                } else {
+                    showFavoritePickerFab()
+                    showSearchFab()
+                    autocompleteLoadProgBarVis.value = View.GONE
+                    searchFabBckgTintListColorResId.value = R.color.theme_primary_dark
+                    hideFavoriteFab()
+                }
             }
             FindMyBikesActivity.SETTINGS_ACTIVITY_REQUEST_CODE -> {
                 coroutineScopeIO.launch {
@@ -411,20 +501,62 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     //Log.d("truc", "it.lastStatusUpdateLocalTimestamp : ${curBikeSystem.value?.lastStatusUpdateLocalTimestamp} \nlast update was ${(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!) / 1000L}s ago")
                     if (isConnectivityAvailable.value == false || System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! >
                             getApplication<Application>().resources.getInteger(R.integer.outdated_data_time_minute) * 60 * 1000) {
-                        dataOutOfDate.postValue(true)
-                        statusBarBckColorResId.postValue(R.color.theme_accent)
+
+                        if (dataOutOfDate.value != true) {
+
+                            dataOutOfDate.postValue(true)
+                            statusBarBckColorResId.postValue(R.color.theme_accent)
+                        }
                     } else {
-                        dataOutOfDate.postValue(false)
-                        statusBarBckColorResId.postValue(R.color.theme_primary_dark)
+
+                        if (dataOutOfDate.value != false) {
+
+                            dataOutOfDate.postValue(false)
+                            statusBarBckColorResId.postValue(R.color.theme_primary_dark)
+                        }
                     }
                 }
             }
         }
 
+        optimalDockStationIdObserver = Observer {
+            if (finalDestLatLng.value != null && stationB.value == null && it != null) {
+                Log.d(TAG, "Conditions met for B auto select, selecting")
+                setStationBById(it)
+            }
+        }
+
+        optimalDockStationId.observeForever(optimalDockStationIdObserver)
+
+        optimalBikeStationId.observeForever {
+            if (it != null && stationA.value == null) {
+                Log.d(TAG, "Conditions met for A auto select, selecting")
+                setStationAById(it)
+            }
+        }
+
+        finalDestPlace.observeForever {
+            if (it != null) {
+                finalDestLatLng.value = it.latLng
+                isFinalDestFav.value = false
+            } else if (finalDestFavorite.value == null) {
+                finalDestLatLng.value = null
+                isFinalDestFav.value = null
+            }
+        }
+
+        finalDestFavorite.observeForever {
+            if (it != null) {
+                finalDestLatLng.value = it.location
+                isFinalDestFav.value = true
+            } else if (finalDestPlace.value == null) {
+                finalDestLatLng.value = null
+                isFinalDestFav.value = null
+            }
+        }
+
         locationPermissionGranted.value = ContextCompat.checkSelfPermission(getApplication(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        //finalDest.value = LatLng(45.75725, 4.84974)//Lyon
-        /////userLoc.value = LatLng(45.75725, 4.84974)//Lyon
         stationData = repo.getBikeSystemStationData(getApplication())
 
         val bikeSystemListData = repo.getBikeSystemListData(getApplication())
@@ -654,6 +786,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
         stationB.observeForever {
             if (it != null) {
+                dockTableProxColumnShown.value = finalDestLatLng.value != null
+
                 statBLatLng.value = it.location
                 tripDetailsWidgetShown.value = true
                 if (lookingForBike.value != true) {
@@ -670,14 +804,17 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     clearBSelectionFabShown.value = true
                 }
             } else {
+                finalDestLatLng.value = null
+                finalDestPlace.value = null
+                finalDestFavorite.value = null
                 statBLatLng.value = null
                 tripDetailsWidgetShown.value = false
                 favoritePickerFabShown.value = true
                 searchFabShown.value = connectivityAvailable.value == true
                 favoriteFabShown.value = false
                 clearBSelectionFabShown.value = false
-                distToUserComp.value = DistanceComparator(userLoc.value ?: LatLng(0.0, 0.0))
-
+                distToUserComp.value = if (userLoc.value == null) null else
+                    DistanceComparator(userLoc.value ?: LatLng(0.0, 0.0))
             }
 
             var finalDest = finalDestinationLatLng.value

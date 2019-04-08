@@ -31,8 +31,9 @@ interface BikeStationDao {
     @Query("DELETE FROM bikestation")
     fun deleteAllBikeStation()
 
-    @Query("SELECT * FROM bikestation WHERE uid = :stationId")
-    fun getStation(stationId: String): LiveData<BikeStation>
+    //TODO: review station IDs
+    @Query("SELECT * FROM bikestation WHERE location_hash = :stationId")
+    fun getStation(stationId: String): BikeStation
 
     //TODO: Add queries for inserting or removing only one BikeStation ? Or use the list one with a list of size 1 ?
     //@Insert(onConflict = REPLACE)

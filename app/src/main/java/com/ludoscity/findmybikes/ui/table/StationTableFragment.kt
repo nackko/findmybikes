@@ -63,6 +63,9 @@ class StationTableFragment : Fragment() {
                 arguments?.getBoolean("isDockTable") ?: true,
                 nearbyActivityViewModel.isAppBarExpanded(),
                 nearbyActivityViewModel.isDataOutOfDate,
+                if (isDockTable) nearbyActivityViewModel.dockTableProximityShown else nearbyActivityViewModel.bikeTableProximityShown,
+                if (isDockTable) nearbyActivityViewModel.dockTableProximityHeaderFromResId else nearbyActivityViewModel.bikeTableProximityHeaderFromResId,
+                if (isDockTable) nearbyActivityViewModel.dockTableProximityHeaderToResId else nearbyActivityViewModel.bikeTableProximityHeaderToResId,
                 nearbyActivityViewModel.getStationA(),
                 if (!isDockTable) nearbyActivityViewModel.getStationA() else nearbyActivityViewModel.getStationB(),
                 nearbyActivityViewModel.distanceToUserComparator,
@@ -132,6 +135,13 @@ class StationTableFragment : Fragment() {
                 nearbyActivityViewModel.setStationA(it)
         })
 
+        tableFragmentModel.nearestAvailabilityStationId.observe(this, android.arch.lifecycle.Observer {
+            if (isDockTable)
+                nearbyActivityViewModel.setOptimalDockStationId(it)
+            else
+                nearbyActivityViewModel.setOptimalBikeStationId(it)
+        })
+
         tableFragmentModel.tableItemDataList.observe(this, android.arch.lifecycle.Observer {
             stationTableRecyclerViewAdapter.loadItems(it ?: emptyList())
         })
@@ -169,7 +179,7 @@ class StationTableFragment : Fragment() {
 
         })
 
-        tableFragmentModel.showProximity.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.showProximityColumn.observe(this, android.arch.lifecycle.Observer {
             //TODO : column width adaptation
             if (it == true) {
                 mProximityHeader!!.visibility = View.VISIBLE
@@ -178,13 +188,17 @@ class StationTableFragment : Fragment() {
             }
         })
 
-        tableFragmentModel.headerFromIconResId.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.proximityHeaderFromResId.observe(this, android.arch.lifecycle.Observer {
             if (it != null) {
+                mProximityHeaderFromImageView!!.visibility = View.VISIBLE
                 mProximityHeaderFromImageView!!.setImageResource(it)
+            } else {
+                //TODO: have explicit visibility LiveData<Int>
+                mProximityHeaderFromImageView!!.visibility = View.GONE
             }
         })
 
-        tableFragmentModel.headerToIconResId.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.proximityHeaderToResId.observe(this, android.arch.lifecycle.Observer {
             if (it != null) {
                 mProximityHeaderToImageView!!.setImageResource(it)
             }

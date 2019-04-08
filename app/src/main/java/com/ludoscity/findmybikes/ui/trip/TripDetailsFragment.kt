@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
@@ -37,8 +38,7 @@ class TripDetailsFragment : Fragment() {
     private lateinit var mTripDetailsProximityTotal: TextView
     private var mTripDetailsSumSeparator: FrameLayout? = null
     private var mTripDetailsBToDestinationRow: View? = null
-    private var mTripDetailsPinSearch: View? = null
-    private var mTripDetailsPinFavorite: View? = null
+    private lateinit var mTripDetailsPinFinalDest: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,8 +59,7 @@ class TripDetailsFragment : Fragment() {
         mTripDetailsProximityTotal = inflatedView.findViewById(R.id.trip_details_proximity_total)
         mTripDetailsSumSeparator = inflatedView.findViewById(R.id.trip_details_sum_separator)
         mTripDetailsBToDestinationRow = inflatedView.findViewById(R.id.trip_details_b_to_search)
-        mTripDetailsPinSearch = inflatedView.findViewById(R.id.trip_details_to_search)
-        mTripDetailsPinFavorite = inflatedView.findViewById(R.id.trip_details_to_favorite)
+        mTripDetailsPinFinalDest = inflatedView.findViewById(R.id.trip_details_final_dest)
 
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
@@ -91,6 +90,12 @@ class TripDetailsFragment : Fragment() {
 
         fragmentModel.totalTripText.observe(this, Observer {
             mTripDetailsProximityTotal.text = it ?: "XXmin"
+        })
+
+        fragmentModel.finalDestinationIconResId.observe(this, Observer {
+            it?.let { resId ->
+                mTripDetailsPinFinalDest.setImageResource(resId)
+            }
         })
 
         return inflatedView

@@ -166,6 +166,10 @@ class FindMyBikesRepository private constructor(
         }
     }
 
+    fun getStationForId(targetId: String): BikeStation {
+        return stationDao.getStation(targetId)
+    }
+
     fun getFavoriteStationList(): LiveData<List<FavoriteEntityStation>> {
         return favoriteStationList
     }

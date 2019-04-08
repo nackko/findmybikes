@@ -13,7 +13,6 @@ import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.ludoscity.findmybikes.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * Created by Gevrai on 2015-04-03.
@@ -53,34 +52,8 @@ class StationTableRecyclerViewAdapter(private val tableFragmentModel: TableFragm
     private val coroutineScopeMAIN = CoroutineScope(Dispatchers.Main)
 
     fun loadItems(newItems: List<StationTableItemData>) {
-
-        //val randomDebugloadID = Math.random()
-
-        //This is slow but safe...
-        /*val diffResult = DiffUtil.calculateDiff(TableDiffCallback(items, newItems))
-        diffResult.dispatchUpdatesTo(this@StationTableRecyclerViewAdapter)
-        items = newItems*/
-
-        //This if to try to mitigate crashes to some success, real debug would be to understand what happens on
-        //screen rotation to the size of the list of items passed
-        if (items.size == newItems.size) {
-            //...this is faster but lead to crashes like
-            //java.lang.IndexOutOfBoundsException: Inconsistency detected. Invalid view holder adapter positionViewHolder
-            //probably because of timing a user location update leading to resort while dispatching or something
-            coroutineScopeIO.launch {
-                //Log.d(TAG, "Background thread, about to calculate diffresult. loadId:$randomDebugloadID oldSize: ${items.size} -- newSize: ${newItems.size}")
-                val diffResult = DiffUtil.calculateDiff(TableDiffCallback(items, newItems))
-
-                coroutineScopeMAIN.launch {
-                    //Log.d(TAG, "UI thread, about to dispatch. loadId:$randomDebugloadID oldSize: ${items.size} -- newSize: ${newItems.size}")
-                    diffResult.dispatchUpdatesTo(this@StationTableRecyclerViewAdapter)
-                    items = newItems
-                }
-            }
-        } else {
-            notifyDataSetChanged()
-            items = newItems
-        }
+        notifyDataSetChanged()
+        items = newItems
     }
 
     override fun onBindViewHolder(holder: BikeStationListItemViewHolder, position: Int) {

@@ -4,8 +4,10 @@ import android.app.Application
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
+import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 
 /**
@@ -20,8 +22,8 @@ class MapFragmentModelFactory(private val repository: FindMyBikesRepository,
                               private val userLoc: LiveData<LatLng>,
                               private val stationA: LiveData<BikeStation>,
                               private val stationB: LiveData<BikeStation>,
-                              private val finalDestinationLoc: LiveData<LatLng>,
-                              private val isFinalDestinationFavorite: LiveData<Boolean>
+                              private val finalDestPlace: LiveData<Place>,
+                              private val finalDestFavorite: LiveData<FavoriteEntityBase>
 ) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -35,8 +37,8 @@ class MapFragmentModelFactory(private val repository: FindMyBikesRepository,
                 userLoc,
                 stationA,
                 stationB,
-                finalDestinationLoc,
-                isFinalDestinationFavorite
+                finalDestPlace,
+                finalDestFavorite
         ) as T
     }
 }
