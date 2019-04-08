@@ -214,17 +214,31 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
                         coroutineScopeIO.launch {
                             val latLngBoundBuilder = LatLngBounds.builder()
+                            var destIsStation = false
 
                             latLngBoundBuilder.include(stationB.location)
+
                             finalDestPlace.value?.let { place ->
                                 latLngBoundBuilder.include(place.latLng)
                             }
                             finalDestFavorite.value?.let { favorite ->
+
                                 latLngBoundBuilder.include(favorite.getLocation(getApplication()))
+
+                                if (favorite.getLocation(getApplication()).latitude ==
+                                        stationB.location.latitude &&
+                                        favorite.getLocation(getApplication()).longitude ==
+                                        stationB.location.longitude) {
+                                    destIsStation = true
+                                }
                             }
 
-                            camAnimTarget.postValue(CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
-                                    getApplication<Application>().resources.getDimension(R.dimen.camera_ab_pin_padding).toInt()))
+                            if (!destIsStation)
+                                camAnimTarget.postValue(CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
+                                        getApplication<Application>().resources.getDimension(R.dimen.camera_ab_pin_padding).toInt()))
+                            else
+                                camAnimTarget.postValue(CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(stationB.location.latitude, stationB.location.longitude), 15.0f))
                         }
                     }
                 }
@@ -351,21 +365,36 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
                         coroutineScopeIO.launch {
                             val latLngBoundBuilder = LatLngBounds.builder()
+                            var destIsStation = false
 
                             latLngBoundBuilder.include(it.location)
                             finalDestPlace.value?.let { place ->
                                 latLngBoundBuilder.include(place.latLng)
                             }
                             finalDestFavorite.value?.let { favorite ->
+
                                 latLngBoundBuilder.include(favorite.getLocation(getApplication()))
+
+                                if (favorite.getLocation(getApplication()).latitude ==
+                                        stationB.value?.location?.latitude &&
+                                        favorite.getLocation(getApplication()).longitude ==
+                                        stationB.value?.location?.longitude) {
+                                    destIsStation = true
+                                }
+
                             }
 
                             mapPaddingRight.postValue(getApplication<Application>().resources.getDimension(
                                     R.dimen.map_infowindow_padding).toInt())
 
-                            camAnimTarget.postValue(CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
-                                    getApplication<Application>().resources.getDimension(R.dimen.camera_search_infowindow_padding).toInt()))
-
+                            if (!destIsStation)
+                                camAnimTarget.postValue(CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
+                                        getApplication<Application>().resources.getDimension(R.dimen.camera_search_infowindow_padding).toInt()))
+                            else
+                                camAnimTarget.postValue(CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(stationB.value?.location?.latitude
+                                                ?: 0.0, stationB.value?.location?.longitude
+                                                ?: 0.0), 15.0f))
                         }
                     }
 
