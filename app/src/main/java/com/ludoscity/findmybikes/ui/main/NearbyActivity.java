@@ -2091,7 +2091,7 @@ public class NearbyActivity extends AppCompatActivity
                     if (!stationId.equalsIgnoreCase(favorite.getId())) {
                         //This is a three legged journey (either to a favorite station that has no dock or a place)
 
-                        LatLng location = favorite.getLocation() != null ? favorite.getLocation() : getLatLngForStation(favorite.getId());
+                        LatLng location = favorite.getLocation(NearbyActivity.this) != null ? favorite.getLocation(NearbyActivity.this) : getLatLngForStation(favorite.getId());
 
                         /*mStationMapFragment.setPinForPickedFavorite(favorite.getDisplayName(),
                                 location,

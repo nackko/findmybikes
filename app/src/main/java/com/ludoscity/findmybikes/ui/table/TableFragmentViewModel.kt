@@ -12,6 +12,9 @@ import com.ludoscity.findmybikes.data.database.SharedPrefHelper
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.utils.Utils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
 
@@ -44,6 +47,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     //at the same time, it is business logic directly related to the table
 
     private var comparator: FindMyBikesActivityViewModel.BaseBikeStationComparator? = null
+
+    private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     val tableItemDataList: LiveData<List<StationTableItemData>>
         get() = tableItemList
@@ -99,10 +104,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         get() = lastClickedStationMutable
     private val lastClickedStationMutable: MutableLiveData<BikeStation> = MutableLiveData()
     fun setLastClickedStationById(stationId: String?) {
-        val stationList = bikeSystemAvailabilityDataSource.value ?: emptyList()
-
-        lastClickedStationMutable.value = stationList.find {
-            it.locationHash == stationId
+        coroutineScopeIO.launch {
+            lastClickedStationMutable.postValue(repository.getStationForId(stationId ?: "nullId"))
         }
     }
 
@@ -115,8 +118,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
 
     private val smoothScrollTargetIdx: MutableLiveData<Int> = MutableLiveData()
-
-    //private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     private val repository: FindMyBikesRepository = repo
 

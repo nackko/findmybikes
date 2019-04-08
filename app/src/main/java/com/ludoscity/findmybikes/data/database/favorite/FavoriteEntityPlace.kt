@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.data.database.favorite
 
 import android.arch.persistence.room.Entity
+import android.content.Context
 
 import com.google.android.gms.maps.model.LatLng
 
@@ -11,10 +12,13 @@ import com.google.android.gms.maps.model.LatLng
 
 @Entity
 class FavoriteEntityPlace(id: String, defaultName: String, bikeSystemId: String, //Room need those 2 accessors
-                          override var location: LatLng, override var attributions: String) : FavoriteEntityBase(id = id,
+                          val location: LatLng, override var attributions: String) : FavoriteEntityBase(id = id,
         defaultName = defaultName,
         uiIndex = -1,
         bikeSystemId = bikeSystemId) {
+    override fun getLocation(ctx: Context): LatLng {
+        return location
+    }
 
     init {
 

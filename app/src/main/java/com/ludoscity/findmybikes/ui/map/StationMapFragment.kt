@@ -278,6 +278,30 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
             }
         })
 
+        pinAMarker = mGoogleMap!!.addMarker(
+                MarkerOptions().position(
+                        LatLng(findMyBikesActivityModel.getStationA().value?.latitude ?: 0.0,
+                                findMyBikesActivityModel.getStationA().value?.longitude ?: 0.0))
+                        .icon(pinAIconBitmapDescriptor)
+                        .visible(findMyBikesActivityModel.getStationA().value != null)
+                        .title(findMyBikesActivityModel.getStationA().value?.locationHash))
+
+        pinBMarker = mGoogleMap!!.addMarker(
+                MarkerOptions().position(
+                        LatLng(findMyBikesActivityModel.getStationB().value?.latitude ?: 0.0,
+                                findMyBikesActivityModel.getStationB().value?.longitude ?: 0.0))
+                        .icon(pinBIconBitmapDescriptor)
+                        .visible(findMyBikesActivityModel.getStationB().value != null)
+                        .title(findMyBikesActivityModel.getStationB().value?.locationHash))
+
+
+        finalDestinationMarker = mGoogleMap!!.addMarker(
+                MarkerOptions().position(
+                        fragmentModel.finalDestinationLatLng.value ?: LatLng(0.0, 0.0))
+                        .icon(pinFavoriteIconBitmapDescriptor)
+                        .visible(fragmentModel.finalDestinationLatLng.value != null)
+                        .title(""))
+
         fragmentModel.mapGfxLiveData.observe(this, Observer { newGfxData ->
 
 
@@ -351,6 +375,14 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         fragmentModel.finalDestinationLatLng.observe(this, Observer {
             if (it != null) {
                 finalDestinationMarker?.position = it
+                if (pinBMarker?.position?.latitude == it.latitude && pinBMarker?.position?.longitude == it.longitude) {
+                    finalDestinationMarker?.hideInfoWindow()
+                    finalDestinationMarker?.setIcon(noPinFavoriteIconBitmapDescriptor)
+                } else {
+                    finalDestinationMarker?.setIcon(pinFavoriteIconBitmapDescriptor)
+                    finalDestinationMarker?.showInfoWindow()
+                }
+
                 finalDestinationMarker?.isVisible = true
             } else {
                 finalDestinationMarker?.isVisible = false
@@ -388,6 +420,16 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         findMyBikesActivityModel.getStationB().observe(this, Observer {
             if (it != null) {
                 pinBMarker?.position = LatLng(it.latitude, it.longitude)
+
+                if (pinBMarker?.position?.latitude == finalDestinationMarker?.position?.latitude && pinBMarker?.position?.longitude == finalDestinationMarker?.position?.longitude) {
+                    finalDestinationMarker?.hideInfoWindow()
+                    finalDestinationMarker?.setIcon(noPinFavoriteIconBitmapDescriptor)
+                } else {
+                    finalDestinationMarker?.setIcon(pinFavoriteIconBitmapDescriptor)
+                    finalDestinationMarker?.showInfoWindow()
+                }
+
+
                 pinBMarker?.isVisible = true
             } else {
                 pinBMarker?.isVisible = false

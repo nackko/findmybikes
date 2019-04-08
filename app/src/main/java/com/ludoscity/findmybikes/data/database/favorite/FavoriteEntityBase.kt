@@ -32,7 +32,7 @@ abstract class FavoriteEntityBase internal constructor(@field:PrimaryKey
     private var defaultNameWasSet = false
 
     abstract val attributions: CharSequence
-    abstract val location: LatLng
+    abstract fun getLocation(ctx: Context): LatLng
 
     val isDisplayNameDefault: Boolean
         get() = customName.isEmpty()

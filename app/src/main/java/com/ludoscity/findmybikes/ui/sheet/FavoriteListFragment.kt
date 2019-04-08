@@ -121,9 +121,7 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
     }
 
     override fun onFavoriteListItemClick(favoriteId: String) {
-
-        //TODO: act on FindMyBikesActivityViewModel instead of a direct callback
-        listener!!.onFavoriteListItemClicked(favoriteId)
+        findMyBikesActivityViewModel!!.setLastClickedFavoriteListItemFavoriteId(favoriteId)
     }
 
     override fun onFavoriteListItemNameEditDone(favoriteId: String, newName: String) {

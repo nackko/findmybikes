@@ -1,8 +1,10 @@
 package com.ludoscity.findmybikes.data.database.favorite
 
 import android.arch.persistence.room.Entity
+import android.content.Context
 
 import com.google.android.gms.maps.model.LatLng
+import com.ludoscity.findmybikes.utils.InjectorUtils
 
 /**
  * Created by F8Full on 2017-12-23. This file is part of #findmybikes
@@ -18,7 +20,8 @@ class FavoriteEntityStation(id: String, defaultName: String, bikeSystemId: Strin
     override val attributions: String
         get() = ""
 
-    override//BikeStationRepository.getInstance().getStation(getId()).getLocation();
-    val location: LatLng
-        get() = LatLng(0.0, 0.0)
+    override
+    fun getLocation(ctx: Context): LatLng {
+        return InjectorUtils.provideRepository(ctx).getStationForId(id).location
+    }
 }

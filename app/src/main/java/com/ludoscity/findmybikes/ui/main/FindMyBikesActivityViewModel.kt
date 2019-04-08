@@ -74,6 +74,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val optimalDockStationId = MutableLiveData<String>()
     private val optimalBikeStationId = MutableLiveData<String>()
 
+    private val favListClickedFavId = MutableLiveData<String>()
+
     private val lastStationStatusDataUpdateTimestampEpoch = MutableLiveData<Long>()
     private val userLoc = MutableLiveData<LatLng>()
     private val stationA = MutableLiveData<BikeStation>()
@@ -240,6 +242,10 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         optimalBikeStationId.value = toSet
     }
 
+    fun setLastClickedFavoriteListItemFavoriteId(toSet: String?) {
+        favListClickedFavId.value = toSet
+    }
+
     val stationBLatLng: LiveData<LatLng>
         get() = statBLatLng
 
@@ -315,6 +321,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     //////////////////////////////////////////////////////////////////////////////////////////////
     //findMyBikesActivityViewModel
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
+    private val coroutineScopeMAIN = CoroutineScope(Dispatchers.Main)
     private var locationCallback: LocationCallback
     private var connectivityManagerNetworkCallback: ConnectivityManager.NetworkCallback
     private val repository : FindMyBikesRepository = repo
@@ -547,8 +554,11 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
         finalDestFavorite.observeForever {
             if (it != null) {
-                finalDestLatLng.value = it.location
-                isFinalDestFav.value = true
+                coroutineScopeIO.launch {
+                    finalDestLatLng.postValue(it.getLocation(getApplication()))
+                    isFinalDestFav.postValue(true)
+                }
+
             } else if (finalDestPlace.value == null) {
                 finalDestLatLng.value = null
                 isFinalDestFav.value = null
@@ -835,6 +845,30 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     stationALatLng = stationALatLng.value,
                     destinationLatLng = it
             )
+        }
+
+        favListClickedFavId.observeForever {
+            it?.let {
+
+                coroutineScopeIO.launch {
+                    finalDestFavorite.postValue(repo.getFavoriteEntityByFavoriteId(it))
+
+                    coroutineScopeMAIN.launch {
+                        //TODO: have table model observe on finaldestPlace/FavEntityBase
+                        //and do the icons figuring out
+                        //could also use isfav like trip details fragment
+                        dockTableProxHeaderFromResId.value = R.drawable.ic_destination_arrow_white_24dp
+                        dockTableProxHeaderToResId.value = R.drawable.ic_pin_favorite_24dp_white
+
+                        hideSearchFab()
+                        autocompleteLoadProgBarVis.value = View.INVISIBLE
+                        clearBSelectionFabShown.value = true
+                        showFavoriteFab()
+                        //hideFavoritePickerFab()
+                        hideSearchFab()
+                    }
+                }
+            }
         }
     }
 

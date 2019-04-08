@@ -206,25 +206,27 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                                 LatLng(stationB.latitude, stationB.longitude), 15.0f)
 
                     } else {
-                        val latLngBoundBuilder = LatLngBounds.builder()
 
-                        latLngBoundBuilder.include(stationB.location)
-                        finalDestPlace.value?.let { place ->
-                            latLngBoundBuilder.include(place.latLng)
-                        }
-                        finalDestFavorite.value?.let { favorite ->
-                            latLngBoundBuilder.include(favorite.location)
-                        }
-
-                        camAnimTarget.value = CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
-                                getApplication<Application>().resources.getDimension(R.dimen.camera_ab_pin_padding).toInt())
-
+                        mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
+                                R.dimen.trip_details_widget_width).toInt()
                         mapPaddingRight.value = getApplication<Application>().resources.getDimension(
                                 R.dimen.map_infowindow_padding).toInt()
-                    }
 
-                    mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
-                            R.dimen.trip_details_widget_width).toInt()
+                        coroutineScopeIO.launch {
+                            val latLngBoundBuilder = LatLngBounds.builder()
+
+                            latLngBoundBuilder.include(stationB.location)
+                            finalDestPlace.value?.let { place ->
+                                latLngBoundBuilder.include(place.latLng)
+                            }
+                            finalDestFavorite.value?.let { favorite ->
+                                latLngBoundBuilder.include(favorite.getLocation(getApplication()))
+                            }
+
+                            camAnimTarget.postValue(CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
+                                    getApplication<Application>().resources.getDimension(R.dimen.camera_ab_pin_padding).toInt()))
+                        }
+                    }
                 }
                 else {
                     val stationA = stationA.value
@@ -347,24 +349,25 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
                     } else {
 
-                        val latLngBoundBuilder = LatLngBounds.builder()
+                        coroutineScopeIO.launch {
+                            val latLngBoundBuilder = LatLngBounds.builder()
 
-                        latLngBoundBuilder.include(it.location)
-                        finalDestPlace.value?.let { place ->
-                            latLngBoundBuilder.include(place.latLng)
+                            latLngBoundBuilder.include(it.location)
+                            finalDestPlace.value?.let { place ->
+                                latLngBoundBuilder.include(place.latLng)
+                            }
+                            finalDestFavorite.value?.let { favorite ->
+                                latLngBoundBuilder.include(favorite.getLocation(getApplication()))
+                            }
+
+                            mapPaddingRight.postValue(getApplication<Application>().resources.getDimension(
+                                    R.dimen.map_infowindow_padding).toInt())
+
+                            camAnimTarget.postValue(CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
+                                    getApplication<Application>().resources.getDimension(R.dimen.camera_search_infowindow_padding).toInt()))
+
                         }
-                        finalDestFavorite.value?.let { favorite ->
-                            latLngBoundBuilder.include(favorite.location)
-                        }
-
-                        mapPaddingRight.value = getApplication<Application>().resources.getDimension(
-                                R.dimen.map_infowindow_padding).toInt()
-
-                        camAnimTarget.value = CameraUpdateFactory.newLatLngBounds(latLngBoundBuilder.build(),
-                                getApplication<Application>().resources.getDimension(R.dimen.camera_search_infowindow_padding).toInt())
                     }
-
-
 
                 } else {
                     mapPaddingLeft.value = getApplication<Application>().resources.getDimension(
@@ -417,9 +420,14 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
         finalDestinationFavoriteObserver = Observer {
             if (it != null) {
-                isFinalDestFavorite.value = true
-                finalDestLatLng.value = it.location
-                finalDestTitle.value = it.displayName
+                coroutineScopeIO.launch {
+                    isFinalDestFavorite.postValue(true)
+                    finalDestLatLng.postValue(it.getLocation(getApplication()))
+                    finalDestTitle.postValue(it.displayName)
+                }
+            } else {
+                //TODO: have explicit visibility flag final dest pin visibility
+                finalDestLatLng.value = null
             }
         }
 

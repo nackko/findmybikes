@@ -28,7 +28,7 @@ import java.util.*
  * 2016-06-03 partially from - https://medium.com/@ipaulpro/drag-and-swipe-with-recyclerview-b9456d2b1aaf#.4okwgvgtx
  */
 
-//TODO: the business code is strong in this once
+//TODO: the business code is strong in this one
 class FavoriteRecyclerViewAdapter(itemClickListener: OnFavoriteListItemClickListener,
                                   itemStartDragListener: OnFavoriteListItemStartDragListener, ctx: Context) : RecyclerView.Adapter<FavoriteRecyclerViewAdapter.FavoriteListItemViewHolder>(), ItemTouchHelperAdapter {
 
