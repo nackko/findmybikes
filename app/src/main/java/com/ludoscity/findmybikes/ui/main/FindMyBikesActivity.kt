@@ -35,7 +35,6 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
-import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
 import com.ludoscity.findmybikes.ui.settings.SettingsActivity
@@ -411,14 +410,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         placeAutocompleteLoadingProgressBar = findViewById(R.id.place_autocomplete_loading)
 
         addFavoriteFAB.setOnClickListener {
-            findMyBikesActivityViewModel.addFavorite(FavoriteEntityStation(
-                    findMyBikesActivityViewModel.getStationB().value!!.locationHash,
-                    findMyBikesActivityViewModel.getStationB().value!!.name!!,
-                    findMyBikesActivityViewModel.curBikeSystem.value!!.id
-                    //findMyBikesActivityViewModel.getCurrentBikeSytemId().value!!
-            ))
-
-            findMyBikesActivityViewModel.hideFavoriteFab()
+            findMyBikesActivityViewModel.addFinalDestToFavoriteList()
         }
 
         //TODO: add splashscreen back

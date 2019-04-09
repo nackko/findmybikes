@@ -32,7 +32,7 @@ interface FavoriteEntityPlaceDao {
 
     //TODO: a more complex query that can be returned as a LiveData<FavoriteEntityBase> ?
     @Query("SELECT * FROM FavoriteEntityPlace WHERE id = :favoriteId")
-    fun getForId(favoriteId: String): FavoriteEntityPlace
+    fun getForId(favoriteId: String): FavoriteEntityPlace?
 
     @Query("SELECT COUNT(*) FROM FavoriteEntityPlace WHERE id <> :favoriteIdToExclude")
     fun validFavoriteCount(favoriteIdToExclude: String): Int

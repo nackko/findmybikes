@@ -378,9 +378,6 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 if (pinBMarker?.position?.latitude == it.latitude && pinBMarker?.position?.longitude == it.longitude) {
                     finalDestinationMarker?.hideInfoWindow()
                     finalDestinationMarker?.setIcon(noPinFavoriteIconBitmapDescriptor)
-                } else {
-                    finalDestinationMarker?.setIcon(pinFavoriteIconBitmapDescriptor)
-                    finalDestinationMarker?.showInfoWindow()
                 }
 
                 finalDestinationMarker?.isVisible = true
@@ -394,6 +391,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                 finalDestinationMarker?.setIcon(pinFavoriteIconBitmapDescriptor)
             } else {
                 finalDestinationMarker?.setIcon(pinSearchIconBitmapDescriptor)
+                finalDestinationMarker?.isVisible = false
             }
         })
 
@@ -425,10 +423,16 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                     finalDestinationMarker?.hideInfoWindow()
                     finalDestinationMarker?.setIcon(noPinFavoriteIconBitmapDescriptor)
                 } else {
-                    finalDestinationMarker?.setIcon(pinFavoriteIconBitmapDescriptor)
                     finalDestinationMarker?.showInfoWindow()
-                }
 
+                    //TODO: fragment should be unaware of favorite concept, BitmapDescriptors to use should
+                    //be prepared by fragment model
+                    if (fragmentModel.isFinalDestinationFavorite.value == true) {
+                        finalDestinationMarker?.setIcon(pinFavoriteIconBitmapDescriptor)
+                    } else {
+                        finalDestinationMarker?.setIcon(pinSearchIconBitmapDescriptor)
+                    }
+                }
 
                 pinBMarker?.isVisible = true
             } else {

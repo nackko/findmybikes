@@ -220,18 +220,18 @@ class FindMyBikesRepository private constructor(
         }
     }
 
-    fun getFavoriteEntityByFavoriteId(favoriteId: String): FavoriteEntityBase {
+    fun getFavoriteEntityByFavoriteId(favoriteId: String): FavoriteEntityBase? {
         return if (favoriteId.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX))
             getFavoritePlaceByFavoriteId(favoriteId)
         else
             getFavoriteStationByFavoriteId(favoriteId)
     }
 
-    private fun getFavoriteStationByFavoriteId(favoriteId: String): FavoriteEntityStation {
+    private fun getFavoriteStationByFavoriteId(favoriteId: String): FavoriteEntityStation? {
         return favoriteEntityStationDao.getForId(favoriteId)
     }
 
-    private fun getFavoritePlaceByFavoriteId(favoriteId: String): FavoriteEntityPlace {
+    private fun getFavoritePlaceByFavoriteId(favoriteId: String): FavoriteEntityPlace? {
         return favoriteEntityPlaceDao.getForId(favoriteId)
     }
 

@@ -31,6 +31,8 @@ import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.SharedPrefHelper
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityPlace
+import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.utils.Utils
 import kotlinx.coroutines.CoroutineScope
@@ -261,12 +263,20 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         favoriteFabShown.value = true
     }
 
+    fun showFavoriteFabPost() {
+        favoriteFabShown.postValue(true)
+    }
+
     fun showSearchFab() {
         searchFabShown.value = true
     }
 
     fun hideSearchFab() {
         searchFabShown.value = false
+    }
+
+    fun hideSearchFabPost() {
+        searchFabShown.postValue(false)
     }
 
     fun showFavoriteSheet() {
@@ -296,6 +306,10 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
     fun hideFavoriteFab() {
         favoriteFabShown.value = false
+    }
+
+    fun hideFavoriteFabPost() {
+        favoriteFabShown.postValue(false)
     }
 
     fun hideFavoriteSheet() {
@@ -390,34 +404,88 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         lastStartActForResultData.value = null
     }
 
+    //TODO: have finalDesBikeStation the same way we have finalDestPlace and finalDestFavoriteEntityBase
+    fun addFinalDestToFavoriteList() {
+        var done = false
+        finalDestPlace.value?.let {
+            val newFav = FavoriteEntityPlace(
+                    id = it.id,
+                    defaultName = it.name.toString(),
+                    location = it.latLng,
+                    attributions = it.attributions?.toString() ?: "",
+                    bikeSystemId = curBikeSystem.value?.id ?: "[[[NO_ID]]]"
+            )
+
+            addFavorite(newFav)
+            finalDestPlace.value = null
+            //TODO: have table model observe on finaldestPlace/FavEntityBase
+            //and do the icons figuring out
+            //could also use isfav like trip details fragment
+            dockTableProxHeaderFromResId.value = R.drawable.ic_destination_arrow_white_24dp
+            dockTableProxHeaderToResId.value = R.drawable.ic_pin_favorite_24dp_white
+            finalDestFavorite.value = newFav
+
+            done = true
+        }
+
+        if (!done) {
+            val newFav = FavoriteEntityStation(
+                    stationB.value?.locationHash ?: "[[[NO_HASH]]]",
+                    stationB.value?.name ?: "[[[NO_NAME]]]",
+                    bikeSystemId = curBikeSystem.value?.id ?: "[[[NO_ID]]]"
+            )
+            addFavorite(newFav)
+            finalDestFavorite.value = newFav
+        }
+
+        hideFavoriteFab()
+    }
+
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             FindMyBikesActivity.PLACE_AUTOCOMPLETE_REQUEST_CODE -> {
+                searchFabBckgTintListColorResId.value = R.color.theme_primary_dark
 
                 if (resultCode == RESULT_OK) {
+                    coroutineScopeIO.launch {
 
-                    val place = PlaceAutocomplete.getPlace(getApplication(), data)
+                        val place = PlaceAutocomplete.getPlace(getApplication(), data)
 
-                    finalDestPlace.value = place
+                        //IDs are not guaranteed stable over long periods of time
+                        //but searching for a place already in favorites is not a typical use case
+                        //TODO: implement best practice of updating favorite places IDs once per month
+                        //To that end, have a networkdatasource that fetch only if at least one month has passed
+                        val existingFav = repo.getFavoriteEntityByFavoriteId(FavoriteEntityPlace.PLACE_ID_PREFIX + place.id)
 
-                    //TODO: have table model observe on finaldestPlace/FavEntityBase
-                    //and do the icons figuring out
-                    //could also use isfav like trip details fragment
-                    dockTableProxHeaderFromResId.value = R.drawable.ic_destination_arrow_white_24dp
-                    dockTableProxHeaderToResId.value = R.drawable.ic_pin_search_24dp_white
+                        if (existingFav == null) {
 
+                            finalDestPlace.postValue(place)
 
-                    hideSearchFab()
-                    autocompleteLoadProgBarVis.value = View.INVISIBLE
-                    clearBSelectionFabShown.value = true
-                    showFavoriteFab()
-                    //hideFavoritePickerFab()
-                    hideSearchFab()
+                            //TODO: have table model observe on finaldestPlace/FavEntityBase
+                            //and do the icons figuring out
+                            //could also use isfav like trip details fragment
+                            dockTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
+                            dockTableProxHeaderToResId.postValue(R.drawable.ic_pin_search_24dp_white)
+
+                            showFavoriteFabPost()
+                        } else {
+                            finalDestFavorite.postValue(existingFav)
+                            dockTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
+                            dockTableProxHeaderToResId.postValue(R.drawable.ic_pin_favorite_24dp_white)
+
+                            hideFavoriteFabPost()
+                        }
+
+                        autocompleteLoadProgBarVis.postValue(View.INVISIBLE)
+                        clearBSelectionFabShown.postValue(true)
+
+                        //hideFavoritePickerFab()
+                        hideSearchFabPost()
+                    }
                 } else {
                     showFavoritePickerFab()
                     showSearchFab()
                     autocompleteLoadProgBarVis.value = View.GONE
-                    searchFabBckgTintListColorResId.value = R.color.theme_primary_dark
                     hideFavoriteFab()
                 }
             }
@@ -805,8 +873,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     searchFabShown.value = false
                     favoriteFabShown.value = true
                     coroutineScopeIO.launch {
-                        //TODO: add favorite fab icon resID depending if station B is a favorite (ask repo)
-                        if (repo.isFavoriteId(it.locationHash)) {
+                        if (finalDestFavorite.value != null || repo.isFavoriteId(it.locationHash)) {
                             favoriteFabShown.postValue(false)
                         }
                     }
