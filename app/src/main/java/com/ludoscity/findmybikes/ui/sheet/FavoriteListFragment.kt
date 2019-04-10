@@ -126,10 +126,10 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
 
     override fun onFavoriteListItemNameEditDone(favoriteId: String, newName: String) {
 
-        if (!newName.isEmpty())
+        if (!newName.isEmpty()) {
             favoriteSheetListViewModel!!.updateFavoriteCustomNameByFavoriteId(favoriteId, newName)
-
-        listener!!.onFavoriteItemEditDone(favoriteId)
+            findMyBikesActivityViewModel!!.refreshStationAAndB()
+        }
 
         findMyBikesActivityViewModel!!.showFavoriteSheetEditFab()
         findMyBikesActivityViewModel!!.favoriteItemNameEditStop()
@@ -164,7 +164,6 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
 
     interface OnFavoriteListFragmentInteractionListener {
 
-        fun onFavoriteItemEditDone(fsvoriteId: String)
         fun onFavoriteItemDeleted(favoriteId: String, showUndo: Boolean)
         fun onFavoriteListChanged(noFavorite: Boolean)
 

@@ -15,6 +15,9 @@ interface FavoriteEntityStationDao {
     @get:Query("SELECT * FROM FavoriteEntityStation ORDER BY ui_index ASC")
     val all: LiveData<List<FavoriteEntityStation>>
 
+    @get:Query("SELECT id FROM FavoriteEntityStation")
+    val allId: List<String>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOne(favoriteEntityStation: FavoriteEntityStation)
 

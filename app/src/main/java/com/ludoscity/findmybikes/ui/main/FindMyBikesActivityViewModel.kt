@@ -321,6 +321,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     }
 
     fun favoriteSheetEditDone() {
+        refreshStationAAndB()
         favoriteSheetEditInProgress.value = false
     }
 
@@ -660,6 +661,13 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         myCurBikeSystem.observeForever {
             Log.d(TAG, "$it")
 
+            setStationA(null)
+            setStationB(null)
+            statALatLng.value = null
+            statBLatLng.value = null
+            finalDestFavorite.value = null
+            finalDestPlace.value = null
+
             if (it == null) {
                 bikeSystemListData.value?.let { bikeSystemList ->
                     findNearestBikeSystemAndSetInRepo(bikeSystemList, userLoc.value, repo)
@@ -679,6 +687,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     userLocObserverForOutOfBounds = Observer { newUserLoc ->
                         newUserLoc?.let {
                             if (!bounds.contains(newUserLoc)) {
+                                //TODO: implement exponential backoff when out of bounds of any bike system
                                 Log.d(TAG, "out of bound dected, invalidating current bike system")
                                 userLoc.removeObserver(userLocObserverForOutOfBounds)
                                 repo.invalidateCurrentBikeSystem(getApplication())
@@ -686,6 +695,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                         }
                     }
 
+                    //TODO: implement exponential backoff
                     userLoc.observeForever(userLocObserverForOutOfBounds)
                 }
             }
@@ -937,6 +947,12 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 }
             }
         }
+    }
+
+    fun refreshStationAAndB() {
+        //let's refresh everyone
+        stationA.value = stationA.value
+        stationB.value = stationB.value
     }
 
     fun requestCurrentBikeSystemStatusRefresh() {

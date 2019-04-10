@@ -122,8 +122,9 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
 
                 break;
             case R.id.favorite_sheet_edit_done_fab:
-                //findMyBikesActivityViewModel.favoriteSheetEditDone();
+                findMyBikesActivityViewModel.favoriteSheetEditDone();
 
+                //Listener is favorite list fragment. Rework through sheet model
                 mListener.onFavoriteSheetEditDone();
                 break;
         }

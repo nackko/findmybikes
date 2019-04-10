@@ -1,9 +1,10 @@
 package com.ludoscity.findmybikes.ui.table
 
 import android.graphics.Typeface
+import android.text.Spanned
 
 data class StationTableRecapData(
-        val name: String,
+        val name: Spanned,
         val availabilityText: String,
         val isAvailabilityPaintStrikeThru: Boolean,
         val availabilityPaintTypeface: Typeface,

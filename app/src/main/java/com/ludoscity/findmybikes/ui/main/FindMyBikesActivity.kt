@@ -67,11 +67,6 @@ class FindMyBikesActivity : AppCompatActivity(),
     override fun onPageScrollStateChanged(state: Int) {
     }
 
-    override fun onFavoriteItemEditDone(fsvoriteId: String) {
-        //TODO: is there anything to do at activity level ?
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun onFavoriteItemDeleted(favoriteId: String, showUndo: Boolean) {
         findMyBikesActivityViewModel.removeFavoriteByFavoriteId(favoriteId)
     }

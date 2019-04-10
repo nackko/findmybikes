@@ -220,7 +220,10 @@ class FindMyBikesRepository private constructor(
         }
     }
 
-    fun getFavoriteEntityByFavoriteId(favoriteId: String): FavoriteEntityBase? {
+    fun getFavoriteEntityByFavoriteId(favoriteId: String?): FavoriteEntityBase? {
+        if (favoriteId == null)
+            return null
+
         return if (favoriteId.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX))
             getFavoritePlaceByFavoriteId(favoriteId)
         else
@@ -235,8 +238,12 @@ class FindMyBikesRepository private constructor(
         return favoriteEntityPlaceDao.getForId(favoriteId)
     }
 
-    fun isFavoriteId(id: String): Boolean {
-        return favoriteEntityPlaceDao.isFavoriteId(id) != 0 || favoriteEntityStationDao.isFavoriteId(id) != 0
+    fun getAllFavoriteStationIdList(): List<String> {
+        return favoriteEntityStationDao.allId
+    }
+
+    fun isFavoriteId(id: String?): Boolean {
+        return id == null || (favoriteEntityPlaceDao.isFavoriteId(id) != 0 || favoriteEntityStationDao.isFavoriteId(id) != 0)
     }
 
     fun hasAtLeastNValidStationFavorites(nearestStationId: String, n: Int): Boolean {

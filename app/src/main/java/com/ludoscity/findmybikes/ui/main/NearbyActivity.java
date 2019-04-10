@@ -1110,7 +1110,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private void removeFavorite(final String _favIdToRemove, boolean showUndo) {
 
-        /*0.*/onFavoriteItemDeleted(_favIdToRemove, showUndo);
+        /*0.*///onFavoriteItemDeleted(_favIdToRemove, showUndo);
         //Ordering matters : undo setup retrieves favorite data from model
         /*1*/
         mFavoriteSheetListViewModel.removeFavorite(_favIdToRemove);
@@ -1224,15 +1224,6 @@ public class NearbyActivity extends AppCompatActivity
         if (!checkOnboarding(eONBOARDING_LEVEL.ONBOARDING_LEVEL_FULL, eONBOARDING_STEP.ONBOARDING_STEP_SEARCH_SHOWCASE)) {
             checkOnboarding(eONBOARDING_LEVEL.ONBOARDING_LEVEL_LIGHT, eONBOARDING_STEP.ONBOARDING_STEP_MAIN_CHOICE_HINT);
         }
-    }
-
-    @Override
-    public void onFavoriteItemEditDone(String favoriteId) {
-
-        //TODO: handle this through activity ViewModel
-        BikeStation closestBikeStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
-        findMyBikesActivityViewModel.setStationA(closestBikeStation);
-        getTablePagerAdapter().notifyStationChangedAll(favoriteId);
     }
 
     @Override
