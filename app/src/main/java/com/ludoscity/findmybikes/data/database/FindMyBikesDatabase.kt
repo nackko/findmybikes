@@ -21,7 +21,7 @@ import com.ludoscity.findmybikes.data.database.station.BikeStationDao
  * Created by F8Full on 2017-12-17.
  * This file is part of #findmybikes
  */
-@Database(entities = [BikeSystem::class, BikeStation::class, FavoriteEntityStation::class, FavoriteEntityPlace::class], version = 10)
+@Database(entities = [BikeSystem::class, BikeStation::class, FavoriteEntityStation::class, FavoriteEntityPlace::class], version = 11)
 @TypeConverters(LatLngTypeConverter::class)
 abstract class FindMyBikesDatabase : RoomDatabase() {
     abstract fun bikeSystemDao(): BikeSystemDao
@@ -56,6 +56,7 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
                         .addMigrations(MIGRATION_7_8)
                         .addMigrations(MIGRATION_8_9)
                         .addMigrations(MIGRATION_9_10)
+                        .addMigrations(MIGRATION_10_11)
                         .setJournalMode(JournalMode.TRUNCATE)
                         .build()
                 INSTANCE = instance
@@ -143,6 +144,14 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
                 database.execSQL("DROP TABLE BikeSystem")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `BikeStation` (`uid` TEXT NOT NULL, `empty_slots` INTEGER NOT NULL, `free_bikes` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT, `timestamp` TEXT NOT NULL, `location_hash` TEXT NOT NULL, `extra_locked` INTEGER, `extra_name` TEXT, `extra_uid` TEXT, `extra_renting` INTEGER, `extra_returning` INTEGER, `extra_status` TEXT, `extra_lastUpdated` INTEGER, PRIMARY KEY(`uid`))")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `BikeSystem` (`id` TEXT NOT NULL, `last_status_update` INTEGER NOT NULL, `citybik_dot_es_url` TEXT NOT NULL, `name` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `city` TEXT NOT NULL, `country` TEXT NOT NULL, `bbox_north_east_lat` REAL, `bbox_north_east_lng` REAL, `bbox_south_west_lat` REAL, `bbox_south_west_lng` REAL, PRIMARY KEY(`id`))")
+            }
+        }
+
+        val MIGRATION_10_11: Migration = object : Migration(10, 11) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+
+                database.execSQL("DROP TABLE BikeSystem")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `BikeSystem` (`id` TEXT NOT NULL, `last_status_update` INTEGER NOT NULL, `citybik_dot_es_url` TEXT NOT NULL, `name` TEXT NOT NULL, `hashtaggableName` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `city` TEXT NOT NULL, `country` TEXT NOT NULL, `bbox_north_east_lat` REAL, `bbox_north_east_lng` REAL, `bbox_south_west_lat` REAL, `bbox_south_west_lng` REAL, PRIMARY KEY(`id`))")
             }
         }
     }

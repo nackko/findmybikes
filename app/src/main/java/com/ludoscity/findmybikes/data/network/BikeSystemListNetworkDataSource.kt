@@ -15,9 +15,6 @@ import java.io.IOException
 
 class BikeSystemListNetworkDataSource private constructor() {
 
-    //TODO: first implemented this before tying up Splash screen fragment
-    //TODO: Add global bike system data to findmybikes repository
-
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     private val downloadedBikeSystemList: MutableLiveData<BikeSystemListAnswerRoot> = MutableLiveData()

@@ -43,15 +43,10 @@
             android:name=".data.network.FetchCitybikDOTesDataIntentService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true" />
-
-        TODO : https://developer.android.com/topic/performance/background-optimization.html-->
-        <receiver
-            android:name=".utils.Utils$Connectivity"
-            android:enabled="false">
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-            </intent-filter>
-        </receiver>
+        <service
+            android:name=".data.network.twitter.PushToTwitterDataIntentService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true" />
 
         <meta-data
             android:name="com.google.android.gms.version"

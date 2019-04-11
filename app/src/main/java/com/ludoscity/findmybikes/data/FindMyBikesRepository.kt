@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.util.Log
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao
@@ -14,6 +15,8 @@ import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
+import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
+import com.ludoscity.findmybikes.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +27,8 @@ class FindMyBikesRepository private constructor(
         private val favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
         private val favoriteEntityStationDao: FavoriteEntityStationDao,
         private val bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
-        private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource) {
+        private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
+        private val twitterNetworkDataExhaust: TwitterNetworkDataExhaust) {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
@@ -124,6 +128,7 @@ class FindMyBikesRepository private constructor(
                                 System.currentTimeMillis(),
                                 it.href,
                                 it.name,
+                                Utils.cleanStringForHashtagUse(it.name),
                                 it.location.latitude,
                                 it.location.longitude,
                                 it.location.city,
@@ -306,6 +311,18 @@ class FindMyBikesRepository private constructor(
         bikeSystemListNetworkDataSource.startFetchingBikeSystemListService(ctx)
     }
 
+    private fun startPushTwitterDataService(ctx: Context, dataToPush: ArrayList<String>, userLoc: LatLng) {
+        twitterNetworkDataExhaust.startPushDataToTwitterService(ctx, dataToPush, userLoc)
+    }
+
+    fun pushDataToTwitter(ctx: Context, dataToPush: ArrayList<String>, userLoc: LatLng) {
+        startPushTwitterDataService(ctx, dataToPush, userLoc)
+    }
+
+    fun getHashtaggableCurBikeSystemName(): String {
+        return currentBikeSystemDao.singleNameForHashtagUse
+    }
+
     companion object {
         private val TAG = FindMyBikesRepository::class.java.simpleName
 
@@ -320,7 +337,8 @@ class FindMyBikesRepository private constructor(
                 favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
                 favoriteEntityStationDao: FavoriteEntityStationDao,
                 bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
-                bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource): FindMyBikesRepository {
+                bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
+                twitterNetworkDataExhaust: TwitterNetworkDataExhaust): FindMyBikesRepository {
             //Log.d(TAG, "Getting the repository")
             if (sInstance == null) {
                 synchronized(LOCK) {
@@ -329,7 +347,8 @@ class FindMyBikesRepository private constructor(
                             favoriteEntityPlaceDao,
                             favoriteEntityStationDao,
                             bikeSystemListNetworkDataSource,
-                            bikeSystemStatusNetworkDataSource)
+                            bikeSystemStatusNetworkDataSource,
+                            twitterNetworkDataExhaust)
                     Log.d(TAG, "Made new repository")
                 }
             }

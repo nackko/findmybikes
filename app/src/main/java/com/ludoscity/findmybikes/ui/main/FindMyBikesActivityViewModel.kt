@@ -685,11 +685,13 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             if (lastBikeSystemId == null)
                 lastBikeSystemId = it?.id
 
+            //so that closest bike selection (and tweeting) happens
+            setStationA(null)
+            statALatLng.value = null
+
             if (lastBikeSystemId != it?.id) {
                 //we switched systems since last time, reset everything
-                setStationA(null)
                 setStationB(null)
-                statALatLng.value = null
                 statBLatLng.value = null
                 finalDestFavorite.value = null
                 finalDestPlace.value = null
@@ -1039,6 +1041,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         abstract fun getProximityString(station: BikeStation, lookingForBike: Boolean,
                                         numFormat: NumberFormat,
                                         ctx: Context): String?
+
+        abstract val userLoc: LatLng
     }
 
     class DistanceComparator(_fromLatLng: LatLng) : BaseBikeStationComparator() {
@@ -1055,7 +1059,10 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             }
         }
 
-        private var distanceRef: LatLng = _fromLatLng
+        override val userLoc: LatLng
+            get() = distanceRef
+
+        private val distanceRef: LatLng = _fromLatLng
 
         override fun compare(lhs: BikeStation, rhs: BikeStation): Int {
             return (lhs.getMeterFromLatLng(distanceRef) - rhs.getMeterFromLatLng(distanceRef)).toInt()
@@ -1065,7 +1072,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     inner class TotalTripTimeComparator(
             private val walkingSpeedKmh: Float = Utils.getAverageWalkingSpeedKmh(getApplication()),
             private val bikingSpeedKmh: Float = Utils.getAverageBikingSpeedKmh(getApplication()),
-            userLatLng: LatLng?,
+            private val userLatLng: LatLng?,
             private val stationALatLng: LatLng?,
             private val destinationLatLng: LatLng?) : BaseBikeStationComparator() {
         override fun getProximityString(station: BikeStation,
@@ -1080,6 +1087,9 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         fun hasFinalDest(): Boolean {
             return destinationLatLng != null
         }
+
+        override val userLoc: LatLng
+            get() = userLatLng ?: LatLng(0.0, 0.0)
 
         private val mTimeUserToAMinutes: Int = Utils.computeTimeBetweenInMinutes(userLatLng, stationALatLng, walkingSpeedKmh)
 

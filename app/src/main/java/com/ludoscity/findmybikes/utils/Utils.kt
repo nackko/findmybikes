@@ -1,13 +1,8 @@
 package com.ludoscity.findmybikes.utils
 
-import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.net.ConnectivityManager
 import android.support.annotation.ColorInt
 import android.support.annotation.StringRes
 import android.support.v4.content.res.ResourcesCompat
@@ -86,9 +81,19 @@ object Utils {
         }*/
     }
 
+    fun cleanStringForHashtagUse(toClean: String): String {
+        var hashtagableBikeSystemName = toClean
+        hashtagableBikeSystemName = hashtagableBikeSystemName.replace("\\s".toRegex(), "")
+        hashtagableBikeSystemName = hashtagableBikeSystemName.replace("[^A-Za-z0-9 ]".toRegex(), "")
+        @Suppress("UNUSED_VALUE")
+        hashtagableBikeSystemName = hashtagableBikeSystemName.toLowerCase()
+
+        return hashtagableBikeSystemName
+    }
+
     //citybik.es Ids, ordered by distance
     //get(0) is the id of the selected station with BAD or AOK availability
-    fun extractOrderedStationIdsFromProcessedString(_processedString: String): List<String> {
+    fun extractOrderedStationIdsFromProcessedString(_processedString: String): ArrayList<String> {
 
         if (_processedString.isEmpty()) {
             val toReturn = ArrayList<String>()
@@ -170,8 +175,8 @@ object Utils {
         return outValue.float
     }
 
-    fun getWalkingProximityString(_from: LatLng, _to: LatLng, _2digitsFormat: Boolean, _nf: NumberFormat, _ctx: Context): String? {
-        return getProximityString(_from, _to, getAverageWalkingSpeedKmh(_ctx), _2digitsFormat, _nf, _ctx)
+    fun getWalkingProximityString(from: LatLng?, to: LatLng?, _2digitsFormat: Boolean, nf: NumberFormat, ctx: Context): String? {
+        return getProximityString(from, to, getAverageWalkingSpeedKmh(ctx), _2digitsFormat, nf, ctx)
     }
 
     fun getBikingProximityString(_from: LatLng, _to: LatLng, _2digitsFormat: Boolean, _nf: NumberFormat, _ctx: Context): String? {
@@ -284,6 +289,7 @@ object Utils {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             result = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
         } else {
+            @Suppress("DEPRECATION")
             result = Html.fromHtml(html)
         }
         return result
@@ -325,57 +331,5 @@ object Utils {
             return toReturn
         }
 
-    }
-
-
-    /**
-     * Created by F8Full on 2015-03-15.
-     * Used to manipulate request result metadata and avoid repetitive code
-     */
-    class Connectivity : BroadcastReceiver() {
-
-        override fun onReceive(context: Context, intent: Intent) {
-            val extras = intent.extras
-
-
-            mConnected = extras!!.getBoolean(ConnectivityManager.EXTRA_NO_CONNECTIVITY)
-
-            if (mConnected) {
-                //stop listening to connectivity change
-                val receiver = ComponentName(context, Connectivity::class.java)
-
-                val pm = context.packageManager
-
-                pm.setComponentEnabledSetting(receiver,
-                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                        PackageManager.DONT_KILL_APP)
-            }
-        }
-
-        companion object {
-
-            private var mConnected = false
-
-            fun isConnected(context: Context): Boolean {
-
-                val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-                val activeNetwork = cm.activeNetworkInfo
-                mConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
-
-                if (!mConnected) {
-                    //start listening to connectivity change
-                    val receiver = ComponentName(context, Connectivity::class.java)
-
-                    val pm = context.packageManager
-
-                    pm.setComponentEnabledSetting(receiver,
-                            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                            PackageManager.DONT_KILL_APP)
-                }
-
-                return mConnected
-            }
-        }
     }
 }

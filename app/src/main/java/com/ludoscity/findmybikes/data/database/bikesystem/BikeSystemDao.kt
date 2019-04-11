@@ -19,6 +19,9 @@ interface BikeSystemDao {
     @get:Query("SELECT id FROM BikeSystem")
     val singleIdSynchronous: String
 
+    @get:Query("SELECT hashtaggableName FROM BikeSystem")
+    val singleNameForHashtagUse: String
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertCurrentBikeSystem(bikeSystem: BikeSystem)
 

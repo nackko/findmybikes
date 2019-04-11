@@ -6,6 +6,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.graphics.Typeface
 import android.text.SpannableString
+import android.util.Log
 import android.view.View
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
@@ -56,9 +57,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     val tableRecapData: LiveData<StationTableRecapData>
         get() = tableRecapMutableData
 
-    val sortedAvailabilityDataString: LiveData<String>
-        get() = sortedAvailabilityDataStr
-
     val nearestAvailabilityStationId: LiveData<String>
         get() = nearestAvailabilityStatId
 
@@ -71,32 +69,12 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     val emptyTextVisibility: LiveData<Boolean>
         get() = emptyTxtVisibility
 
-    fun setRecapVisibility(toSet: Boolean) {
-        recapVisibility.value = toSet
-    }
-
-    fun setEmptyTextVisibility(toSet: Boolean) {
-        emptyTxtVisibility.value = toSet
-    }
-
-    fun setListVisibility(toSet: Boolean) {
-        listVisibility.value = toSet
-    }
-
     val stringIfEmpty: LiveData<String>
         get() = stringOnEmpty
-
-    fun setStringIfEmpty(toSet: String) {
-        stringOnEmpty.value = toSet
-    }
 
     val headerAvailabilityText: LiveData<String>
         get() = headerAvailText
 
-
-    fun setShowProximity(toSet: Boolean) {
-        //showProx.value = toSet
-    }
 
     val isRefreshEnabled: LiveData<Boolean>
         get() = refreshGestureAvailable
@@ -136,8 +114,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
     private val repository: FindMyBikesRepository = repo
 
-    private val sortedAvailabilityDataStr: MutableLiveData<String>
-    private val nearestAvailabilityStatId: MutableLiveData<String>
+    private val nearestAvailabilityStatId: MutableLiveData<String> = MutableLiveData()
     private val recapVisibility: MutableLiveData<Boolean> = MutableLiveData()
     private val listVisibility: MutableLiveData<Boolean> = MutableLiveData()
     private val emptyTxtVisibility: MutableLiveData<Boolean> = MutableLiveData()
@@ -155,22 +132,18 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     private val dataOutdatedObserver: android.arch.lifecycle.Observer<Boolean>
 
     companion object {
-        val AVAILABILITY_POSTFIX_START_SEQUENCE = "_AVAILABILITY_"
-        val AOK_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "AOK"
-        val BAD_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "BAD"
-        val CRITICAL_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "CRI"
-        internal val LOCKED_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "LCK"
-        internal val OUTDATED_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "OUT"
-        internal val ERROR_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "ERR"
-
+        private val TAG = TableFragmentViewModel::class.java.simpleName
+        const val AVAILABILITY_POSTFIX_START_SEQUENCE = "_AVAILABILITY_"
+        const val AOK_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "AOK"
+        const val BAD_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "BAD"
+        const val CRITICAL_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "CRI"
+        internal const val LOCKED_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "LCK"
+        internal const val OUTDATED_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "OUT"
+        internal const val ERROR_AVAILABILITY_POSTFIX = AVAILABILITY_POSTFIX_START_SEQUENCE + "ERR"
     }
 
 
     init {
-
-        sortedAvailabilityDataStr = MutableLiveData()
-        nearestAvailabilityStatId = MutableLiveData()
-
         if (isDockTable) {
             headerAvailText.value = app.getString(R.string.docks)
         } else {
@@ -189,6 +162,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
                 computeAndEmitTableDisplayData(newData, isDataOutOfDate.value != false,
                         numFormat, isDockTable)
+
+                emitNearestAndTweet(repo, newData, !isDockTable)
             }
         }
 
@@ -198,6 +173,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
                 computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
                         isDataOutOfDate.value != false, numFormat, isDockTable)
+
+                emitNearestAndTweet(repo, bikeSystemAvailabilityDataSource.value, true)
             }
         }
 
@@ -208,6 +185,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                 comparator = it
                 computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
                         isDataOutOfDate.value != false, numFormat, isDockTable)
+
+                emitNearestAndTweet(repo, bikeSystemAvailabilityDataSource.value)
             }
         }
 
@@ -244,63 +223,36 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         }
 
         isDataOutOfDate.observeForever(dataOutdatedObserver)
+    }
 
-        tableItemList.observeForever {
-            it?.let {
-                coroutineScopeIO.launch {
-                    val sortedStationList = bikeSystemAvailabilityDataSource.value?.toMutableList()
-                            ?: emptyList<BikeStation>()
-                    //if comparator is null, no need to extract nearest with availability
-                    comparator?.let { comp ->
-                        Collections.sort(sortedStationList, comp)
+    private fun emitNearestAndTweet(repo: FindMyBikesRepository, newData: List<BikeStation>?, alsoTweet: Boolean = false) {
+        newData?.let {
+            coroutineScopeIO.launch {
+                val sortedStationList = newData.toMutableList()
+                //if comparator is null, no need to extract nearest with availability
+                comparator?.let { comp ->
+                    Collections.sort(sortedStationList, comp)
 
-                        val availabilityDataPostfixBuilder = StringBuilder()
+                    val availabilityDataPostfixBuilder = StringBuilder()
 
-                        if (isDataOutOfDate.value == true) {
-                            if (sortedStationList.isNotEmpty())
-                                availabilityDataPostfixBuilder.append(sortedStationList[0].locationHash).append(OUTDATED_AVAILABILITY_POSTFIX)
-                        } else {
-                            var badOrAOKStationCount = 0
-                            val minimumServiceCount = Math.round(sortedStationList.size * 0.1)   //10%
+                    if (isDataOutOfDate.value == true) {
+                        if (sortedStationList.isNotEmpty())
+                            availabilityDataPostfixBuilder.append(sortedStationList[0].locationHash).append(OUTDATED_AVAILABILITY_POSTFIX)
+                    } else {
+                        var badOrAOKStationCount = 0
+                        val minimumServiceCount = Math.round(sortedStationList.size * 0.1)   //10%
 
-                            for (stationItem in sortedStationList) { //SORTED BY DISTANCE
-                                if (!isDockTable) {
-                                    if (!stationItem.isLocked) {
+                        for (stationItem in sortedStationList) { //SORTED BY DISTANCE
+                            if (!isDockTable) {
+                                if (!stationItem.isLocked) {
 
-                                        if (stationItem.freeBikes > SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication())) {
-
-                                            if (badOrAOKStationCount == 0) {
-                                                if (stationItem.freeBikes <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication())) {
-
-                                                    availabilityDataPostfixBuilder.insert(0, stationItem.locationHash + BAD_AVAILABILITY_POSTFIX)
-                                                } else {
-                                                    availabilityDataPostfixBuilder.insert(0, stationItem.locationHash + AOK_AVAILABILITY_POSTFIX)
-                                                }
-                                            }
-
-                                            ++badOrAOKStationCount
-
-                                            if (badOrAOKStationCount >= minimumServiceCount)
-                                                break
-                                        } else if (badOrAOKStationCount == 0) {
-                                            availabilityDataPostfixBuilder.append(stationItem.locationHash)
-                                                    .append(CRITICAL_AVAILABILITY_POSTFIX)
-                                        }
-                                    } else if (badOrAOKStationCount == 0) {
-                                        availabilityDataPostfixBuilder.append(stationItem.locationHash)
-                                                .append(LOCKED_AVAILABILITY_POSTFIX)
-                                    }
-                                } else {  //A locked station accepts bike returns
-
-                                    if (stationItem.emptySlots == -1 || stationItem.emptySlots > SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication())) {
+                                    if (stationItem.freeBikes > SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication())) {
 
                                         if (badOrAOKStationCount == 0) {
-
-                                            if (stationItem.emptySlots != -1 && stationItem.emptySlots <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication())) {
+                                            if (stationItem.freeBikes <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication())) {
 
                                                 availabilityDataPostfixBuilder.insert(0, stationItem.locationHash + BAD_AVAILABILITY_POSTFIX)
                                             } else {
-
                                                 availabilityDataPostfixBuilder.insert(0, stationItem.locationHash + AOK_AVAILABILITY_POSTFIX)
                                             }
                                         }
@@ -313,29 +265,59 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                                         availabilityDataPostfixBuilder.append(stationItem.locationHash)
                                                 .append(CRITICAL_AVAILABILITY_POSTFIX)
                                     }
+                                } else if (badOrAOKStationCount == 0) {
+                                    availabilityDataPostfixBuilder.append(stationItem.locationHash)
+                                            .append(LOCKED_AVAILABILITY_POSTFIX)
                                 }
-                            }
+                            } else {  //A locked station accepts bike returns
 
-                            //failsafe if no bike could be found
-                            if (badOrAOKStationCount == 0 && !sortedStationList.isEmpty())
-                                availabilityDataPostfixBuilder.append(sortedStationList[0].locationHash).append(LOCKED_AVAILABILITY_POSTFIX)
-                            else if (badOrAOKStationCount != 0 && badOrAOKStationCount < minimumServiceCount) {
-                                //if less than 10% of the network could provide service but a bike could still be found, let's prevent tweeting from happening
-                                val firstBadOrOkIdx = if (availabilityDataPostfixBuilder.indexOf(BAD_AVAILABILITY_POSTFIX) != -1)
-                                    availabilityDataPostfixBuilder.indexOf(BAD_AVAILABILITY_POSTFIX)
-                                else
-                                    availabilityDataPostfixBuilder.indexOf(AOK_AVAILABILITY_POSTFIX)
+                                if (stationItem.emptySlots == -1 || stationItem.emptySlots > SharedPrefHelper.getInstance().getCriticalAvailabilityMax(getApplication())) {
 
-                                availabilityDataPostfixBuilder.replace(firstBadOrOkIdx, firstBadOrOkIdx + ERROR_AVAILABILITY_POSTFIX.length, ERROR_AVAILABILITY_POSTFIX)
+                                    if (badOrAOKStationCount == 0) {
+
+                                        if (stationItem.emptySlots != -1 && stationItem.emptySlots <= SharedPrefHelper.getInstance().getBadAvailabilityMax(getApplication())) {
+
+                                            availabilityDataPostfixBuilder.insert(0, stationItem.locationHash + BAD_AVAILABILITY_POSTFIX)
+                                        } else {
+
+                                            availabilityDataPostfixBuilder.insert(0, stationItem.locationHash + AOK_AVAILABILITY_POSTFIX)
+                                        }
+                                    }
+
+                                    ++badOrAOKStationCount
+
+                                    if (badOrAOKStationCount >= minimumServiceCount)
+                                        break
+                                } else if (badOrAOKStationCount == 0) {
+                                    availabilityDataPostfixBuilder.append(stationItem.locationHash)
+                                            .append(CRITICAL_AVAILABILITY_POSTFIX)
+                                }
                             }
                         }
 
-                        val availabilityDataString = availabilityDataPostfixBuilder.toString()
+                        //failsafe if no bike could be found
+                        if (badOrAOKStationCount == 0 && !sortedStationList.isEmpty())
+                            availabilityDataPostfixBuilder.append(sortedStationList[0].locationHash).append(LOCKED_AVAILABILITY_POSTFIX)
+                        else if (badOrAOKStationCount != 0 && badOrAOKStationCount < minimumServiceCount) {
+                            //if less than 10% of the network could provide service but a bike could still be found, let's prevent tweeting from happening
+                            val firstBadOrOkIdx = if (availabilityDataPostfixBuilder.indexOf(BAD_AVAILABILITY_POSTFIX) != -1)
+                                availabilityDataPostfixBuilder.indexOf(BAD_AVAILABILITY_POSTFIX)
+                            else
+                                availabilityDataPostfixBuilder.indexOf(AOK_AVAILABILITY_POSTFIX)
 
-                        sortedAvailabilityDataStr.postValue(availabilityDataString)
-
-                        nearestAvailabilityStatId.postValue(Utils.extractNearestAvailableStationIdFromDataString(availabilityDataString))
+                            availabilityDataPostfixBuilder.replace(firstBadOrOkIdx, firstBadOrOkIdx + ERROR_AVAILABILITY_POSTFIX.length, ERROR_AVAILABILITY_POSTFIX)
+                        }
                     }
+                    val availabilityDataString = availabilityDataPostfixBuilder.toString()
+
+                    if (alsoTweet && availabilityDataString.length > 32 + AOK_AVAILABILITY_POSTFIX.length &&
+                            (availabilityDataString.contains(AOK_AVAILABILITY_POSTFIX) || availabilityDataString.contains(BAD_AVAILABILITY_POSTFIX)) &&
+                            isDataOutOfDate.value != true)
+                        repo.pushDataToTwitter(getApplication(), Utils.extractOrderedStationIdsFromProcessedString(availabilityDataString), comp.userLoc)
+                    else
+                        Log.i(TAG, "Conditions not met to publish on Twitter -- skipped")
+
+                    nearestAvailabilityStatId.postValue(Utils.extractNearestAvailableStationIdFromDataString(availabilityDataString))
                 }
             }
         }

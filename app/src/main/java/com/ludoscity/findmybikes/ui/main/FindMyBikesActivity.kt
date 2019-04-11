@@ -56,7 +56,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         //Log.d(TAG, "onPageScrolled : position:$position, positionOffset:$positionOffset")
         if (positionOffset == 0.0f) {
 
-            getTablePagerAdapter().smoothScrollHighlightedInViewForTable(position, true)
+            getTablePagerAdapter().smoothScrollHighlightedInViewForTable(position)
         }
     }
 
@@ -450,8 +450,6 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         setStatusBarClickListener()
 
-        getContentTablePagerAdapter().setCurrentUserLatLng(DEBUG_FAKE_USER_CUR_LOC)
-
         setupFavoriteSheet()
 
         circularRevealInterpolator = AnimationUtils.loadInterpolator(this, R.interpolator.msf_interpolator)
@@ -574,6 +572,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         if (findMyBikesActivityViewModel.hasLocationPermission.value != true) {
             val request = permissionsBuilder(android.Manifest.permission.ACCESS_FINE_LOCATION).build()
 
+            Log.i(TAG, "Sending location permission request")
             request.send()
 
             request.listeners {
@@ -583,6 +582,8 @@ class FindMyBikesActivity : AppCompatActivity(),
                 //onShouldShowRationale { perms, nonce ->
                 //}
             }
+        } else {
+            Log.i(TAG, "Activity was resumed and already have location permission, carrying on...")
         }
 
         super.onResume()
@@ -595,7 +596,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     private fun setStatusBarClickListener() {
 
         statusBar.setOnClickListener {
-            if (Utils.Connectivity.isConnected(applicationContext)) {
+            if (findMyBikesActivityViewModel.isConnectivityAvailable.value == true) {
                 // use the android system webview
                 val intent = Intent(this@FindMyBikesActivity, WebViewActivity::class.java)
                 intent.putExtra(WebViewActivity.EXTRA_URL, "http://www.citybik.es")

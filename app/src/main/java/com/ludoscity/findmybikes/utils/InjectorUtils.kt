@@ -12,6 +12,7 @@ import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
+import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
@@ -35,6 +36,11 @@ class InjectorUtils {
             return BikeSystemStatusNetworkDataSource.getInstance()
         }
 
+        fun provideTwitterNetworkDataExhaust(ctx: Context): TwitterNetworkDataExhaust {
+            provideRepository(ctx)
+            return TwitterNetworkDataExhaust.getInstance()
+        }
+
         fun provideBikeSystemListNetworkDataSource(ctx: Context): BikeSystemListNetworkDataSource {
             provideRepository(ctx)
             return BikeSystemListNetworkDataSource.getInstance()
@@ -45,12 +51,14 @@ class InjectorUtils {
 
             val systemListNetworkDataSource = BikeSystemListNetworkDataSource.getInstance()
             val systemStatusNetworkDataSource = BikeSystemStatusNetworkDataSource.getInstance()
+            val twitterNetworkDataExhaust = TwitterNetworkDataExhaust.getInstance()
             return FindMyBikesRepository.getInstance(database.bikeSystemDao(),
                     database.bikeStationDao(),
                     database.favoriteEntityPlaceDao(),
                     database.favoriteEntityStationDao(),
                     systemListNetworkDataSource,
-                    systemStatusNetworkDataSource)
+                    systemStatusNetworkDataSource,
+                    twitterNetworkDataExhaust)
         }
 
         fun provideMainActivityViewModelFactory(app: Application): FindMyBikesModelFactory {

@@ -13,6 +13,7 @@ data class BikeSystem(
         @ColumnInfo(name = "citybik_dot_es_url")
         val citybikDOTesUrl: String,
         val name: String,
+        val hashtaggableName: String,
         val latitude: Double,
         val longitude: Double,
         val city: String,
