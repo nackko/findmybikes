@@ -590,11 +590,11 @@ class FindMyBikesActivity : AppCompatActivity(),
             request.send()
 
             request.listeners {
-                onAccepted { findMyBikesActivityViewModel.setLocationPermissionGranted(true) }
-                onDenied { findMyBikesActivityViewModel.setLocationPermissionGranted(false) }
-                onPermanentlyDenied { findMyBikesActivityViewModel.setLocationPermissionGranted(false) }
-                onShouldShowRationale { perms, nonce ->
-                }
+                onAccepted { Log.i(TAG, "Location permission granted");findMyBikesActivityViewModel.setLocationPermissionGranted(true) }
+                onDenied { Log.i(TAG, "Location permission denied");findMyBikesActivityViewModel.setLocationPermissionGranted(false) }
+                onPermanentlyDenied { Log.i(TAG, "Location permission permanently denied");findMyBikesActivityViewModel.setLocationPermissionGranted(false) }
+                //onShouldShowRationale { perms, nonce ->
+                //}
             }
         }
 
@@ -708,6 +708,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         hashtagableBikeSystemName = hashtagableBikeSystemName.replace("\\s".toRegex(), "")
         hashtagableBikeSystemName = hashtagableBikeSystemName.replace("[^A-Za-z0-9 ]".toRegex(), "")
+        @Suppress("UNUSED_VALUE")
         hashtagableBikeSystemName = hashtagableBikeSystemName.toLowerCase()
 
         supportActionBar!!.title = Utils.fromHtml(String.format(resources.getString(R.string.appbar_title_formatting),
