@@ -666,7 +666,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         myCurBikeSystem.observeForever {
             Log.d(TAG, "$it")
 
-            if (lastBikeSystemId != it?.id) {
+            if (lastBikeSystemId != null && lastBikeSystemId != it?.id) {
                 //we switched systems since last time, reset everything
                 setStationA(null)
                 setStationB(null)
