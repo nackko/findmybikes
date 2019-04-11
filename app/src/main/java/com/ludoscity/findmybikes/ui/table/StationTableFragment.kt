@@ -148,15 +148,24 @@ class StationTableFragment : Fragment() {
 
         tableFragmentModel.stationRecapVisibility.observe(this, android.arch.lifecycle.Observer { visible ->
 
-            if (visible == true) {
-                mStationRecyclerView!!.visibility = View.GONE
-                mEmptyListTextView!!.visibility = View.VISIBLE
+            if (visible == true)
                 mStationRecap!!.visibility = View.VISIBLE
-            } else {
-                mStationRecyclerView!!.visibility = View.VISIBLE
-                mEmptyListTextView!!.visibility = View.GONE
+            else
                 mStationRecap!!.visibility = View.GONE
-            }
+        })
+
+        tableFragmentModel.stationListVisibility.observe(this, android.arch.lifecycle.Observer { visible ->
+            if (visible == true)
+                mStationRecyclerView!!.visibility = View.VISIBLE
+            else
+                mStationRecyclerView!!.visibility = View.GONE
+        })
+
+        tableFragmentModel.emptyTextVisibility.observe(this, android.arch.lifecycle.Observer {
+            if (it == true)
+                mEmptyListTextView!!.visibility = View.VISIBLE
+            else
+                mEmptyListTextView!!.visibility = View.GONE
         })
 
         tableFragmentModel.stringIfEmpty.observe(this, android.arch.lifecycle.Observer {

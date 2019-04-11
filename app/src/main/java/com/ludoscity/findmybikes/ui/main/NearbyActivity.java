@@ -864,6 +864,8 @@ public class NearbyActivity extends AppCompatActivity
                 mSearchFAB.show();
 
                 getTablePagerAdapter().showStationRecap();
+                getTablePagerAdapter().showEmptyText();
+                getTablePagerAdapter().hideList();
 
                 //in case of full onboarding, setup search showcase (user cancelled previous showcased search)
                 //... check if full onboarding should happen

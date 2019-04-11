@@ -63,6 +63,16 @@ class StationTablePagerAdapter(
     }
 
     //TODO: this smell like business logic
+    fun showStationRecap() {
+        retrieveListFragment(DOCK_STATIONS)?.let {
+            val dockTableModel =
+                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+
+            dockTableModel.setRecapVisibility(true)
+        }
+    }
+
+    //TODO: this smell like business logic
     fun hideStationRecap() {
         retrieveListFragment(DOCK_STATIONS)?.let {
             val dockTableModel =
@@ -72,15 +82,43 @@ class StationTablePagerAdapter(
         }
     }
 
-    //TODO: this smell like business logic
-    fun showStationRecap() {
+    fun hideEmptyText() {
         retrieveListFragment(DOCK_STATIONS)?.let {
             val dockTableModel =
                     ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
 
-            dockTableModel.setRecapVisibility(true)
+            dockTableModel.setEmptyTextVisibility(false)
         }
     }
+
+    fun showEmptyText() {
+        retrieveListFragment(DOCK_STATIONS)?.let {
+            val dockTableModel =
+                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+
+            dockTableModel.setEmptyTextVisibility(true)
+        }
+    }
+
+    fun hideList() {
+        retrieveListFragment(DOCK_STATIONS)?.let {
+            val dockTableModel =
+                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+
+            dockTableModel.setListVisibility(false)
+        }
+    }
+
+    fun showList() {
+        retrieveListFragment(DOCK_STATIONS)?.let {
+            val dockTableModel =
+                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+
+            dockTableModel.setListVisibility(true)
+        }
+    }
+
+
 
     fun setRefreshEnabledAll(toSet: Boolean) {
         retrieveListFragment(DOCK_STATIONS)?.let {

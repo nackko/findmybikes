@@ -745,7 +745,8 @@ class FindMyBikesActivity : AppCompatActivity(),
             if (searchAutocompleteIntent != null) {
                 try {
                     findMyBikesActivityViewModel.requestStartActivityForResult(searchAutocompleteIntent!!, PLACE_AUTOCOMPLETE_REQUEST_CODE)
-                    getContentTablePagerAdapter().hideStationRecap()
+                    //TODO: hise the recap and be able to show it back if user presses back from search
+                    //getContentTablePagerAdapter().hideStationRecap()
 
                 } catch (e: GooglePlayServicesRepairableException) {
                     Log.d(TAG, "oops", e)

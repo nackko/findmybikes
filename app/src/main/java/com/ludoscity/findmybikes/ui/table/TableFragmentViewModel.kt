@@ -65,8 +65,22 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     val stationRecapVisibility: LiveData<Boolean>
         get() = recapVisibility
 
+    val stationListVisibility: LiveData<Boolean>
+        get() = listVisibility
+
+    val emptyTextVisibility: LiveData<Boolean>
+        get() = emptyTxtVisibility
+
     fun setRecapVisibility(toSet: Boolean) {
         recapVisibility.value = toSet
+    }
+
+    fun setEmptyTextVisibility(toSet: Boolean) {
+        emptyTxtVisibility.value = toSet
+    }
+
+    fun setListVisibility(toSet: Boolean) {
+        listVisibility.value = toSet
     }
 
     val stringIfEmpty: LiveData<String>
@@ -125,6 +139,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     private val sortedAvailabilityDataStr: MutableLiveData<String>
     private val nearestAvailabilityStatId: MutableLiveData<String>
     private val recapVisibility: MutableLiveData<Boolean> = MutableLiveData()
+    private val listVisibility: MutableLiveData<Boolean> = MutableLiveData()
+    private val emptyTxtVisibility: MutableLiveData<Boolean> = MutableLiveData()
 
     private val stringOnEmpty: MutableLiveData<String> = MutableLiveData()
     private val headerAvailText: MutableLiveData<String> = MutableLiveData()
@@ -199,6 +215,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         stationSelectionDataSourceObserver = android.arch.lifecycle.Observer { newSelection ->
             recapVisibility.value = newSelection == null
+            emptyTxtVisibility.value = newSelection == null
+            listVisibility.value = newSelection != null
 
             computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
                     isDataOutOfDate.value != false, numFormat, isDockTable)
