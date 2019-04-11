@@ -35,6 +35,7 @@ class TripFragmentViewModel(app: Application,
     private val stationBToFinalDestDurationString = MutableLiveData<String>()
     private val totalTripDurationString = MutableLiveData<String>()
     private val finalDestIconResId = MutableLiveData<Int>()
+    private val lastRowVisible = MutableLiveData<Boolean>()
 
     val locToStationAText: LiveData<String>
         get() = locToStationADurationString
@@ -51,6 +52,8 @@ class TripFragmentViewModel(app: Application,
     val finalDestinationIconResId: LiveData<Int>
         get() = finalDestIconResId
 
+    val isLastRowVisible: LiveData<Boolean>
+        get() = lastRowVisible
 
     init {
 
@@ -117,6 +120,7 @@ class TripFragmentViewModel(app: Application,
 
         finalDestObserver = Observer {
 
+            lastRowVisible.value = it != null
 
             val locToA = userLocToStationAWalkingDurationMin.value
             val statAToStatB = stationAToStationBBikingDurationMin.value

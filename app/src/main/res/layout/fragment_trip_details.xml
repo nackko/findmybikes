@@ -157,7 +157,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/trip_details_b_to_search"
+            android:id="@+id/trip_details_b_to_final_dest"
             style="@style/trip_details_row"
             android:layout_width="wrap_content"
             android:layout_below="@id/trip_details_a_to_b">
@@ -228,7 +228,7 @@
             style="@style/trip_details_sum_separator"
             android:layout_width="match_parent"
             android:layout_height="3dp"
-            android:layout_below="@id/trip_details_b_to_search"
+            android:layout_below="@id/trip_details_b_to_final_dest"
 
             android:background="@color/background_dark" />
 

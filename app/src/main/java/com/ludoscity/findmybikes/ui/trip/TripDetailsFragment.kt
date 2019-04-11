@@ -32,13 +32,13 @@ class TripDetailsFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
-    private lateinit var mTripDetailsProximityA: TextView
-    private lateinit var mTripDetailsProximityB: TextView
-    private lateinit var mTripDetailsProximitySearch: TextView
-    private lateinit var mTripDetailsProximityTotal: TextView
-    private var mTripDetailsSumSeparator: FrameLayout? = null
-    private var mTripDetailsBToDestinationRow: View? = null
-    private lateinit var mTripDetailsPinFinalDest: ImageView
+    private lateinit var tripDetailsProximityA: TextView
+    private lateinit var tripDetailsProximityB: TextView
+    private lateinit var tripDetailsProximitySearch: TextView
+    private lateinit var tripDetailsProximityTotal: TextView
+    private var tripDetailsSumSeparator: FrameLayout? = null
+    private var tripDetailsBToDestinationRow: View? = null
+    private lateinit var tripDetailsPinFinalDest: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,13 +53,13 @@ class TripDetailsFragment : Fragment() {
 
         val inflatedView = inflater.inflate(R.layout.fragment_trip_details, container, false)
 
-        mTripDetailsProximityA = inflatedView.findViewById(R.id.trip_details_proximity_a)
-        mTripDetailsProximityB = inflatedView.findViewById(R.id.trip_details_proximity_b)
-        mTripDetailsProximitySearch = inflatedView.findViewById(R.id.trip_details_proximity_search)
-        mTripDetailsProximityTotal = inflatedView.findViewById(R.id.trip_details_proximity_total)
-        mTripDetailsSumSeparator = inflatedView.findViewById(R.id.trip_details_sum_separator)
-        mTripDetailsBToDestinationRow = inflatedView.findViewById(R.id.trip_details_b_to_search)
-        mTripDetailsPinFinalDest = inflatedView.findViewById(R.id.trip_details_final_dest)
+        tripDetailsProximityA = inflatedView.findViewById(R.id.trip_details_proximity_a)
+        tripDetailsProximityB = inflatedView.findViewById(R.id.trip_details_proximity_b)
+        tripDetailsProximitySearch = inflatedView.findViewById(R.id.trip_details_proximity_search)
+        tripDetailsProximityTotal = inflatedView.findViewById(R.id.trip_details_proximity_total)
+        tripDetailsSumSeparator = inflatedView.findViewById(R.id.trip_details_sum_separator)
+        tripDetailsBToDestinationRow = inflatedView.findViewById(R.id.trip_details_b_to_final_dest)
+        tripDetailsPinFinalDest = inflatedView.findViewById(R.id.trip_details_final_dest)
 
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
@@ -76,25 +76,32 @@ class TripDetailsFragment : Fragment() {
 
         val fragmentModel = ViewModelProviders.of(this, modelFactory).get(TripFragmentViewModel::class.java)
 
+        fragmentModel.isLastRowVisible.observe(this, Observer {
+            if (it == true)
+                tripDetailsBToDestinationRow!!.visibility = View.VISIBLE
+            else
+                tripDetailsBToDestinationRow!!.visibility = View.GONE
+        })
+
         fragmentModel.locToStationAText.observe(this, Observer {
-            mTripDetailsProximityA.text = it ?: "XXmin"
+            tripDetailsProximityA.text = it ?: "XXmin"
         })
 
         fragmentModel.stationAToStationBText.observe(this, Observer {
-            mTripDetailsProximityB.text = it ?: "XXmin"
+            tripDetailsProximityB.text = it ?: "XXmin"
         })
 
         fragmentModel.stationBToFinalDestText.observe(this, Observer {
-            mTripDetailsProximitySearch.text = it ?: "XXmin"
+            tripDetailsProximitySearch.text = it ?: "XXmin"
         })
 
         fragmentModel.totalTripText.observe(this, Observer {
-            mTripDetailsProximityTotal.text = it ?: "XXmin"
+            tripDetailsProximityTotal.text = it ?: "XXmin"
         })
 
         fragmentModel.finalDestinationIconResId.observe(this, Observer {
             it?.let { resId ->
-                mTripDetailsPinFinalDest.setImageResource(resId)
+                tripDetailsPinFinalDest.setImageResource(resId)
             }
         })
 
