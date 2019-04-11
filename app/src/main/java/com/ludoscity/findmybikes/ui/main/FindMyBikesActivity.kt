@@ -701,7 +701,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         supportActionBar!!.title = Utils.fromHtml(String.format(resources.getString(R.string.appbar_title_formatting),
                 resources.getString(R.string.appbar_title_prefix),
-                bs?.name ?: "",//hashtagableBikeSystemName,
+                bs?.name?.toLowerCase() ?: "",//hashtagableBikeSystemName,
                 resources.getString(R.string.appbar_title_postfix)))
         //doesn't scale well, but just a little touch for my fellow Montréalers
         @Suppress("CanBeVal") var cityHashtag = ""
