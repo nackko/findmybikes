@@ -426,6 +426,13 @@ class FindMyBikesActivity : AppCompatActivity(),
         searchFAB = findViewById(R.id.search_fab)
         addFavoriteFAB = findViewById(R.id.favorite_add_remove_fab)
         directionsLocToAFab = findViewById(R.id.directions_loc_to_a_fab)
+
+        directionsLocToAFab.setOnClickListener {
+
+            launchGoogleMapsForDirections(findMyBikesActivityViewModel.userLocation.value,
+                    findMyBikesActivityViewModel.stationALatLng.value,
+                    true)
+        }
         placeAutocompleteLoadingProgressBar = findViewById(R.id.place_autocomplete_loading)
 
         addFavoriteFAB.setOnClickListener {
@@ -436,7 +443,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         /*if (savedInstanceState == null)
             splashScreen.visibility = View.VISIBLE*/
 
-        setupDirectionsLocToAFab()
         setupSearchFab()
         setupFavoritePickerFab()
         setupClearFab()
@@ -447,39 +453,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         getContentTablePagerAdapter().setCurrentUserLatLng(DEBUG_FAKE_USER_CUR_LOC)
 
         setupFavoriteSheet()
-
-        //noinspection ConstantConditions
-        findViewById<View>(R.id.trip_details_directions_loc_to_a).setOnClickListener {
-            //TODO: this is wrong as userLoc and station values are captured at setup time
-            findMyBikesActivityViewModel.stationALatLng.value?.let {
-                launchGoogleMapsForDirections(findMyBikesActivityViewModel.userLocation.value, findMyBikesActivityViewModel.stationALatLng.value, true)
-            }
-
-        }
-        //noinspection ConstantConditions
-        findViewById<View>(R.id.trip_details_directions_a_to_b).setOnClickListener {
-            //TODO: this is wrong as userLoc and station values are captured at setup time
-            launchGoogleMapsForDirections(findMyBikesActivityViewModel.stationALatLng.value, findMyBikesActivityViewModel.stationBLatLng.value, false)
-        }
-        //noinspection ConstantConditions
-        findViewById<View>(R.id.trip_details_directions_b_to_destination).setOnClickListener {
-            //TODO: this is wrong as userLoc and station values are captured at setup time
-            launchGoogleMapsForDirections(findMyBikesActivityViewModel.stationBLatLng.value, findMyBikesActivityViewModel.finalDestinationLatLng.value, true)
-        }
-        findViewById<View>(R.id.trip_details_share).setOnClickListener {
-            //Je serai à la station Bixi Hutchison/beaubien dans ~15min ! Partagé via #findmybikes
-            //I will be at the Bixi station Hutchison/beaubien in ~15min ! Shared via #findmybikes
-            val message = String.format(resources.getString(R.string.trip_details_share_message_content),
-                    findMyBikesActivityViewModel.curBikeSystem.value?.name,
-                    getContentTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.DOCK_STATIONS)!!.name,
-                    tripDetailsProximityTotal.text.toString()) //TODO: total proximity is exposed in trip details fragment model
-
-            val sendIntent = Intent()
-            sendIntent.action = Intent.ACTION_SEND
-            sendIntent.putExtra(Intent.EXTRA_TEXT, message)
-            sendIntent.type = "text/plain"
-            startActivity(Intent.createChooser(sendIntent, getString(R.string.trip_details_share_title)))
-        }
 
         circularRevealInterpolator = AnimationUtils.loadInterpolator(this, R.interpolator.msf_interpolator)
     }
@@ -757,27 +730,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         }
     }
 
-    private fun setupDirectionsLocToAFab() {
-        directionsLocToAFab.setOnClickListener {
-            val curSelectedStation = getContentTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.BIKE_STATIONS)
-
-            // Seen NullPointerException in crash report.
-            if (null != curSelectedStation) {
-
-                val tripLegOrigin = if (findMyBikesActivityViewModel.isLookingForBike.value == true) DEBUG_FAKE_USER_CUR_LOC else stationMapFragment.markerALatLng
-                val tripLegDestination = curSelectedStation.location
-                val walkMode = findMyBikesActivityViewModel.isLookingForBike.value
-
-                if (walkMode != null) {
-                    launchGoogleMapsForDirections(tripLegOrigin!!, tripLegDestination, walkMode)
-                }
-                else{
-                    launchGoogleMapsForDirections(tripLegOrigin!!, tripLegDestination, false)
-                }
-            }
-        }
-    }
-
+    //intent prep in Utils (same code in TripFragmentviewModel::prepareLaunchGoogleMapsForDirections)
     private fun launchGoogleMapsForDirections(origin: LatLng?, destination: LatLng?, walking: Boolean) {
 
         origin?.let {

@@ -105,6 +105,18 @@ class TripDetailsFragment : Fragment() {
             }
         })
 
+        inflatedView.findViewById<View>(R.id.trip_details_directions_loc_to_a).setOnClickListener {
+            fragmentModel.locToStationADirectionsFabClick()
+        }
+
+        inflatedView.findViewById<View>(R.id.trip_details_directions_a_to_b).setOnClickListener {
+            fragmentModel.stationAToStationBDirectionsFabClick()
+        }
+
+        inflatedView.findViewById<View>(R.id.trip_details_directions_b_to_destination).setOnClickListener {
+            fragmentModel.stationBTofinalDestinationDirectionsFabClick()
+        }
+
         return inflatedView
     }
 

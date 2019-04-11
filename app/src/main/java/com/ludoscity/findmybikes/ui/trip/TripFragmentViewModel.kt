@@ -5,6 +5,8 @@ import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
+import android.content.Intent
+import android.net.Uri
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.utils.Utils
@@ -36,6 +38,10 @@ class TripFragmentViewModel(app: Application,
     private val totalTripDurationString = MutableLiveData<String>()
     private val finalDestIconResId = MutableLiveData<Int>()
     private val lastRowVisible = MutableLiveData<Boolean>()
+
+    private val locToAGoogleMapDirectionsIntent = MutableLiveData<Intent>()
+    private val aToBGoogleMapDirectionsIntent = MutableLiveData<Intent>()
+    private val bToDestGoogleMapDirectionsIntent = MutableLiveData<Intent>()
 
     val locToStationAText: LiveData<String>
         get() = locToStationADurationString
@@ -70,6 +76,9 @@ class TripFragmentViewModel(app: Application,
 
             recalculateTripTotal(statBToFinal, statAToStatB, locToA)
 
+            locToAGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(it,
+                    stationALatLng.value,
+                    true)
         }
 
         userLoc.observeForever(userLocObserver)
@@ -91,6 +100,14 @@ class TripFragmentViewModel(app: Application,
             val statBToFinal = stationBToFinalDestWalkingDurationMin.value
 
             recalculateTripTotal(statBToFinal, statAToStatB, locToA)
+
+            locToAGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(userLoc.value,
+                    it,
+                    true)
+
+            aToBGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(it,
+                    stationBLatLng.value,
+                    false)
         }
 
         stationALatLng.observeForever(stationALatLngObserver)
@@ -114,6 +131,14 @@ class TripFragmentViewModel(app: Application,
 
             recalculateTripTotal(statBToFinal, statAToStatB, locToA)
 
+            aToBGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(stationALatLng.value,
+                    it,
+                    false)
+
+            bToDestGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(it,
+                    finalDestination.value,
+                    true)
+
         }
 
         stationBLatLng.observeForever(stationBLatLngObserver)
@@ -133,6 +158,10 @@ class TripFragmentViewModel(app: Application,
             stationBToFinalDestWalkingDurationMin.value = statBToFinal
 
             recalculateTripTotal(statBToFinal, statAToStatB, locToA)
+
+            bToDestGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(stationBLatLng.value,
+                    it,
+                    true)
         }
 
         finalDestination.observeForever(finalDestObserver)
@@ -166,6 +195,18 @@ class TripFragmentViewModel(app: Application,
         }
     }
 
+    fun locToStationADirectionsFabClick() {
+        getApplication<Application>().startActivity(locToAGoogleMapDirectionsIntent.value)
+    }
+
+    fun stationAToStationBDirectionsFabClick() {
+        getApplication<Application>().startActivity(aToBGoogleMapDirectionsIntent.value)
+    }
+
+    fun stationBTofinalDestinationDirectionsFabClick() {
+        getApplication<Application>().startActivity(bToDestGoogleMapDirectionsIntent.value)
+    }
+
     private fun recalculateTripTotal(statBToFinal: Int?, statAToStatB: Int?, locToA: Int?) {
         //Hopefully this does an addition or a null if any of the val are null
         val totalTripDuration = statBToFinal?.let { it1 -> statAToStatB?.let { itFirst -> locToA?.plus(itFirst) }?.plus(it1) }
@@ -177,6 +218,41 @@ class TripFragmentViewModel(app: Application,
             totalTripDurationMin.value = statAToStatB?.let { it1 -> locToA?.plus(it1) }
         }
     }
+
+    private fun prepareLaunchGoogleMapsForDirections(origin: LatLng?, destination: LatLng?, walking: Boolean): Intent? {
+
+        var toReturn: Intent? = null
+        origin?.let {
+            destination?.let {
+
+                val builder = StringBuilder("http://maps.google.com/maps?&saddr=")
+
+                builder.append(origin.latitude).append(",").append(origin.longitude)
+
+                builder.append("&daddr=").append(destination.latitude).append(",").append(destination.longitude).append("&dirflg=")//append("B"). Labeling doesn't work :'(
+
+                if (walking)
+                    builder.append("w")
+                else
+                    builder.append("b")
+
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(builder.toString()))
+                intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity")
+                toReturn = intent
+                //if (getApplication<Application>().packageManager.queryIntentActivities(intent, 0).size > 0) {
+                //    getApplication<Application>().startActivity(intent) // launch the map activity
+                //}
+                /*else {
+                    Utils.Snackbar.makeStyled(coordinatorLayout, R.string.google_maps_not_installed,
+                            Snackbar.LENGTH_SHORT, ContextCompat.getColor(this, R.color.theme_primary_dark))
+                            .show()
+                }*/
+            }
+        }
+
+        return toReturn
+    }
+
 
     override fun onCleared() {
         userLoc.removeObserver(userLocObserver)
