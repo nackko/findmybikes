@@ -143,7 +143,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         val mapInit = MapsInitializer.initialize(applicationContext)
 
         if (mapInit != 0) {
-            Log.e("NearbyActivity", "GooglePlayServicesNotAvailableException raised with error code :$mapInit")
+            Log.e(TAG, "GooglePlayServicesNotAvailableException raised with error code :$mapInit")
         }
 
         //variables to retore state from bundle. TODO: Model will take care of that

@@ -120,8 +120,8 @@ class FavoriteRecyclerViewAdapter(itemClickListener: OnFavoriteListItemClickList
 
     }
 
-    //TODO: investigate making the sheet (and not NearbyActivity) listening and forwarding relevant
-    //event to NearbyActivity
+    //TODO: investigate making the sheet (and not Activity) listening and forwarding relevant
+    //event
     //TODO: no, forward to model, which one is still up in the air
     interface OnFavoriteListItemClickListener {
         fun onFavoriteListItemClick(favoriteId: String)

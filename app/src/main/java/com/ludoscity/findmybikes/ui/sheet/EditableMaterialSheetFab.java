@@ -6,7 +6,6 @@ import android.view.View;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel;
-import com.ludoscity.findmybikes.ui.main.NearbyActivity;
 
 /**
  * Created by F8Full on 2016-06-03.
@@ -35,36 +34,6 @@ public class EditableMaterialSheetFab extends MaterialSheetFab
      * @param sheetColor The background color of the material sheet.
      * @param fabColor   The background color of the FAB.
      */
-    public EditableMaterialSheetFab(NearbyActivity isFavoriteSheetItemNameEditInProgress, FindMyBikesActivityViewModel findMyBikesActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
-        //noinspection unchecked
-        super(view, sheet, overlay, sheetColor, fabColor);
-        mEditFAB = sheet.findViewById(R.id.favorite_sheet_edit_fab);
-        mEditFAB.setOnClickListener(this);  //TODO: Consider making the fragment the listener ?
-
-        mEditDoneFAB = sheet.findViewById(R.id.favorite_sheet_edit_done_fab);
-        mEditDoneFAB.setOnClickListener(this);
-
-        this.findMyBikesActivityViewModel = findMyBikesActivityViewModel;
-
-        this.findMyBikesActivityViewModel.isFavoriteSheetEditInProgress().observe(isFavoriteSheetItemNameEditInProgress, isSheetEditing -> {
-
-            if (mEditFAB.getVisibility() == View.INVISIBLE && mEditDoneFAB.getVisibility() == View.INVISIBLE)
-                return;
-
-            if (isSheetEditing != null && isSheetEditing) {
-                mEditFAB.hide();
-                mEditDoneFAB.show();
-            } else {
-                mEditDoneFAB.hide();
-                mEditFAB.show();
-            }
-        });
-
-
-
-        mListener = _listener;
-    }
-
     public EditableMaterialSheetFab(FindMyBikesActivityViewModel findMyBikesActivityViewModel, View view, View sheet, View overlay, int sheetColor, int fabColor, OnFavoriteSheetEventListener _listener) {
         //noinspection unchecked
         super(view, sheet, overlay, sheetColor, fabColor);
