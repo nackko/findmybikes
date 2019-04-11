@@ -374,6 +374,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private lateinit var userLocObserverForOutOfBounds: Observer<LatLng>
     private val userLocObserverForComparatorUpdate: Observer<LatLng>
 
+    private val nowObserver: Observer<Long>
+
     private val optimalDockStationIdObserver: Observer<String>
 
     private val statusBarTxt = MutableLiveData<String>()
@@ -523,7 +525,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             }
         }
 
-        now.observeForever {
+        nowObserver = Observer {
             it?.let { now ->
 
                 coroutineScopeIO.launch {
@@ -598,6 +600,20 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     }
                 }
             }
+        }
+
+        now.observeForever(nowObserver)
+
+        repo.lastBikeNetworkStatusFetchErrored.observeForever {
+            if (it == true) {
+                now.observeForever(nowObserver)
+            }
+        }
+
+        repo.getBikeSystemStationData(getApplication()).observeForever {
+            //TODO deactivate refresh gesture in tables
+            //TODO: bike and dock should be re selected based on new availability
+            statusBarTxt.value = getApplication<Application>().getString(R.string.refreshing_map)
         }
 
         optimalDockStationIdObserver = Observer {
@@ -703,6 +719,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                                 //TODO: implement exponential backoff when out of bounds of any bike system
                                 Log.d(TAG, "out of bound dected, invalidating current bike system")
                                 userLoc.removeObserver(userLocObserverForOutOfBounds)
+                                statusBarTxt.value = getApplication<Application>().getString(R.string.searching_bike_network)
                                 repo.invalidateCurrentBikeSystem(getApplication())
                             }
                         }
@@ -962,6 +979,10 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         }
     }
 
+    fun markerRedrawEnd() {
+        now.observeForever(nowObserver)
+    }
+
     fun refreshStationAAndB() {
         //let's refresh everyone
         stationA.value = stationA.value
@@ -969,6 +990,11 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     }
 
     fun requestCurrentBikeSystemStatusRefresh() {
+        coroutineScopeMAIN.launch {
+            statusBarTxt.value = getApplication<Application>().getString(R.string.downloading)
+            now.removeObserver(nowObserver)
+        }
+
         repo.invalidateBikeSystemStatus(getApplication(), curBikeSystem.value?.citybikDOTesUrl
                 ?: "")
     }

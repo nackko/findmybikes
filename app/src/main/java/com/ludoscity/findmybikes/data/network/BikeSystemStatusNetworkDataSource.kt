@@ -73,6 +73,8 @@ class BikeSystemStatusNetworkDataSource private constructor() {
 
                 //server level error, could not retrieve bike system data
                 Log.w(TAG, "Exception raised trying to fetch bike system status -- Aborted\n $e")
+                //propagate error back to repository
+                downloadedBikeSystemStatus.postValue(null)
             }
             workInProgress = false
         }

@@ -41,10 +41,18 @@ class FindMyBikesRepository private constructor(
     private val curBikeSystemData: LiveData<BikeSystem> = currentBikeSystemDao.single
     private val curBikeSystemStatusData: LiveData<List<BikeStation>> = stationDao.all
 
+    private val statusFetchErrored = MutableLiveData<Boolean>()
+    val lastBikeNetworkStatusFetchErrored: LiveData<Boolean>
+        get () = statusFetchErrored
+
 
     init {
 
         networkBikeSystemStatusData.observeForever { newStatusDataFromNetwork ->
+
+            if (newStatusDataFromNetwork == null) {
+                statusFetchErrored.value = true
+            }
 
             newStatusDataFromNetwork?.let {
 

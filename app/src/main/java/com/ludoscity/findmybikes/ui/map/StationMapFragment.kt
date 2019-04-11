@@ -334,27 +334,13 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
                             .visible(fragmentModel.finalDestinationLatLng.value != null)
                             .title("")
             )
-            /*mMarkerPickedPlace = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedPlaceLatLng!!)
-                    .icon(mPinSearchIconBitmapDescriptor)
-                    .visible(pinPickedPlaceVisible)
-                    .title(pickedPlaceName))
-            mMarkerPickedFavorite = mGoogleMap!!.addMarker(MarkerOptions().position(pinPickedFavoriteLatLng!!)
-                    .icon(mPinFavoriteIconBitmapDescriptor)
-                    .visible(pinPickedFavoriteVisible)
-                    .zIndex(.5f)//so that it's on top of B pin (default Z is 0)
-                    .title(pickedFavoriteName))
-
-            if (pinPickedPlaceVisible)
-                mMarkerPickedPlace!!.showInfoWindow()
-
-            if (pinPickedFavoriteVisible && (mMarkerPickedFavorite!!.position.latitude != pinBLatLng.latitude || mMarkerPickedFavorite!!.position.longitude != pinBLatLng.longitude))
-                mMarkerPickedFavorite!!.showInfoWindow()*/
 
             gfxData.forEach {
                 it.addToMap(mGoogleMap!!)
             }
 
             Log.d(TAG, "Markers redrawned, size :" + gfxData.size)
+            findMyBikesActivityModel.markerRedrawEnd()
 
             if (mAnimCallback == null) {
                 fragmentModel.showMapItems()

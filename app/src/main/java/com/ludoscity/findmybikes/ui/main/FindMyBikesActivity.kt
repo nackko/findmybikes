@@ -239,6 +239,12 @@ class FindMyBikesActivity : AppCompatActivity(),
                 directionsLocToAFab.hide()
         })
 
+        InjectorUtils.provideRepository(this).lastBikeNetworkStatusFetchErrored.observeForever {
+            if (it == true) {
+                getTablePagerAdapter().setRefreshingAll(false)
+            }
+        }
+
         findMyBikesActivityViewModel.curBikeSystem.observe(this, Observer { newBikeSystem ->
 
             setupFavoritePickerFab()
@@ -254,7 +260,8 @@ class FindMyBikesActivity : AppCompatActivity(),
                                                 it.boundingBoxNorthEastLongitude ?: 0.0))))
                         .build(this)
 
-
+                //TODO: act on model ?
+                getTablePagerAdapter().setRefreshingAll(false)
             }
 
 
@@ -309,6 +316,13 @@ class FindMyBikesActivity : AppCompatActivity(),
             if (it != null) {
                 placeAutocompleteLoadingProgressBar.visibility = it
             }
+        })
+
+        findMyBikesActivityViewModel.isConnectivityAvailable.observe(this, Observer {
+            //TODO: doesn't work when launching while offline. Probably because table fragments don't exist just yet
+            //TODO: refactor such as not going through adapter (pass LiveData<Boolean> to table model constructor). Manipulate it from activity model
+            //Do it when refactoring distance comparator
+            getTablePagerAdapter().setRefreshEnabledAll(it == true)
         })
 
         findMyBikesActivityViewModel.searchFabBackgroundtintListColorResId.observe(this, Observer {
@@ -854,7 +868,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         findMyBikesActivityViewModel.requestCurrentBikeSystemStatusRefresh()
 
         //TODO: act on model ?
-        getTablePagerAdapter().setRefreshingAll(false)
+        getTablePagerAdapter().setRefreshingAll(true)
 
         //TODO: this is debug
         //getTablePagerAdapter().smoothScrollHighlightedInViewForTable(BIKE_STATIONS, true)

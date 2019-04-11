@@ -49,46 +49,55 @@ class StationTablePagerAdapter(
                 headerFromIconResId: Int?, headerToIconResId: Int?,
                 stringIfEmpty: String) {
 
-        var tableModel =
-                ViewModelProviders.of(retrieveListFragment(BIKE_STATIONS), bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+        retrieveListFragment(BIKE_STATIONS)?.let { bikeFrag ->
+            var tableModel =
+                    ViewModelProviders.of(bikeFrag, bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+            if (_pageID == DOCK_STATIONS)
+                retrieveListFragment(DOCK_STATIONS)?.let { dockFrag ->
+                    tableModel = ViewModelProviders.of(dockFrag, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+                }
 
-        if (_pageID == DOCK_STATIONS) {
-            tableModel = ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+            tableModel.setShowProximity(showProximity)
+            tableModel.setStringIfEmpty(stringIfEmpty)
         }
-
-        tableModel.setShowProximity(showProximity)
-        //tableModel.setHeaderFromIconResId(headerFromIconResId)
-        //tableModel.setHeaderToIconResId(headerToIconResId)
-        tableModel.setStringIfEmpty(stringIfEmpty)
     }
 
     //TODO: this smell like business logic
     fun hideStationRecap() {
-        val dockTableModel =
-                ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+        retrieveListFragment(DOCK_STATIONS)?.let {
+            val dockTableModel =
+                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
 
-        dockTableModel.setRecapVisibility(false)
+            dockTableModel.setRecapVisibility(false)
+        }
     }
 
     //TODO: this smell like business logic
     fun showStationRecap() {
-        val dockTableModel =
-                ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+        retrieveListFragment(DOCK_STATIONS)?.let {
+            val dockTableModel =
+                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
 
-        dockTableModel.setRecapVisibility(true)
+            dockTableModel.setRecapVisibility(true)
+        }
     }
 
     fun setRefreshEnabledAll(toSet: Boolean) {
-        val dockTableModel =
-                ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-        val bikeTableModel =
-                ViewModelProviders.of(retrieveListFragment(BIKE_STATIONS), bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-        bikeTableModel.setRefreshEnabled(toSet)
-        dockTableModel.setRefreshEnabled(toSet)
+        retrieveListFragment(DOCK_STATIONS)?.let {
+            val dockTableModel =
+                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+            retrieveListFragment(BIKE_STATIONS)?.let { bikeFrag ->
+                val bikeTableModel =
+                        ViewModelProviders.of(bikeFrag, bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+
+                bikeTableModel.setRefreshEnabled(toSet)
+                dockTableModel.setRefreshEnabled(toSet)
+            }
+        }
     }
 
-    private fun retrieveListFragment(position: Int): StationTableFragment {
-        return getRegisteredFragment(position) as StationTableFragment
+    private fun retrieveListFragment(position: Int): StationTableFragment? {
+        return getRegisteredFragment(position) as? StationTableFragment
     }
 
     fun getHighlightedStationForTable(position: Int): BikeStation? {
@@ -113,17 +122,18 @@ class StationTablePagerAdapter(
     }
 
     fun retrieveClosestRawIdAndAvailability(_pageID: Int): String? {
-        val toReturn: String?
+        var toReturn: String? = null
 
-        var tableModel =
-                ViewModelProviders.of(retrieveListFragment(BIKE_STATIONS), bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-
-        if (_pageID == DOCK_STATIONS) {
-            tableModel = ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+        retrieveListFragment(BIKE_STATIONS)?.let { bikeFrag ->
+            var tableModel =
+                    ViewModelProviders.of(bikeFrag, bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+            if (_pageID == DOCK_STATIONS)
+                retrieveListFragment(DOCK_STATIONS)?.let { dockFrag ->
+                    tableModel = ViewModelProviders.of(dockFrag, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+                }
+            //TODO: someone should observe that instead of forcing value retrieval randomly
+            toReturn = tableModel.sortedAvailabilityDataString.value
         }
-
-        //TODO: someone should observe that instead of forcing value retrieval randomly
-        toReturn = tableModel.sortedAvailabilityDataString.value
 
         return toReturn
     }
@@ -155,30 +165,34 @@ class StationTablePagerAdapter(
     }
 
     fun setRefreshingAll(toSet: Boolean) {
-        val dockTableModel =
-                ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-        val bikeTableModel =
-                ViewModelProviders.of(retrieveListFragment(BIKE_STATIONS), bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+        retrieveListFragment(DOCK_STATIONS)?.let {
+            val dockTableModel =
+                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+            retrieveListFragment(BIKE_STATIONS)?.let { bikeFrag ->
+                val bikeTableModel =
+                        ViewModelProviders.of(bikeFrag, bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
 
-        dockTableModel.setRefreshLayoutVisible(toSet)
-        bikeTableModel.setRefreshLayoutVisible(toSet)
+                dockTableModel.setRefreshLayoutVisible(toSet)
+                bikeTableModel.setRefreshLayoutVisible(toSet)
+            }
+        }
     }
 
     fun notifyStationAUpdate(_newALatLng: LatLng, _userLatLng: LatLng) {
-        retrieveListFragment(DOCK_STATIONS).updateTotalTripSortComparator(_userLatLng, _newALatLng)
+        retrieveListFragment(DOCK_STATIONS)?.updateTotalTripSortComparator(_userLatLng, _newALatLng)
     }
 
     fun smoothScrollHighlightedInViewForTable(_tableId: Int, _appBarExpanded: Boolean) {
-        var tableModel =
-                ViewModelProviders.of(retrieveListFragment(BIKE_STATIONS), bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+        retrieveListFragment(BIKE_STATIONS)?.let { bikeFrag ->
+            var tableModel =
+                    ViewModelProviders.of(bikeFrag, bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+            if (_tableId == DOCK_STATIONS)
+                retrieveListFragment(DOCK_STATIONS)?.let { dockFrag ->
+                    tableModel = ViewModelProviders.of(dockFrag, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
 
-        if (_tableId == DOCK_STATIONS) {
-            tableModel = ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+                    tableModel.smoothScrollSelectionInView()
+                }
         }
-
-        tableModel.smoothScrollSelectionInView()
-
-        //retrieveListFragment(_tableId).smoothScrollSelectionInView(_appBarExpanded)
     }
 
     fun setClickResponsivenessForTable(_tableId: Int, _toSet: Boolean) {
@@ -187,8 +201,8 @@ class StationTablePagerAdapter(
 
     fun showFavoriteHeaderInBTab() {
 
-        val dockTableModel =
-                ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
+        //val dockTableModel =
+        //        ViewModelProviders.of(retrieveListFragment(DOCK_STATIONS), dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
 
         //dockTableModel.setHeaderToIconResId((R.drawable.ic_pin_favorite_24dp_white))
     }
