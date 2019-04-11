@@ -178,6 +178,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             }
         })
 
+        //TODO: Model should prepare desired app bar expansion state. !!!appBarExpanded already in model tracks if it *is* expanded or not!!!
         findMyBikesActivityViewModel.isLookingForBike.observe(this, Observer {
             appBarLayout.setExpanded(it != true, true)
         })
@@ -283,6 +284,15 @@ class FindMyBikesActivity : AppCompatActivity(),
 
                 onboardingShowcaseView.hide()
             }*/
+        })
+
+        findMyBikesActivityViewModel.curBikeSystem.observe(this, Observer { bikeSystem ->
+            bikeSystem?.let {
+                findViewById<TextView>(R.id.favorites_sheet_header_textview).text =
+                        Utils.fromHtml(String.format(resources.getString(R.string.favorites_sheet_header),
+                                it.name
+                        ))
+            }
         })
 
         findMyBikesActivityViewModel.isFavoriteSheetEditInProgress.observe(this, Observer {
@@ -591,31 +601,6 @@ class FindMyBikesActivity : AppCompatActivity(),
         super.onResume()
     }
 
-    //TODO, with repo and stuff, get rid of async tasks
-    private fun tryInitialSetup() {
-
-        /*if (Utils.Connectivity.isConnected(this)) {
-            splashScreenTextTop.setText(getString(R.string.auto_bike_select_finding))
-
-            if (SharedPrefHelper.getInstance().isBikeNetworkIdAvailable(this)) {
-
-                findMyBikesActivityViewModel.setCurrentBikeSytemId(SharedPrefHelper.getBikeNetworkId(this))
-
-                val downloadWebTask = NearbyActivity.DownloadWebTask()
-                mDownloadWebTask.execute()
-
-                Log.i("nearbyActivity", "No sortedStationList data in RootApplication but bike network id available in SharedPrefHelper- launching first download")
-            } else {
-
-                mFindNetworkTask = FindNetworkTask(SharedPrefHelper.getInstance().getBikeNetworkName(this))
-                mFindNetworkTask.execute()
-            }
-        } else {
-            Utils.Snackbar.makeStyled(mSplashScreen, R.string.connectivity_rationale, Snackbar.LENGTH_INDEFINITE, ContextCompat.getColor(this@NearbyActivity, R.color.theme_primary_dark))
-                    .setAction(R.string.retry) { tryInitialSetup() }.show()
-        }*/
-    }
-
     private fun setupFavoriteSheet() {
         //TODO: ??!!
     }
@@ -727,7 +712,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         supportActionBar!!.title = Utils.fromHtml(String.format(resources.getString(R.string.appbar_title_formatting),
                 resources.getString(R.string.appbar_title_prefix),
-                hashtagableBikeSystemName,
+                bs?.name ?: "",//hashtagableBikeSystemName,
                 resources.getString(R.string.appbar_title_postfix)))
         //doesn't scale well, but just a little touch for my fellow Montréalers
         @Suppress("CanBeVal") var cityHashtag = ""

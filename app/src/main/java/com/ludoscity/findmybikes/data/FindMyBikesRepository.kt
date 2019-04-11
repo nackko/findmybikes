@@ -39,8 +39,6 @@ class FindMyBikesRepository private constructor(
     //when db is updated.
     //COULD NOT RETURN THEM DIRECTLY FROM ACCESSOR
     private val curBikeSystemData: LiveData<BikeSystem> = currentBikeSystemDao.single
-    private val favoritePlaceList: LiveData<List<FavoriteEntityPlace>> = favoriteEntityPlaceDao.all
-    private val favoriteStationList: LiveData<List<FavoriteEntityStation>> = favoriteEntityStationDao.all
     private val curBikeSystemStatusData: LiveData<List<BikeStation>> = stationDao.all
 
 
@@ -171,11 +169,11 @@ class FindMyBikesRepository private constructor(
     }
 
     fun getFavoriteStationList(): LiveData<List<FavoriteEntityStation>> {
-        return favoriteStationList
+        return favoriteEntityStationDao.getAllForBikeSystemId(currentBikeSystemDao.singleIdSynchronous)
     }
 
     fun getFavoritePlaceList(): LiveData<List<FavoriteEntityPlace>> {
-        return favoritePlaceList
+        return favoriteEntityPlaceDao.getAllForBikeSystemId(currentBikeSystemDao.singleIdSynchronous)
     }
 
     fun addOrUpdateFavorite(toAddOrUpdate: FavoriteEntityBase) {
@@ -236,6 +234,10 @@ class FindMyBikesRepository private constructor(
 
     private fun getFavoritePlaceByFavoriteId(favoriteId: String): FavoriteEntityPlace? {
         return favoriteEntityPlaceDao.getForId(favoriteId)
+    }
+
+    fun getFavoriteCount(): Int {
+        return favoriteEntityPlaceDao.count + favoriteEntityStationDao.count
     }
 
     fun getAllFavoriteStationIdList(): List<String> {

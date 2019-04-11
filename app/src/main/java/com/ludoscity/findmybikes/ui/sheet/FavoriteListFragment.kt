@@ -50,7 +50,7 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
                     isFavoriteSheetItemNameEditInProgress = favItemNameEditInProgress!!
                 })
 
-        val facto = InjectorUtils.provideFavoriteSheetListFragmentViewModelFactory(activity!!.application, findMyBikesActivityViewModel!!.isFavoriteSheetEditInProgress)
+        val facto = InjectorUtils.provideFavoriteSheetListFragmentViewModelFactory(activity!!.application, findMyBikesActivityViewModel!!.isFavoriteSheetEditInProgress, findMyBikesActivityViewModel!!.curBikeSystem)
 
         favoriteSheetListViewModel = ViewModelProviders.of(this, facto).get(FavoriteSheetListViewModel::class.java)
 
@@ -154,7 +154,7 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
     override fun onFavoriteSheetEditDone() {
 
         for ((i, fav) in favoriteRecyclerViewAdapter.items.withIndex()) {
-            favoriteSheetListViewModel!!.updateFavoriteUiIndexByFavoriteId(fav.favoriteId, i)
+            favoriteSheetListViewModel!!.updateFavoriteUiIndexByFavoriteId(fav.favoriteId, favoriteRecyclerViewAdapter.items.size - i)
         }
         findMyBikesActivityViewModel!!.favoriteSheetEditDone()
     }
@@ -169,11 +169,4 @@ class FavoriteListFragment : Fragment(), FavoriteRecyclerViewAdapter.OnFavoriteL
 
         fun onFavoriteListItemClicked(favoriteId: String)
     }
-
-    companion object {
-
-        val FAVORITE_LIST_ITEM_CLICK_PATH = "station_list_item_click"
-        val FAVORITE_LIST_INACTIVE_ITEM_CLICK_PATH = "station_list_inactive_item_click"
-    }
-
 }

@@ -12,8 +12,8 @@ import android.arch.persistence.room.Query
 @Dao
 interface FavoriteEntityPlaceDao {
 
-    @get:Query("SELECT * FROM FavoriteEntityPlace ORDER BY ui_index ASC")
-    val all: LiveData<List<FavoriteEntityPlace>>
+    @Query("SELECT * FROM FavoriteEntityPlace WHERE bike_system_id = :bikeSystemId ORDER BY ui_index ASC")
+    fun getAllForBikeSystemId(bikeSystemId: String): LiveData<List<FavoriteEntityPlace>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOne(favoriteEntityPlace: FavoriteEntityPlace)
@@ -33,6 +33,9 @@ interface FavoriteEntityPlaceDao {
     //TODO: a more complex query that can be returned as a LiveData<FavoriteEntityBase> ?
     @Query("SELECT * FROM FavoriteEntityPlace WHERE id = :favoriteId")
     fun getForId(favoriteId: String): FavoriteEntityPlace?
+
+    @get:Query("SELECT COUNT(*) FROM FavoriteEntityPlace")
+    val count: Int
 
     @Query("SELECT COUNT(*) FROM FavoriteEntityPlace WHERE id <> :favoriteIdToExclude")
     fun validFavoriteCount(favoriteIdToExclude: String): Int

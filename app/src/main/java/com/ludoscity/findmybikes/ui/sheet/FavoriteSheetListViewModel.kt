@@ -8,6 +8,7 @@ import android.arch.lifecycle.Observer
 import android.graphics.Typeface
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
+import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityPlace
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
@@ -23,7 +24,8 @@ import kotlinx.coroutines.launch
  */
 
 class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
-                                 val sheetEditInProgress: LiveData<Boolean>,
+                                 private val sheetEditInProgress: LiveData<Boolean>,
+                                 curBikeSystemDataSource: LiveData<BikeSystem>,
                                  app: Application) : AndroidViewModel(app) {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
@@ -34,86 +36,107 @@ class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
 
     private val sheetItemList: MutableLiveData<List<FavoriteSheetItemData>> = MutableLiveData()
 
-    private val favoriteStationListDataSource: LiveData<List<FavoriteEntityStation>>
-    private val favoritePlaceListDataSource: LiveData<List<FavoriteEntityPlace>>
+    private lateinit var favoriteStationListDataSource: LiveData<List<FavoriteEntityStation>>
+    private lateinit var favoritePlaceListDataSource: LiveData<List<FavoriteEntityPlace>>
 
-    private val favoriteStationDataObserver: Observer<List<FavoriteEntityStation>>
-    private val favoritePlaceDataObserver: Observer<List<FavoriteEntityPlace>>
+    private lateinit var favoriteStationDataObserver: Observer<List<FavoriteEntityStation>>
+    private lateinit var favoritePlaceDataObserver: Observer<List<FavoriteEntityPlace>>
     private val favoriteSheetInProgressObserver: Observer<Boolean>
+    private val curBikeSystemObserver: Observer<BikeSystem>
 
     //convenience
     private val mergeFavoriteEntityList = MutableLiveData<List<FavoriteEntityBase>>()
+    //TODO: replug selection ?
     private val selectedFavoriteEntityId = MutableLiveData<String>()
 
-    ////////////////////////////////////////////
-    //old code
-    private val mFavoriteList = MutableLiveData<List<FavoriteEntityBase>>()
-
-    val favoriteEntityList: LiveData<List<FavoriteEntityBase>>
-        get() = mFavoriteList
-
-    //TODO: this bugs me, I hope setValue is thread safe. Revisit this
-    //android app architecture guide : https://developer.android.com/topic/libraries/architecture/guide.html
     init {
 
-        //sheetEditInProgress.value = false
+        curBikeSystemObserver = Observer { curBikeSystem ->
+            curBikeSystem?.let {
+                coroutineScopeIO.launch {
+
+                    favoriteStationListDataSource = repo.getFavoriteStationList()
+                    favoritePlaceListDataSource = repo.getFavoritePlaceList()
+
+                    favoriteStationDataObserver = Observer { favStationData ->
+                        favStationData?.let {
+
+                            val merged = emptyList<FavoriteEntityBase>().toMutableList()
+
+                            merged.addAll(it)
+                            merged.addAll(favoritePlaceListDataSource.value ?: emptyList())
+
+                            merged.sortByDescending { favorite -> favorite.uiIndex }
+
+                            mergeFavoriteEntityList.postValue(merged)
+                        }
+                    }
+
+                    favoriteStationListDataSource.observeForever(favoriteStationDataObserver)
+
+                    favoritePlaceDataObserver = Observer {
+                        it?.let {
+                            val merged = emptyList<FavoriteEntityBase>().toMutableList()
+
+                            merged.addAll(it)
+                            merged.addAll(favoriteStationListDataSource.value ?: emptyList())
+
+                            merged.sortByDescending { favorite -> favorite.uiIndex }
+
+                            mergeFavoriteEntityList.postValue(merged)
+                        }
+                    }
+
+                    favoritePlaceListDataSource.observeForever(favoritePlaceDataObserver)
+                }
+            }
+        }
+
+        curBikeSystemDataSource.observeForever(curBikeSystemObserver)
 
         favoriteSheetInProgressObserver = Observer {
 
-            val sortedFavoriteList = mergeFavoriteEntityList.value?.toMutableList()
-                    ?: emptyList<FavoriteEntityBase>().sortedWith(
-                            compareBy {
-                                it.uiIndex
-                            }
-                    )
+            if (it == true) {
 
-            val newFavoriteDisplayData = ArrayList<FavoriteSheetItemData>()
-            //TODO: in backgorund
+                val newFavoriteDisplayData = ArrayList<FavoriteSheetItemData>()
+                //TODO: in backgorund
 
-            sortedFavoriteList.forEach { fav ->
+                mergeFavoriteEntityList.value?.forEach { fav ->
 
-                val sheeEditInProgress = it == true
+                    val sheeEditInProgress = it == true
 
-                newFavoriteDisplayData.add(FavoriteSheetItemData(
-                        R.color.theme_accent_transparent,
-                        sheeEditInProgress,
-                        !sheeEditInProgress,
-                        sheeEditInProgress,
-                        when (sheeEditInProgress) {
-                            true -> Utils.getPercentResource(getApplication(),
-                                    R.dimen.favorite_name_width_sheet_editing,
-                                    true)
-                            false -> Utils.getPercentResource(getApplication(),
-                                    R.dimen.favorite_name_width_no_sheet_editing,
-                                    true)
-                        },
-                        fav.displayName,
-                        if (fav.isDisplayNameDefault) Typeface.ITALIC else Typeface.BOLD,
-                        fav.id
-                ))
+                    newFavoriteDisplayData.add(FavoriteSheetItemData(
+                            R.color.theme_accent_transparent,
+                            sheeEditInProgress,
+                            !sheeEditInProgress,
+                            sheeEditInProgress,
+                            when (sheeEditInProgress) {
+                                true -> Utils.getPercentResource(getApplication(),
+                                        R.dimen.favorite_name_width_sheet_editing,
+                                        true)
+                                false -> Utils.getPercentResource(getApplication(),
+                                        R.dimen.favorite_name_width_no_sheet_editing,
+                                        true)
+                            },
+                            fav.displayName,
+                            if (fav.isDisplayNameDefault) Typeface.ITALIC else Typeface.BOLD,
+                            fav.id
+                    ))
+                }
+
+                sheetItemList.value = newFavoriteDisplayData
             }
-
-            sheetItemList.value = newFavoriteDisplayData
-
         }
 
         sheetEditInProgress.observeForever(favoriteSheetInProgressObserver)
 
+        mergeFavoriteEntityList.observeForever {
 
-
-        mergeFavoriteEntityList.observeForever { newData ->
-            //TODO: emit data for display
-            val sortedFavoriteList = newData?.toMutableList()
-                    ?: emptyList<FavoriteEntityBase>().sortedWith(
-                            compareBy {
-                                it.uiIndex
-                            }
-                    )
 
             val newFavoriteDisplayData = ArrayList<FavoriteSheetItemData>()
             //TODO: in backgorund
 
-            sortedFavoriteList.forEach { fav ->
+            mergeFavoriteEntityList.value?.forEach { fav ->
 
                 val sheeEditInProgress = sheetEditInProgress.value == true
 
@@ -138,127 +161,7 @@ class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
 
             sheetItemList.value = newFavoriteDisplayData
         }
-
-        favoriteStationListDataSource = repo.getFavoriteStationList()
-        favoritePlaceListDataSource = repo.getFavoritePlaceList()
-
-        favoriteStationDataObserver = Observer {
-            it?.let {
-                coroutineScopeIO.launch {
-                    val merged = emptyList<FavoriteEntityBase>().toMutableList()
-
-                    merged.addAll(it)
-                    merged.addAll(favoritePlaceListDataSource.value ?: emptyList())
-
-                    merged.sortBy { it.uiIndex }
-
-                    mergeFavoriteEntityList.postValue(it)
-                }
-            }
-        }
-
-        favoriteStationListDataSource.observeForever(favoriteStationDataObserver)
-
-        favoritePlaceDataObserver = Observer {
-            it?.let {
-                coroutineScopeIO.launch {
-                    val merged = emptyList<FavoriteEntityBase>().toMutableList()
-
-                    merged.addAll(it)
-                    merged.addAll(favoriteStationListDataSource.value ?: emptyList())
-
-                    merged.sortBy { it.uiIndex }
-
-                    mergeFavoriteEntityList.postValue(merged)
-                }
-            }
-        }
-
-        favoritePlaceListDataSource.observeForever(favoritePlaceDataObserver)
-
-
-        //////////////////////3
-        //old code
-        /*FavoriteRepository.getInstance().favoriteStationList.observeForever { favoriteEntityStations ->
-            val oldList = mFavoriteList.value
-
-            val mergedList = ArrayList<FavoriteEntityBase>()
-
-            val toPurge = ArrayList<FavoriteEntityBase>()
-
-            /*if (oldList != null) {
-                for (fav in oldList) {
-
-                    if (!favoriteEntityStations!!.contains(fav) && !fav.id.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
-                        toPurge.add(fav)
-                    }
-                }
-
-                oldList.removeAll(toPurge)
-                mergedList.addAll(oldList)
-            }*/
-
-            //mergedList.addAll(favoriteEntityStations)
-
-            val Unique_set = HashSet(mergedList)
-
-            val mergedListUnique = ArrayList(Unique_set)
-
-            val mergedUniqueListForCurrentBikeSystem = ArrayList<FavoriteEntityBase>()
-
-            for (fav in mergedListUnique) {
-                //TODO: replug merging with current bike system id from REPO
-                if (fav.bikeSystemId.equals(mNearbyActivityViewModel!!.getCurrentBikeSytemId().value!!, ignoreCase = true)) {
-                    mergedUniqueListForCurrentBikeSystem.add(fav)
-                }
-            }
-
-            mFavoriteList.setValue(mergedUniqueListForCurrentBikeSystem)
-        }*/
-
-        /*FavoriteRepository.getInstance().favoritePlaceList.observeForever { favoriteEntityPlaces ->
-            val oldList = mFavoriteList.value
-
-            val mergedList = ArrayList<FavoriteEntityBase>()
-
-            val toPurge = ArrayList<FavoriteEntityBase>()
-
-            /*if (oldList != null) {
-                for (fav in oldList) {
-                    if (!favoriteEntityPlaces!!.contains(fav) && fav.id.startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)) {
-                        toPurge.add(fav)
-                    }
-                }
-                oldList.removeAll(toPurge)
-                mergedList.addAll(oldList)
-            }
-
-            mergedList.addAll(favoriteEntityPlaces)*/
-
-            val Unique_set = HashSet(mergedList)
-
-            val mergedListUnique = ArrayList(Unique_set)
-
-            val mergedUniqueListForCurrentBikeSystem = ArrayList<FavoriteEntityBase>()
-
-            for (fav in mergedListUnique) {
-                //TODO: replug merging with current bike system id from REPO
-                //if (fav.bikeSystemId.equals(mNearbyActivityViewModel!!.getCurrentBikeSytemId().value!!, ignoreCase = true)) {
-                    mergedUniqueListForCurrentBikeSystem.add(fav)
-                //}
-            }
-
-            mFavoriteList.setValue(mergedUniqueListForCurrentBikeSystem)
-        }*/
     }
-
-    /*fun getFavoriteEntityStationLiveDataForId(favoriteId: String): LiveData<FavoriteEntityStation>? {
-        return repo.getFavoriteStationByFavoriteId(favoriteId)
-    }
-
-    fun getFavoriteEntityPlaceLiveDataForId(favoriteId: String): LiveData<FavoriteEntityPlace>? {
-        return repo.getFavoritePlaceByFavoriteId(favoriteId)
-    }*/
 
     fun isFavorite(id: String): Boolean {
         return repo.isFavoriteId(id)
@@ -270,14 +173,6 @@ class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
 
     fun removeFavorite(favIdToRemove: String) {
         repo.removeFavoriteByFavoriteId(favIdToRemove)
-    }
-
-    fun addFavorite(toAdd: FavoriteEntityBase) {
-
-        if (toAdd.uiIndex == -1)
-            toAdd.uiIndex = mFavoriteList.value!!.size
-
-        repo.addOrUpdateFavorite(toAdd)
     }
 
     fun updateFavoriteCustomNameByFavoriteId(favoriteIdToUpdate: String, newCustomName: String) {

@@ -65,6 +65,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val favoriteSheetEditFabShown = MutableLiveData<Boolean>()
 
     private val myCurBikeSystem = MutableLiveData<BikeSystem>()
+    private var lastBikeSystemId: String? = null
 
     val curBikeSystem: LiveData<BikeSystem>
         get() = myCurBikeSystem
@@ -407,36 +408,40 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
     //TODO: have finalDesBikeStation the same way we have finalDestPlace and finalDestFavoriteEntityBase
     fun addFinalDestToFavoriteList() {
-        var done = false
-        finalDestPlace.value?.let {
-            val newFav = FavoriteEntityPlace(
-                    id = it.id,
-                    defaultName = it.name.toString(),
-                    location = it.latLng,
-                    attributions = it.attributions?.toString() ?: "",
-                    bikeSystemId = curBikeSystem.value?.id ?: "[[[NO_ID]]]"
-            )
+        coroutineScopeIO.launch {
+            var done = false
+            finalDestPlace.value?.let {
+                val newFav = FavoriteEntityPlace(
+                        id = it.id,
+                        uiIndex = repo.getFavoriteCount(),
+                        defaultName = it.name.toString(),
+                        location = it.latLng,
+                        attributions = it.attributions?.toString() ?: "",
+                        bikeSystemId = curBikeSystem.value?.id ?: "[[[NO_ID]]]"
+                )
 
-            addFavorite(newFav)
-            finalDestPlace.value = null
-            //TODO: have table model observe on finaldestPlace/FavEntityBase
-            //and do the icons figuring out
-            //could also use isfav like trip details fragment
-            dockTableProxHeaderFromResId.value = R.drawable.ic_destination_arrow_white_24dp
-            dockTableProxHeaderToResId.value = R.drawable.ic_pin_favorite_24dp_white
-            finalDestFavorite.value = newFav
+                addFavorite(newFav)
+                finalDestPlace.postValue(null)
+                //TODO: have table model observe on finaldestPlace/FavEntityBase
+                //and do the icons figuring out
+                //could also use isfav like trip details fragment
+                dockTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
+                dockTableProxHeaderToResId.postValue(R.drawable.ic_pin_favorite_24dp_white)
+                finalDestFavorite.postValue(newFav)
 
-            done = true
-        }
+                done = true
+            }
 
-        if (!done) {
-            val newFav = FavoriteEntityStation(
-                    stationB.value?.locationHash ?: "[[[NO_HASH]]]",
-                    stationB.value?.name ?: "[[[NO_NAME]]]",
-                    bikeSystemId = curBikeSystem.value?.id ?: "[[[NO_ID]]]"
-            )
-            addFavorite(newFav)
-            finalDestFavorite.value = newFav
+            if (!done) {
+                val newFav = FavoriteEntityStation(
+                        id = stationB.value?.locationHash ?: "[[[NO_HASH]]]",
+                        uiIndex = repo.getFavoriteCount(),
+                        defaultName = stationB.value?.name ?: "[[[NO_NAME]]]",
+                        bikeSystemId = curBikeSystem.value?.id ?: "[[[NO_ID]]]"
+                )
+                addFavorite(newFav)
+                finalDestFavorite.postValue(newFav)
+            }
         }
 
         hideFavoriteFab()
@@ -661,12 +666,17 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         myCurBikeSystem.observeForever {
             Log.d(TAG, "$it")
 
-            setStationA(null)
-            setStationB(null)
-            statALatLng.value = null
-            statBLatLng.value = null
-            finalDestFavorite.value = null
-            finalDestPlace.value = null
+            if (lastBikeSystemId != it?.id) {
+                //we switched systems since last time, reset everything
+                setStationA(null)
+                setStationB(null)
+                statALatLng.value = null
+                statBLatLng.value = null
+                finalDestFavorite.value = null
+                finalDestPlace.value = null
+            }
+
+            lastBikeSystemId = it?.id
 
             if (it == null) {
                 bikeSystemListData.value?.let { bikeSystemList ->
@@ -896,8 +906,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 finalDestFavorite.value = null
                 statBLatLng.value = null
                 tripDetailsWidgetShown.value = false
-                favoritePickerFabShown.value = true
-                searchFabShown.value = connectivityAvailable.value == true
+                favoritePickerFabShown.value = isLookingForBike.value != true
+                searchFabShown.value = isLookingForBike.value != true && connectivityAvailable.value == true
                 favoriteFabShown.value = false
                 clearBSelectionFabShown.value = false
                 distToUserComp.value = if (userLoc.value == null) null else

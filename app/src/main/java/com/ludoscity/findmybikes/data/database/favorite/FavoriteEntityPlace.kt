@@ -11,10 +11,10 @@ import com.google.android.gms.maps.model.LatLng
  */
 
 @Entity
-class FavoriteEntityPlace(id: String, defaultName: String, bikeSystemId: String, //Room need those 2 accessors
+class FavoriteEntityPlace(id: String, uiIndex: Int, defaultName: String, bikeSystemId: String, //Room need those 2 accessors
                           val location: LatLng, override var attributions: String) : FavoriteEntityBase(id = id,
         defaultName = defaultName,
-        uiIndex = -1,
+        uiIndex = uiIndex,
         bikeSystemId = bikeSystemId) {
     override fun getLocation(ctx: Context): LatLng {
         return location

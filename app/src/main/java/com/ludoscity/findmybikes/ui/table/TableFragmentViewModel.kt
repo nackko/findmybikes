@@ -358,8 +358,8 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                                                       outdated: Boolean) {
         coroutineScopeIO.launch {
             tableRecapMutableData.postValue(StationTableRecapData(
-                    if (repository.isFavoriteId(stationToRecap?.locationHash))
-                        repository.getFavoriteEntityByFavoriteId(stationToRecap?.locationHash)?.getSpannedDisplayName(getApplication(), true)
+                    if (stationToRecap != null && repository.isFavoriteId(stationToRecap.locationHash))
+                        repository.getFavoriteEntityByFavoriteId(stationToRecap.locationHash)?.getSpannedDisplayName(getApplication(), true)
                                 ?: SpannableString("[[[FAV_NAME]]]")
                     else
                         SpannableString(stationToRecap?.name ?: "[[[STATION_NAME]]]"),

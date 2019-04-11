@@ -805,11 +805,11 @@ public class NearbyActivity extends AppCompatActivity
                 if (attr != null)
                     attrString = attr.toString();
 
-                FavoriteEntityPlace newFavForPlace = new FavoriteEntityPlace(place.getId(),
+                FavoriteEntityPlace newFavForPlace = null;/*new FavoriteEntityPlace(place.getId(),
                         place.getName().toString(),
                         "",//findMyBikesActivityViewModel.getCurrentBikeSytemId().getValue(),
                         place.getLatLng(),
-                        attrString);
+                        attrString);*/
 
                 final FavoriteEntityBase existingFavForPlace = null;//mFavoriteSheetListViewModel.getFavoriteEntityForId(newFavForPlace.getId());
 
@@ -1118,7 +1118,7 @@ public class NearbyActivity extends AppCompatActivity
 
     private void addFavorite(final FavoriteEntityBase _toAdd, boolean showUndo) {
 
-        mFavoriteSheetListViewModel.addFavorite(_toAdd);
+        //mFavoriteSheetListViewModel.addFavorite(_toAdd);
 
         //To setup correct name
         final BikeStation closestBikeStation = getTablePagerAdapter().getHighlightedStationForTable(StationTablePagerAdapter.Companion.getBIKE_STATIONS());
@@ -1425,10 +1425,10 @@ public class NearbyActivity extends AppCompatActivity
             if (highlighthedDockStation != null) {
                 setupBTableSelection(highlighthedDockStation.getLocationHash(), isLookingForBike());
 
-                FavoriteEntityBase newFavForStation = new FavoriteEntityStation(highlighthedDockStation.getLocationHash(),
+                FavoriteEntityBase newFavForStation = null;/*new FavoriteEntityStation(highlighthedDockStation.getLocationHash(),
                         highlighthedDockStation.getName(),
                         ""//findMyBikesActivityViewModel.getCurrentBikeSytemId().getValue()
-                );
+                );*/
 
                 boolean showFavoriteAddFab = false;
 

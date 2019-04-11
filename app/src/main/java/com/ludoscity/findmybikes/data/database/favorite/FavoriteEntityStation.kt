@@ -11,10 +11,10 @@ import com.ludoscity.findmybikes.utils.InjectorUtils
  * A data model class to handle the concept of a favorite station and save it using Room
  */
 @Entity
-class FavoriteEntityStation(id: String, defaultName: String, bikeSystemId: String) : FavoriteEntityBase(
+class FavoriteEntityStation(id: String, uiIndex: Int, defaultName: String, bikeSystemId: String) : FavoriteEntityBase(
         id = id,
         defaultName = defaultName,
-        uiIndex = -1,
+        uiIndex = uiIndex,
         bikeSystemId = bikeSystemId) {
 
     override val attributions: String

@@ -7,6 +7,7 @@ import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase
+import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
@@ -109,10 +110,11 @@ class InjectorUtils {
         }
 
         fun provideFavoriteSheetListFragmentViewModelFactory(app: Application,
-                                                             isSheetEditInProgress: LiveData<Boolean>): FavoriteSheetListFragmentModelFactory {
+                                                             isSheetEditInProgress: LiveData<Boolean>,
+                                                             curBikeSystemDataSource: LiveData<BikeSystem>): FavoriteSheetListFragmentModelFactory {
             val repo = provideRepository(app.applicationContext)
 
-            return FavoriteSheetListFragmentModelFactory(repo, app, isSheetEditInProgress)
+            return FavoriteSheetListFragmentModelFactory(repo, app, isSheetEditInProgress, curBikeSystemDataSource)
         }
 
         fun provideTripFragmentViewModelFactory(app: Application,

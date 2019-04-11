@@ -12,8 +12,8 @@ import android.arch.persistence.room.Query
 @Dao
 interface FavoriteEntityStationDao {
 
-    @get:Query("SELECT * FROM FavoriteEntityStation ORDER BY ui_index ASC")
-    val all: LiveData<List<FavoriteEntityStation>>
+    @Query("SELECT * FROM FavoriteEntityStation WHERE bike_system_id = :bikeSystemId ORDER BY ui_index ASC")
+    fun getAllForBikeSystemId(bikeSystemId: String): LiveData<List<FavoriteEntityStation>>
 
     @get:Query("SELECT id FROM FavoriteEntityStation")
     val allId: List<String>
@@ -36,6 +36,9 @@ interface FavoriteEntityStationDao {
     //TODO: a more complex query that can be returned as a LiveData<FavoriteEntityBase> ?
     @Query("SELECT * FROM FavoriteEntityStation WHERE id = :favoriteId")
     fun getForId(favoriteId: String): FavoriteEntityStation?
+
+    @get:Query("SELECT COUNT(*) FROM FavoriteEntityStation")
+    val count: Int
 
     @Query("SELECT COUNT(*) FROM FavoriteEntityStation WHERE id <> :favoriteIdToExclude")
     fun validFavoriteCount(favoriteIdToExclude: String): Int

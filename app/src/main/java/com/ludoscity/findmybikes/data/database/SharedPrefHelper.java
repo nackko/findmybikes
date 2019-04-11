@@ -144,13 +144,14 @@ public class SharedPrefHelper {
                     if (curFav.getString("favorite_id").startsWith(FavoriteEntityPlace.PLACE_ID_PREFIX)){
                         toReturn.add(new FavoriteEntityPlace(
                                 curFav.getString("favorite_id"),
+                                i,
                                 curFav.getString("display_name"),
                                 InjectorUtils.Companion.provideRepository(_ctx).getCurrentBikeSystem().getValue().getId(),
                                 new LatLng(curFav.getDouble("latitude"), curFav.getDouble("longitude")),
                                 curFav.getString("attributions")));
                     }
                     else{
-                        toReturn.add(new FavoriteEntityStation(curFav.getString("favorite_id"), curFav.getString("display_name"),
+                        toReturn.add(new FavoriteEntityStation(curFav.getString("favorite_id"), i, curFav.getString("display_name"),
                                 InjectorUtils.Companion.provideRepository(_ctx).getCurrentBikeSystem().getValue().getId()));
                     }
                 }
