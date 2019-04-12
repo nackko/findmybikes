@@ -394,6 +394,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val nowObserver: Observer<Long>
 
     private val optimalDockStationIdObserver: Observer<String>
+    private val optimalBikeStationIdObserver: Observer<String>
 
     private val statusBarTxt = MutableLiveData<String>()
     private val statusBarBckColorResId = MutableLiveData<Int>()
@@ -606,7 +607,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     futureStringBuilder.clear()
 
                     //Log.d("truc", "it.lastStatusUpdateLocalTimestamp : ${curBikeSystem.value?.lastStatusUpdateLocalTimestamp} \nlast update was ${(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!) / 1000L}s ago")
-                    if (isConnectivityAvailable.value == false || System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! >
+                    if (isConnectivityAvailable.value == false || now - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! >
                             getApplication<Application>().resources.getInteger(R.integer.outdated_data_time_minute) * 60 * 1000) {
 
                         if (dataOutOfDate.value != true) {
@@ -649,12 +650,14 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
         optimalDockStationId.observeForever(optimalDockStationIdObserver)
 
-        optimalBikeStationId.observeForever {
-            if (it != null && stationA.value == null) {
+        optimalBikeStationIdObserver = Observer {
+            if (it != null && userLoc.value != null && stationA.value == null) {
                 Log.d(TAG, "Conditions met for A auto select, selecting")
                 setStationAById(it)
             }
         }
+
+        optimalBikeStationId.observeForever(optimalBikeStationIdObserver)
 
         finalDestPlace.observeForever {
             if (it != null) {
@@ -711,17 +714,17 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             }
         }
 
-        myCurBikeSystem.observeForever {
-            Log.d(TAG, "$it")
+        myCurBikeSystem.observeForever { newSystem ->
+            Log.d(TAG, "$newSystem")
 
             if (lastBikeSystemId == null)
-                lastBikeSystemId = it?.id
+                lastBikeSystemId = newSystem?.id
 
             //so that closest bike selection (and tweeting) happens
             setStationA(null)
             statALatLng.value = null
 
-            if (lastBikeSystemId != it?.id) {
+            if (lastBikeSystemId != newSystem?.id) {
                 //we switched systems since last time, reset everything
                 setStationB(null)
                 statBLatLng.value = null
@@ -729,28 +732,30 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 finalDestPlace.value = null
             }
 
-            lastBikeSystemId = it?.id
+            lastBikeSystemId = newSystem?.id
 
-            if (it == null) {
+            if (newSystem == null) {
                 bikeSystemListData.value?.let { bikeSystemList ->
                     findNearestBikeSystemAndSetInRepo(bikeSystemList, userLoc.value, repo)
                 }
             } else {
                 //We have bounds, start watching user location to trigger new attempt at finding a bike system
                 //when getting out of bounds
-                it.boundingBoxNorthEastLatitude?.let { bbNELat ->
+                newSystem.boundingBoxNorthEastLatitude?.let { bbNELat ->
 
-                    Log.d(TAG, "registering observer on userLoc for out of bounds detection for ${it.id}")
+                    Log.d(TAG, "registering observer on userLoc for out of bounds detection for ${newSystem.id}")
                     val boundsBuilder = LatLngBounds.builder()
-                    boundsBuilder.include(LatLng(bbNELat, it.boundingBoxNorthEastLongitude!!))
-                    boundsBuilder.include(LatLng(it.boundingBoxSouthWestLatitude!!, it.boundingBoxSouthWestLongitude!!))
+                    boundsBuilder.include(LatLng(bbNELat, newSystem.boundingBoxNorthEastLongitude!!))
+                    boundsBuilder.include(LatLng(newSystem.boundingBoxSouthWestLatitude!!, newSystem.boundingBoxSouthWestLongitude!!))
 
                     val bounds = boundsBuilder.build()
 
                     userLocObserverForOutOfBounds = Observer { newUserLoc ->
                         newUserLoc?.let {
-                            if (!bounds.contains(newUserLoc)) {
+                            val lastUpdateTimestamp = newSystem.lastStatusUpdateLocalTimestamp
+                            if (!bounds.contains(newUserLoc) && now.value ?: Int.MAX_VALUE - lastUpdateTimestamp >= getApplication<Application>().resources.getInteger(R.integer.outdated_data_time_minute) * 60 * 1000) {
                                 //TODO: implement exponential backoff when out of bounds of any bike system
+                                //TODO: just maintain out of bounds observable boolean in activity model. Observe where pertinent
                                 Log.d(TAG, "out of bound dected, invalidating current bike system")
                                 userLoc.removeObserver(userLocObserverForOutOfBounds)
                                 statusBarTxt.value = getApplication<Application>().getString(R.string.searching_bike_network)

@@ -1,12 +1,10 @@
-package com.ludoscity.findmybikes.data.network
+package com.ludoscity.findmybikes.data.network.citybik_es
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
-import com.ludoscity.findmybikes.data.network.citybik_es.Citybik_esAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

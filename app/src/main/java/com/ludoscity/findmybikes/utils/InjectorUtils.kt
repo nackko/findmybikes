@@ -10,8 +10,8 @@ import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
-import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
-import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDataSource
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory

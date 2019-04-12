@@ -40,7 +40,7 @@
             android:parentActivityName=".ui.main.FindMyBikesActivity" />
 
         <service
-            android:name=".data.network.FetchCitybikDOTesDataIntentService"
+            android:name=".data.network.citybik_es.FetchCitybikDOTesDataIntentService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true" />
         <service

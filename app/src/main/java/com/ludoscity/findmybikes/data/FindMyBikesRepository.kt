@@ -11,10 +11,10 @@ import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao
 import com.ludoscity.findmybikes.data.database.favorite.*
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.database.station.BikeStationDao
-import com.ludoscity.findmybikes.data.network.BikeSystemListNetworkDataSource
-import com.ludoscity.findmybikes.data.network.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
+import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
 import com.ludoscity.findmybikes.utils.Utils
 import kotlinx.coroutines.CoroutineScope
