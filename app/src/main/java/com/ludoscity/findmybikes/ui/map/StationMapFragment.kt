@@ -212,7 +212,7 @@ class StationMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerCli
         //mGoogleMap.setOnMapClickListener(this);
         //héhéhé, feel the power of design !!
         //TODO: rethink gestue. Also gesture availability observed from fragment or activity model
-        //mGoogleMap!!.uiSettings.isZoomGesturesEnabled = false
+        mGoogleMap!!.uiSettings.isZoomGesturesEnabled = false
         mGoogleMap!!.uiSettings.isRotateGesturesEnabled = false
         mGoogleMap!!.uiSettings.isIndoorLevelPickerEnabled = false
         mGoogleMap!!.uiSettings.isTiltGesturesEnabled = false

@@ -110,10 +110,6 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
     val isScrollGesturesEnabled: LiveData<Boolean>
         get() = scrollGesturesEnabled
 
-    fun setScrollGesturesEnabled(toSet: Boolean) {
-        scrollGesturesEnabled.value = toSet
-    }
-
     private val userLocationObserver: android.arch.lifecycle.Observer<LatLng>
     private val stationAObserver: android.arch.lifecycle.Observer<BikeStation>
     private val stationBObserver: android.arch.lifecycle.Observer<BikeStation>
@@ -156,6 +152,8 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
         isDataOutOfDate.observeForever(isDataOutOfDateObserver)
 
         isLookingForBikeObserver = Observer {
+
+            scrollGesturesEnabled.value = it != true
 
             if (it == true) {
                 //TODO: emit new camera update refactor in one method
@@ -241,8 +239,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                                         LatLng(stationB.location.latitude, stationB.location.longitude), 15.0f))
                         }
                     }
-                }
-                else {
+                } else {
                     val stationA = stationA.value
                     if (stationA != null) {
 
