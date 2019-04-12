@@ -217,6 +217,13 @@ class FindMyBikesActivity : AppCompatActivity(),
             }
         })
 
+        findMyBikesActivityViewModel.isSelectNearestBikeFabShown.observe(this, Observer {
+            if (it == true)
+                autoSelectBikeFab.show()
+            else
+                autoSelectBikeFab.hide()
+        })
+
         findMyBikesActivityViewModel.isClearBSelectionFabShown.observe(this, Observer {
             if (it == true) {
                 clearFAB.show()
@@ -606,20 +613,8 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     private fun setupAutoselectBikeFab() {
-        autoSelectBikeFab = findViewById<FloatingActionButton>(R.id.autoselect_closest_bike)
-
-        //Flipping this bool gives way to bike auto selection and found Snackbar animation
-        //TODO : BonPlatDePates. Spaghetti monster must be contained.
-        //In need an FSM of some kind. States being A selected Y/N B selected Y/N ....
-        //TODO: Think about it more
-        //DONE: use a viewmodel with following
-        //isDataOutdated
-        //isASelected/getSelectedA
-        //isBSelected/getSelectedB
-        //isConnectivityAvailable
-        //isFavoritePicked/getPickedFavorite
-        //currentSelectedTab (index or BIKELIST or STATIONLIST IDs ?)
-        autoSelectBikeFab.setOnClickListener({ findMyBikesActivityViewModel.setNearestBikeAutoselected(false) })
+        autoSelectBikeFab = findViewById(R.id.autoselect_closest_bike)
+        autoSelectBikeFab.setOnClickListener { findMyBikesActivityViewModel.setOptimalBikeAsStationA() }
     }
 
     private fun setupClearFab() {

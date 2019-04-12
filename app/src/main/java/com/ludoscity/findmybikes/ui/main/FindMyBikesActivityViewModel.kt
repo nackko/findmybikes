@@ -53,6 +53,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val locationPermissionGranted = MutableLiveData<Boolean>()
 
     private val favoriteFabShown = MutableLiveData<Boolean>()
+    private val selectBikeFabShown = MutableLiveData<Boolean>()
     private val tripDetailsWidgetShown = MutableLiveData<Boolean>()
     private val favoritePickerFabShown = MutableLiveData<Boolean>()
     private val searchFabShown = MutableLiveData<Boolean>()
@@ -162,6 +163,9 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     val isFavoriteFabShown: LiveData<Boolean>
         get() = favoriteFabShown
 
+    val isSelectNearestBikeFabShown: LiveData<Boolean>
+        get() = selectBikeFabShown
+
     val isFavoritePickerFabShown: LiveData<Boolean>
         get() = favoritePickerFabShown
 
@@ -261,11 +265,19 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         repository.removeFavoriteByFavoriteId(idToRemove)
     }
 
-    fun showFavoriteFab() {
+    private fun showFavoriteFab() {
         favoriteFabShown.value = true
     }
 
-    fun showFavoriteFabPost() {
+    private fun showSelectNearestBikeFab() {
+        selectBikeFabShown.value = true
+    }
+
+    private fun hideSelectNearestBikeFab() {
+        selectBikeFabShown.value = false
+    }
+
+    private fun showFavoriteFabPost() {
         favoriteFabShown.postValue(true)
     }
 
@@ -335,8 +347,6 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         return appBarExpanded
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    //findMyBikesActivityViewModel
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
     private val coroutineScopeMAIN = CoroutineScope(Dispatchers.Main)
     private var locationCallback: LocationCallback
@@ -360,6 +370,12 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
     fun setAllTableRefreshEnabled(toSet: Boolean) {
         tableRefreshEnabled.value = toSet
+    }
+
+    fun setOptimalBikeAsStationA() {
+        coroutineScopeIO.launch {
+            stationA.postValue(repo.getStationForId(optimalBikeStationId.value ?: "NO_ID"))
+        }
     }
 
     private val tableRefreshEnabled = MutableLiveData<Boolean>()
@@ -932,6 +948,13 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 statBLatLng.value?.let {
                     tripDetailsWidgetShown.value = true
                 }
+
+                if (it.locationHash != optimalBikeStationId.value)
+                    showSelectNearestBikeFab()
+                else
+                    hideSelectNearestBikeFab()
+
+
             } else {
                 directionsToStationAFabShown.value = false
                 tripDetailsWidgetShown.value = false
