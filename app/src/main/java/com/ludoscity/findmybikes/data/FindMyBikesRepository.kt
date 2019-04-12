@@ -69,6 +69,9 @@ class FindMyBikesRepository private constructor(
 
                 coroutineScopeIO.launch {
 
+                    if (prevBikeSystem.value == null)
+                        prevBikeSystem.postValue(getCurrentBikeSystem().value)
+
                     currentBikeSystemDao.updateLastUpdateTimestamp(it.id, System.currentTimeMillis())
 
                     Log.d(TAG, "New data from network, begin processing of " +
