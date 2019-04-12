@@ -103,13 +103,13 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         locationPermissionGranted.value = toSet
     }
 
-    private val distToUserComp = MutableLiveData<DistanceComparator>()
-    val distanceToUserComparator: LiveData<DistanceComparator>
-        get() = distToUserComp
+    private val bikeTableComp = MutableLiveData<BaseBikeStationComparator>()
+    val bikeTableComparator: LiveData<BaseBikeStationComparator>
+        get() = bikeTableComp
 
-    private val totTripTimeComp = MutableLiveData<TotalTripTimeComparator>()
-    val totalTripTimeComparator: LiveData<TotalTripTimeComparator>
-        get() = totTripTimeComp
+    private val dockTableComp = MutableLiveData<BaseBikeStationComparator>()
+    val dockTableComparator: LiveData<BaseBikeStationComparator>
+        get() = dockTableComp
 
     val userLocation: LiveData<LatLng>
         get() = userLoc
@@ -138,6 +138,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     }
 
     private val connectivityAvailable = MutableLiveData<Boolean>()
+    //TODO: reimplement check for location services
     private val isLocationServiceAvailable = MutableLiveData<Boolean>()
 
     val isConnectivityAvailable: LiveData<Boolean>
@@ -349,6 +350,22 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     val bikeTableProximityShown: LiveData<Boolean>
         get() = bikeTableProxColumnShown
 
+    private val tableRefreshing = MutableLiveData<Boolean>()
+    val allTableRefreshing: LiveData<Boolean>
+        get() = tableRefreshing
+
+    fun setAllTableRefreshing(toSet: Boolean) {
+        tableRefreshing.value = toSet
+    }
+
+    fun setAllTableRefreshEnabled(toSet: Boolean) {
+        tableRefreshEnabled.value = toSet
+    }
+
+    private val tableRefreshEnabled = MutableLiveData<Boolean>()
+    val allTableRefreshEnabled: LiveData<Boolean>
+        get() = tableRefreshEnabled
+
     val dockTableProximityShown: LiveData<Boolean>
         get() = dockTableProxColumnShown
 
@@ -429,6 +446,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 //could also use isfav like trip details fragment
                 dockTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
                 dockTableProxHeaderToResId.postValue(R.drawable.ic_pin_favorite_24dp_white)
+                bikeTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
+                bikeTableProxHeaderToResId.postValue(R.drawable.ic_pin_favorite_24dp_white)
                 finalDestFavorite.postValue(newFav)
 
                 done = true
@@ -475,11 +494,16 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                             dockTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
                             dockTableProxHeaderToResId.postValue(R.drawable.ic_pin_search_24dp_white)
 
+                            bikeTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
+                            bikeTableProxHeaderToResId.postValue(R.drawable.ic_pin_search_24dp_white)
+
                             showFavoriteFabPost()
                         } else {
                             finalDestFavorite.postValue(existingFav)
                             dockTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
                             dockTableProxHeaderToResId.postValue(R.drawable.ic_pin_favorite_24dp_white)
+                            bikeTableProxHeaderFromResId.postValue(R.drawable.ic_destination_arrow_white_24dp)
+                            bikeTableProxHeaderToResId.postValue(R.drawable.ic_pin_favorite_24dp_white)
 
                             hideFavoriteFabPost()
                         }
@@ -636,9 +660,14 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             if (it != null) {
                 finalDestLatLng.value = it.latLng
                 isFinalDestFav.value = false
+                bikeTableProxHeaderToResId.value = R.drawable.ic_pin_search_24dp_white
             } else if (finalDestFavorite.value == null) {
                 finalDestLatLng.value = null
                 isFinalDestFav.value = null
+
+                //TODO: hide 'From' header
+                //bikeTableProxHeaderFromResId.postValue(R.drawable.)
+                bikeTableProxHeaderToResId.postValue(R.drawable.ic_walking_24dp_white)
             }
         }
 
@@ -647,11 +676,14 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 coroutineScopeIO.launch {
                     finalDestLatLng.postValue(it.getLocation(getApplication()))
                     isFinalDestFav.postValue(true)
+                    bikeTableProxHeaderToResId.postValue(R.drawable.ic_pin_favorite_24dp_white)
                 }
 
             } else if (finalDestPlace.value == null) {
                 finalDestLatLng.value = null
                 isFinalDestFav.value = null
+                //TODO: hide 'From' header
+                bikeTableProxHeaderToResId.value = R.drawable.ic_walking_24dp_white
             }
         }
 
@@ -865,14 +897,18 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             if (finalDest == null)
                 finalDest = stationBLatLng.value
 
-            totTripTimeComp.value = TotalTripTimeComparator(
+            dockTableComp.value = TotalTripTimeComparatorForDockTable(
                     userLatLng = newUserLoc,
                     stationALatLng = stationALatLng.value,
                     destinationLatLng = finalDest
             )
 
             newUserLoc?.let {
-                distToUserComp.value = DistanceComparator(it)
+                bikeTableComp.value = TotalTripTimeComparatorForBikeTable(
+                        userLatLng = newUserLoc,
+                        stationBLatLng = stationBLatLng.value,
+                        destinationLatLng = finalDest
+                )
             }
         }
 
@@ -897,7 +933,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 statALatLng.value = null
             }
 
-            totTripTimeComp.value = TotalTripTimeComparator(
+            dockTableComp.value = TotalTripTimeComparatorForDockTable(
                     userLatLng = userLoc.value,
                     stationALatLng = it?.location,
                     destinationLatLng = finalDestinationLatLng.value
@@ -932,8 +968,6 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 searchFabShown.value = isLookingForBike.value != true && connectivityAvailable.value == true
                 favoriteFabShown.value = false
                 clearBSelectionFabShown.value = false
-                distToUserComp.value = if (userLoc.value == null) null else
-                    DistanceComparator(userLoc.value ?: LatLng(0.0, 0.0))
             }
 
             var finalDest = finalDestinationLatLng.value
@@ -941,15 +975,21 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             if (finalDest == null)
                 finalDest = it?.location
 
-            totTripTimeComp.value = TotalTripTimeComparator(
+            dockTableComp.value = TotalTripTimeComparatorForDockTable(
                     userLatLng = userLoc.value,
                     stationALatLng = stationALatLng.value,
+                    destinationLatLng = finalDest
+            )
+
+            bikeTableComp.value = TotalTripTimeComparatorForBikeTable(
+                    userLatLng = userLoc.value,
+                    stationBLatLng = stationBLatLng.value,
                     destinationLatLng = finalDest
             )
         }
 
         finalDestinationLatLng.observeForever {
-            totTripTimeComp.value = TotalTripTimeComparator(
+            dockTableComp.value = TotalTripTimeComparatorForDockTable(
                     userLatLng = userLoc.value,
                     stationALatLng = stationALatLng.value,
                     destinationLatLng = it
@@ -968,6 +1008,9 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                         //could also use isfav like trip details fragment
                         dockTableProxHeaderFromResId.value = R.drawable.ic_destination_arrow_white_24dp
                         dockTableProxHeaderToResId.value = R.drawable.ic_pin_favorite_24dp_white
+
+                        bikeTableProxHeaderFromResId.value = R.drawable.ic_destination_arrow_white_24dp
+                        bikeTableProxHeaderToResId.value = R.drawable.ic_pin_favorite_24dp_white
 
                         hideSearchFab()
                         autocompleteLoadProgBarVis.value = View.INVISIBLE
@@ -1045,31 +1088,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         abstract val userLoc: LatLng
     }
 
-    class DistanceComparator(_fromLatLng: LatLng) : BaseBikeStationComparator() {
-        override fun getProximityString(station: BikeStation, lookingForBike: Boolean,
-                                        numFormat: NumberFormat,
-                                        ctx: Context): String? {
-            return if (lookingForBike) {
-                Utils.getWalkingProximityString(
-                        station.location, distanceRef, false, numFormat, ctx)
-            } else {
-                //TODO: use LiveData from model
-                Utils.getBikingProximityString(
-                        station.location, distanceRef, false, numFormat, ctx)
-            }
-        }
-
-        override val userLoc: LatLng
-            get() = distanceRef
-
-        private val distanceRef: LatLng = _fromLatLng
-
-        override fun compare(lhs: BikeStation, rhs: BikeStation): Int {
-            return (lhs.getMeterFromLatLng(distanceRef) - rhs.getMeterFromLatLng(distanceRef)).toInt()
-        }
-    }
-
-    inner class TotalTripTimeComparator(
+    inner class TotalTripTimeComparatorForDockTable(
             private val walkingSpeedKmh: Float = Utils.getAverageWalkingSpeedKmh(getApplication()),
             private val bikingSpeedKmh: Float = Utils.getAverageBikingSpeedKmh(getApplication()),
             private val userLatLng: LatLng?,
@@ -1094,8 +1113,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         private val mTimeUserToAMinutes: Int = Utils.computeTimeBetweenInMinutes(userLatLng, stationALatLng, walkingSpeedKmh)
 
         /*internal fun getUpdatedComparatorFor(userLatLng: LatLng,
-                                             stationALatLng: LatLng?): TotalTripTimeComparator {
-            return TotalTripTimeComparator(walkingSpeedKmh, bikingSpeedKmh, userLatLng,
+                                             stationALatLng: LatLng?): TotalTripTimeComparatorForDockTable {
+            return TotalTripTimeComparatorForDockTable(walkingSpeedKmh, bikingSpeedKmh, userLatLng,
                     stationALatLng ?: this.stationALatLng, destinationLatLng)
         }*/
 
@@ -1116,20 +1135,72 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         }
 
         private fun calculateWalkTimeMinute(_stationB: BikeStation): Int {
-
-            var timeBtoDestMinutes = 0
-
-            if (destinationLatLng != null)
-                timeBtoDestMinutes = Utils.computeTimeBetweenInMinutes(_stationB.location,
-                        destinationLatLng, walkingSpeedKmh)
-
-            return mTimeUserToAMinutes + timeBtoDestMinutes
+            return mTimeUserToAMinutes + Utils.computeTimeBetweenInMinutes(_stationB.location,
+                    destinationLatLng, walkingSpeedKmh)
 
         }
 
         private fun calculateBikeTimeMinute(_stationB: BikeStation): Int {
 
             return Utils.computeTimeBetweenInMinutes(stationALatLng, _stationB.location,
+                    bikingSpeedKmh)
+        }
+    }
+
+    inner class TotalTripTimeComparatorForBikeTable(
+            private val walkingSpeedKmh: Float = Utils.getAverageWalkingSpeedKmh(getApplication()),
+            private val bikingSpeedKmh: Float = Utils.getAverageBikingSpeedKmh(getApplication()),
+            private val userLatLng: LatLng?,
+            private val stationBLatLng: LatLng?,
+            private val destinationLatLng: LatLng?) : BaseBikeStationComparator() {
+        override fun getProximityString(station: BikeStation,
+                                        lookingForBike: Boolean,
+                                        numFormat: NumberFormat,
+                                        ctx: Context): String? {
+            val totalTime = calculateWalkTimeMinute(station) + calculateBikeTimeMinute(station)
+
+            return Utils.durationToProximityString(totalTime, false, numFormat, ctx)
+        }
+
+        fun hasFinalDest(): Boolean {
+            return destinationLatLng != null
+        }
+
+        override val userLoc: LatLng
+            get() = userLatLng ?: LatLng(0.0, 0.0)
+
+        private val mBToDestMinutes: Int = Utils.computeTimeBetweenInMinutes(stationBLatLng, destinationLatLng, walkingSpeedKmh)
+
+        /*internal fun getUpdatedComparatorFor(userLatLng: LatLng,
+                                             stationBLatLng: LatLng?): TotalTripTimeComparatorForDockTable {
+            return TotalTripTimeComparatorForDockTable(walkingSpeedKmh, bikingSpeedKmh, userLatLng,
+                    stationBLatLng ?: this.stationBLatLng, destinationLatLng)
+        }*/
+
+        override fun compare(lhs: BikeStation, rhs: BikeStation): Int {
+
+            val lhsWalkTime = calculateWalkTimeMinute(lhs)
+            val rhsWalkTime = calculateWalkTimeMinute(rhs)
+
+            val lhsBikeTime = calculateBikeTimeMinute(lhs)
+            val rhsBikeTime = calculateBikeTimeMinute(rhs)
+
+            val totalTimeDiff = lhsWalkTime + lhsBikeTime - (rhsWalkTime + rhsBikeTime)
+
+            return if (totalTimeDiff != 0)
+                totalTimeDiff
+            else
+                lhsWalkTime - rhsWalkTime
+        }
+
+        private fun calculateWalkTimeMinute(stationA: BikeStation): Int {
+            return mBToDestMinutes + Utils.computeTimeBetweenInMinutes(userLatLng,
+                    stationA.location, walkingSpeedKmh)
+        }
+
+        private fun calculateBikeTimeMinute(stationA: BikeStation): Int {
+
+            return Utils.computeTimeBetweenInMinutes(stationA.location, stationBLatLng,
                     bikingSpeedKmh)
         }
     }

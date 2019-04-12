@@ -28,7 +28,6 @@ class StationTablePagerAdapter(
             args.putBoolean("isDockTable", dockTableFragmentModelFactory.isDockTable)
         }
 
-        //args.putInt(StationTableFragment.STATION_LIST_ARG_BACKGROUND_RES_ID, R.drawable.ic_favorites_background);
         args.putSerializable("numFormat", NumberFormat.getInstance())
 
         toReturn.arguments = args
@@ -40,36 +39,8 @@ class StationTablePagerAdapter(
         return NUM_ITEMS
     }
 
-    fun setRefreshEnabledAll(toSet: Boolean) {
-        retrieveListFragment(DOCK_STATIONS)?.let {
-            val dockTableModel =
-                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-            retrieveListFragment(BIKE_STATIONS)?.let { bikeFrag ->
-                val bikeTableModel =
-                        ViewModelProviders.of(bikeFrag, bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-
-                bikeTableModel.setRefreshEnabled(toSet)
-                dockTableModel.setRefreshEnabled(toSet)
-            }
-        }
-    }
-
     private fun retrieveListFragment(position: Int): StationTableFragment? {
         return getRegisteredFragment(position) as? StationTableFragment
-    }
-
-    fun setRefreshingAll(toSet: Boolean) {
-        retrieveListFragment(DOCK_STATIONS)?.let {
-            val dockTableModel =
-                    ViewModelProviders.of(it, dockTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-            retrieveListFragment(BIKE_STATIONS)?.let { bikeFrag ->
-                val bikeTableModel =
-                        ViewModelProviders.of(bikeFrag, bikeTableFragmentModelFactory).get(TableFragmentViewModel::class.java)
-
-                dockTableModel.setRefreshLayoutVisible(toSet)
-                bikeTableModel.setRefreshLayoutVisible(toSet)
-            }
-        }
     }
 
     fun smoothScrollHighlightedInViewForTable(_tableId: Int) {

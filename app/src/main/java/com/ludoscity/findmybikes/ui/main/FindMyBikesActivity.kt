@@ -241,7 +241,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         InjectorUtils.provideRepository(this).lastBikeNetworkStatusFetchErrored.observeForever {
             if (it == true) {
-                getTablePagerAdapter().setRefreshingAll(false)
+                findMyBikesActivityViewModel.setAllTableRefreshing(false)
             }
         }
 
@@ -260,8 +260,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                                                 it.boundingBoxNorthEastLongitude ?: 0.0))))
                         .build(this)
 
-                //TODO: act on model ?
-                getTablePagerAdapter().setRefreshingAll(false)
+                findMyBikesActivityViewModel.setAllTableRefreshing(false)
             }
 
 
@@ -319,10 +318,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         })
 
         findMyBikesActivityViewModel.isConnectivityAvailable.observe(this, Observer {
-            //TODO: doesn't work when launching while offline. Probably because table fragments don't exist just yet
-            //TODO: refactor such as not going through adapter (pass LiveData<Boolean> to table model constructor). Manipulate it from activity model
-            //Do it when refactoring distance comparator
-            getTablePagerAdapter().setRefreshEnabledAll(it == true)
+            findMyBikesActivityViewModel.setAllTableRefreshEnabled(it == true)
         })
 
         findMyBikesActivityViewModel.searchFabBackgroundtintListColorResId.observe(this, Observer {
@@ -352,24 +348,26 @@ class FindMyBikesActivity : AppCompatActivity(),
                         findMyBikesActivityViewModel.isAppBarExpanded(),
                         findMyBikesActivityViewModel.isDataOutOfDate,
                         findMyBikesActivityViewModel.bikeTableProximityShown,
+                        findMyBikesActivityViewModel.allTableRefreshing,
+                        findMyBikesActivityViewModel.allTableRefreshEnabled,
                         findMyBikesActivityViewModel.bikeTableProximityHeaderFromResId,
                         findMyBikesActivityViewModel.bikeTableProximityHeaderToResId,
                         findMyBikesActivityViewModel.getStationA(),
                         findMyBikesActivityViewModel.getStationA(),
-                        findMyBikesActivityViewModel.distanceToUserComparator,
-                        findMyBikesActivityViewModel.totalTripTimeComparator,
+                        findMyBikesActivityViewModel.bikeTableComparator,
                         NumberFormat.getInstance()),
                 InjectorUtils.provideTableFragmentViewModelFactory(application,
                         true,
                         findMyBikesActivityViewModel.isAppBarExpanded(),
                         findMyBikesActivityViewModel.isDataOutOfDate,
                         findMyBikesActivityViewModel.dockTableProximityShown,
+                        findMyBikesActivityViewModel.allTableRefreshing,
+                        findMyBikesActivityViewModel.allTableRefreshEnabled,
                         findMyBikesActivityViewModel.dockTableProximityHeaderFromResId,
                         findMyBikesActivityViewModel.dockTableProximityHeaderToResId,
                         findMyBikesActivityViewModel.getStationA(),
                         findMyBikesActivityViewModel.getStationB(),
-                        findMyBikesActivityViewModel.distanceToUserComparator,
-                        findMyBikesActivityViewModel.totalTripTimeComparator,
+                        findMyBikesActivityViewModel.dockTableComparator,
                         NumberFormat.getInstance()
                 ))
         stationTableViewPager.addOnPageChangeListener(this)
@@ -814,20 +812,8 @@ class FindMyBikesActivity : AppCompatActivity(),
     }
 
     override fun onRefresh() {
-        //val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
-        //findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(FindMyBikesActivityViewModel::class.java)
-
-        //this is debug
-        //findMyBikesActivityViewModel.setDataOutOfDate(!(findMyBikesActivityViewModel.isDataOutOfDate.value
-        //        ?: true))
         findMyBikesActivityViewModel.requestCurrentBikeSystemStatusRefresh()
-
-        //TODO: act on model ?
-        getTablePagerAdapter().setRefreshingAll(true)
-
-        //TODO: this is debug
-        //getTablePagerAdapter().smoothScrollHighlightedInViewForTable(BIKE_STATIONS, true)
-
+        findMyBikesActivityViewModel.setAllTableRefreshing(true)
     }
 
     private fun getTablePagerAdapter(): StationTablePagerAdapter {

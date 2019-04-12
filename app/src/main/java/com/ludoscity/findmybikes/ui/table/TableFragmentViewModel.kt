@@ -37,12 +37,11 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
                              private val stationSelectionDataSource: LiveData<BikeStation>,
                              private val isDataOutOfDate: LiveData<Boolean>,
                              val showProximityColumn: LiveData<Boolean>,
+                             val isRefreshing: LiveData<Boolean>,
+                             val isRefreshEnabled: LiveData<Boolean>,
                              val proximityHeaderFromResId: LiveData<Int>,
                              val proximityHeaderToResId: LiveData<Int>,
-        //TODO: refactor the following to have a single LiveData<BaseBikeStationComparator>
-        //source is set by activity model on correctcompartor (distance or totaltime)
-                             distToUserComparatorSource: LiveData<FindMyBikesActivityViewModel.DistanceComparator>,
-                             totalTripComparatorSource: LiveData<FindMyBikesActivityViewModel.TotalTripTimeComparator>,
+                             comparatorSource: LiveData<FindMyBikesActivityViewModel.BaseBikeStationComparator>,
                              numFormat: NumberFormat) : AndroidViewModel(app) {
 
     //TODO: header setup should happen by observing app state instead of being explicitly called on the model ?
@@ -75,21 +74,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     val headerAvailabilityText: LiveData<String>
         get() = headerAvailText
 
-
-    val isRefreshEnabled: LiveData<Boolean>
-        get() = refreshGestureAvailable
-
-    fun setRefreshEnabled(toSet: Boolean?) {
-        refreshGestureAvailable.value = toSet
-    }
-
-    val isRefreshLayoutVisible: LiveData<Boolean>
-        get() = showRefreshLayout
-
-    fun setRefreshLayoutVisible(toSet: Boolean?) {
-        showRefreshLayout.value = toSet
-    }
-
     val recyclerViewAdapterPosToSmoothScollInView: LiveData<Int>
         get() = smoothScrollTargetIdx
 
@@ -106,10 +90,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
     private val tableRecapMutableData: MutableLiveData<StationTableRecapData> = MutableLiveData()
 
-    private val refreshGestureAvailable: MutableLiveData<Boolean> = MutableLiveData()
-    private val showRefreshLayout: MutableLiveData<Boolean> = MutableLiveData()
-
-
     private val smoothScrollTargetIdx: MutableLiveData<Int> = MutableLiveData()
 
     private val repository: FindMyBikesRepository = repo
@@ -125,8 +105,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>>
     private val bikeSystemAvailabilityDataObserver: android.arch.lifecycle.Observer<List<BikeStation>>
 
-    private val totalTripComparatorObserver: android.arch.lifecycle.Observer<FindMyBikesActivityViewModel.TotalTripTimeComparator>
-    private val distanceComparatorObserver: android.arch.lifecycle.Observer<FindMyBikesActivityViewModel.DistanceComparator>
+    private val comparatorObserver: android.arch.lifecycle.Observer<FindMyBikesActivityViewModel.BaseBikeStationComparator>
     private val stationRecapDataSourceObserver: android.arch.lifecycle.Observer<BikeStation>
     private val stationSelectionDataSourceObserver: android.arch.lifecycle.Observer<BikeStation>
     private val dataOutdatedObserver: android.arch.lifecycle.Observer<Boolean>
@@ -167,30 +146,16 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
             }
         }
 
-        distanceComparatorObserver = android.arch.lifecycle.Observer {
-            if (!isDockTable) {
-                comparator = it
+        comparatorObserver = android.arch.lifecycle.Observer {
+            comparator = it
 
-                computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
-                        isDataOutOfDate.value != false, numFormat, isDockTable)
+            computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
+                    isDataOutOfDate.value != false, numFormat, isDockTable)
 
-                emitNearestAndTweet(repo, bikeSystemAvailabilityDataSource.value, true)
-            }
+            emitNearestAndTweet(repo, bikeSystemAvailabilityDataSource.value, !isDockTable)
         }
 
-        distToUserComparatorSource.observeForever(distanceComparatorObserver)
-
-        totalTripComparatorObserver = android.arch.lifecycle.Observer {
-            if (isDockTable) {
-                comparator = it
-                computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
-                        isDataOutOfDate.value != false, numFormat, isDockTable)
-
-                emitNearestAndTweet(repo, bikeSystemAvailabilityDataSource.value)
-            }
-        }
-
-        totalTripComparatorSource.observeForever(totalTripComparatorObserver)
+        comparatorSource.observeForever(comparatorObserver)
 
         stationSelectionDataSourceObserver = android.arch.lifecycle.Observer { newSelection ->
             recapVisibility.value = newSelection == null
@@ -449,7 +414,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
                 newDisplayData.add(StationTableItemData(
                         backgroundResId,
-                        if (isDockTable && (comparator as? FindMyBikesActivityViewModel.TotalTripTimeComparator)?.hasFinalDest() == false) View.INVISIBLE else View.VISIBLE,
+                        if (isDockTable && (comparator as? FindMyBikesActivityViewModel.TotalTripTimeComparatorForDockTable)?.hasFinalDest() == false) View.INVISIBLE else View.VISIBLE,
                         proximityText,
                         durationAlpha,
                         if (allFavIdList.contains(station.locationHash))

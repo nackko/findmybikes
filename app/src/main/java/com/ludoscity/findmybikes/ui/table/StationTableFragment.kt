@@ -15,15 +15,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.github.amlcurran.showcaseview.targets.ViewTarget
-import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
-import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.ui.sheet.DividerItemDecoration
 import com.ludoscity.findmybikes.ui.sheet.ScrollingLinearLayoutManager
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import java.text.NumberFormat
-import java.util.*
 
 class StationTableFragment : Fragment() {
 
@@ -64,12 +61,13 @@ class StationTableFragment : Fragment() {
                 nearbyActivityViewModel.isAppBarExpanded(),
                 nearbyActivityViewModel.isDataOutOfDate,
                 if (isDockTable) nearbyActivityViewModel.dockTableProximityShown else nearbyActivityViewModel.bikeTableProximityShown,
+                nearbyActivityViewModel.allTableRefreshing,
+                nearbyActivityViewModel.allTableRefreshEnabled,
                 if (isDockTable) nearbyActivityViewModel.dockTableProximityHeaderFromResId else nearbyActivityViewModel.bikeTableProximityHeaderFromResId,
                 if (isDockTable) nearbyActivityViewModel.dockTableProximityHeaderToResId else nearbyActivityViewModel.bikeTableProximityHeaderToResId,
                 nearbyActivityViewModel.getStationA(),
                 if (!isDockTable) nearbyActivityViewModel.getStationA() else nearbyActivityViewModel.getStationB(),
-                nearbyActivityViewModel.distanceToUserComparator,
-                nearbyActivityViewModel.totalTripTimeComparator,
+                if (isDockTable) nearbyActivityViewModel.dockTableComparator else nearbyActivityViewModel.bikeTableComparator,
                 arguments?.getSerializable("numFormat") as NumberFormat
         )
 
@@ -99,7 +97,7 @@ class StationTableFragment : Fragment() {
             else mSwipeRefreshLayout!!.isEnabled = it == true
         })
 
-        tableFragmentModel.isRefreshLayoutVisible.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.isRefreshing.observe(this, android.arch.lifecycle.Observer {
             if (it != mSwipeRefreshLayout!!.isRefreshing)
                 mSwipeRefreshLayout!!.isRefreshing = it ?: false
         })
@@ -108,13 +106,6 @@ class StationTableFragment : Fragment() {
         mProximityHeader = inflatedView.findViewById(R.id.proximity_header)
         mProximityHeaderFromImageView = inflatedView.findViewById(R.id.proximity_header_from)
         mProximityHeaderToImageView = inflatedView.findViewById(R.id.proximity_header_to)
-
-        /*val args = arguments
-        if (args != null) {
-
-            mStationRecyclerView!!.background = ContextCompat.getDrawable(this.context!!, args.getInt(STATION_LIST_ARG_BACKGROUND_RES_ID))
-            mProximityHeader!!.visibility = View.GONE
-        }*/
 
         return inflatedView
     }
@@ -224,23 +215,4 @@ class StationTableFragment : Fragment() {
             }
         })
     }
-
-    //TODO: this should happen in model, resorting list and posting it to tableItemDataList
-    //This was called through setupUi with a comparator parameter. It should now be set on the model
-    fun setSortComparatorAndSort(_toSet: Comparator<BikeStation>) {
-
-        if (mRecyclerViewScrollingState == SCROLL_STATE_IDLE) {
-
-            //TODO: rewire this code path and understand if model makes it obsolete
-            //Comparator is in model now anyway
-            //stationTableRecyclerViewAdapter.setStationSortComparatorAndSort(_toSet)
-        }
-    }
-
-    //_stationALatLng can be null
-    fun updateTotalTripSortComparator(_userLatLng: LatLng, _stationALatLng: LatLng) {
-        //TODO: comparator is in model now
-        //stationTableRecyclerViewAdapter.updateTotalTripSortComparator(_userLatLng, _stationALatLng)
-    }
-
 }

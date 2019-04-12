@@ -21,14 +21,16 @@ class TableFragmentModelFactory(private val repository: FindMyBikesRepository,
                                 private val stationSelectionDataSource: LiveData<BikeStation>,
                                 private val dataOutOfDate: LiveData<Boolean>,
                                 private val showProximityColumn: LiveData<Boolean>,
+                                private val isRefreshing: LiveData<Boolean>,
+                                private val isRefreshEnabled: LiveData<Boolean>,
                                 private val proximityHeaderFromResId: LiveData<Int>,
                                 private val proximityHeaderToResId: LiveData<Int>,
-                                private val distToUserComparatorSource: LiveData<FindMyBikesActivityViewModel.DistanceComparator>,
-                                private val totalTripComparatorSource: LiveData<FindMyBikesActivityViewModel.TotalTripTimeComparator>,
+                                private val comparatorSource: LiveData<FindMyBikesActivityViewModel.BaseBikeStationComparator>,
                                 private val numFormat: NumberFormat) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
+        @Suppress("UNCHECKED_CAST")
         return TableFragmentViewModel(repository,
                 application,
                 isDockTable,
@@ -37,10 +39,11 @@ class TableFragmentModelFactory(private val repository: FindMyBikesRepository,
                 stationSelectionDataSource,
                 dataOutOfDate,
                 showProximityColumn,
+                isRefreshing,
+                isRefreshEnabled,
                 proximityHeaderFromResId,
                 proximityHeaderToResId,
-                distToUserComparatorSource,
-                totalTripComparatorSource,
+                comparatorSource,
                 numFormat) as T
     }
 }

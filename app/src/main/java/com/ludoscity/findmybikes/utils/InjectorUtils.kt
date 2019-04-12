@@ -96,12 +96,13 @@ class InjectorUtils {
                                                  appBarExpanded: LiveData<Boolean>,
                                                  dataOutOfDate: LiveData<Boolean>,
                                                  showProximityColumn: LiveData<Boolean>,
+                                                 isRefreshing: LiveData<Boolean>,
+                                                 isRefreshEnabled: LiveData<Boolean>,
                                                  proximityHeaderFromResId: LiveData<Int>,
                                                  proximityHeaderToResId: LiveData<Int>,
                                                  stationRecapDatasource: LiveData<BikeStation>,
                                                  stationSelectionDatasource: LiveData<BikeStation>,
-                                                 distToUserComparatorSource: LiveData<FindMyBikesActivityViewModel.DistanceComparator>,
-                                                 totalTripComparatorSource: LiveData<FindMyBikesActivityViewModel.TotalTripTimeComparator>,
+                                                 comparatorSource: LiveData<FindMyBikesActivityViewModel.BaseBikeStationComparator>,
                                                  numFormat: NumberFormat): TableFragmentModelFactory {
             val repository = provideRepository(app.applicationContext)
             return TableFragmentModelFactory(repository, app, isDockTable,
@@ -110,10 +111,11 @@ class InjectorUtils {
                     stationSelectionDatasource,
                     dataOutOfDate,
                     showProximityColumn,
+                    isRefreshing,
+                    isRefreshEnabled,
                     proximityHeaderFromResId,
                     proximityHeaderToResId,
-                    distToUserComparatorSource,
-                    totalTripComparatorSource,
+                    comparatorSource,
                     numFormat)
         }
 
