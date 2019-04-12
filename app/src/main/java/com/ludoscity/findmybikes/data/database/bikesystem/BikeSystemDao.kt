@@ -16,6 +16,9 @@ interface BikeSystemDao {
     @get:Query("SELECT * FROM bikeSystem")
     val single: LiveData<BikeSystem>
 
+    @get:Query("SELECT * FROM bikeSystem")
+    val singleSynchronous: BikeSystem
+
     @get:Query("SELECT id FROM BikeSystem")
     val singleIdSynchronous: String
 

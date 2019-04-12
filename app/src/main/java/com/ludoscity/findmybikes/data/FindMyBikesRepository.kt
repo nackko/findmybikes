@@ -49,8 +49,15 @@ class FindMyBikesRepository private constructor(
     val lastBikeNetworkStatusFetchErrored: LiveData<Boolean>
         get () = statusFetchErrored
 
+    private val prevBikeSystem = MutableLiveData<BikeSystem>()
+    val previousBikeSystem: LiveData<BikeSystem>
+        get() = prevBikeSystem
 
     init {
+
+        coroutineScopeIO.launch {
+            prevBikeSystem.postValue(currentBikeSystemDao.singleSynchronous)
+        }
 
         networkBikeSystemStatusData.observeForever { newStatusDataFromNetwork ->
 
@@ -281,6 +288,7 @@ class FindMyBikesRepository private constructor(
 
     fun setCurrentBikeSystem(ctx: Context, toSet: BikeSystem, alsoFetchStatus: Boolean = false) {
         Log.d(TAG, "setting current bike system to : $toSet")
+        prevBikeSystem.postValue(currentBikeSystemDao.singleSynchronous)
         currentBikeSystemDao.deleteCurrentBikeSystem()
         currentBikeSystemDao.insertCurrentBikeSystem(toSet)
         if (alsoFetchStatus)

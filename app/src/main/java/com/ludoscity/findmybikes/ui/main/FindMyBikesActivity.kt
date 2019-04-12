@@ -12,6 +12,7 @@ import android.support.design.widget.*
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
@@ -112,6 +113,7 @@ class FindMyBikesActivity : AppCompatActivity(),
     private lateinit var tripDetailsProximityTotal: TextView
 
     private lateinit var findMyBikesActivityViewModel: FindMyBikesActivityViewModel
+    private lateinit var welcomeDialog: AlertDialog
 
     private val TABS_ICON_RES_ID = intArrayOf(R.drawable.ic_pin_a_36dp_white, R.drawable.ic_pin_b_36dp_white)
 
@@ -332,6 +334,31 @@ class FindMyBikesActivity : AppCompatActivity(),
             it?.let { colorResId ->
                 searchFAB.backgroundTintList = ContextCompat.getColorStateList(this, colorResId)
             }
+        })
+
+        findMyBikesActivityViewModel.welcomeAlertDialogTitleText.observe(this, Observer {
+            it?.let { title ->
+                welcomeDialog = AlertDialog.Builder(this).setTitle(title)
+                        .setMessage(findMyBikesActivityViewModel.welcomeAlertDialogMessageText.value)
+                        .setPositiveButton(resources.getString(R.string.ok)) { _, _ -> findMyBikesActivityViewModel.welcomeDialogDismissed() }
+                        .create()
+            }
+        })
+
+        findMyBikesActivityViewModel.welcomeAlertDialogMessageText.observe(this, Observer {
+            it?.let { message ->
+                welcomeDialog = AlertDialog.Builder(this).setTitle(findMyBikesActivityViewModel.welcomeAlertDialogTitleText.value)
+                        .setMessage(message)
+                        .setPositiveButton(resources.getString(R.string.ok)) { _, _ -> findMyBikesActivityViewModel.welcomeDialogDismissed() }
+                        .create()
+            }
+        })
+
+        findMyBikesActivityViewModel.isWelcomeDialogShown.observe(this, Observer {
+            if (it == true && !welcomeDialog.isShowing)
+                welcomeDialog.show()
+            else
+                welcomeDialog.hide()
         })
 
         // Update Bar - TODO: Have fragment ?

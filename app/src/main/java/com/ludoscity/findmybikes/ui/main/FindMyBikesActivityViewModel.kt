@@ -14,6 +14,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
 import android.support.v4.content.ContextCompat
+import android.text.Spanned
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.View
@@ -412,8 +413,24 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val optimalDockStationIdObserver: Observer<String>
     private val optimalBikeStationIdObserver: Observer<String>
 
+    private val welcomeDialogShown = MutableLiveData<Boolean>()
+    private val welcomeAlertDialogTitleTxt = MutableLiveData<Spanned>()
+    private val welcomeAlertDialogMessageTxt = MutableLiveData<Spanned>()
     private val statusBarTxt = MutableLiveData<String>()
     private val statusBarBckColorResId = MutableLiveData<Int>()
+
+    val isWelcomeDialogShown: LiveData<Boolean>
+        get() = welcomeDialogShown
+
+    fun welcomeDialogDismissed() {
+        welcomeDialogShown.value = false
+    }
+
+    val welcomeAlertDialogTitleText: LiveData<Spanned>
+        get() = welcomeAlertDialogTitleTxt
+
+    val welcomeAlertDialogMessageText: LiveData<Spanned>
+        get() = welcomeAlertDialogMessageTxt
 
     val statusBarText: LiveData<String>
         get() = statusBarTxt
@@ -755,6 +772,28 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                     findNearestBikeSystemAndSetInRepo(bikeSystemList, userLoc.value, repo)
                 }
             } else {
+                val previousSystem = repo.previousBikeSystem.value
+                if (previousSystem == null) {
+                    welcomeAlertDialogTitleTxt.value = Utils.fromHtml(String.format(getApplication<Application>().resources.getString(R.string.hello_city), "", newSystem.city))
+
+                    welcomeAlertDialogMessageTxt.value = Utils.fromHtml(String.format(getApplication<Application>().resources.getString(R.string.bike_network_found_message),
+                            newSystem.name
+                    ))
+
+                    if (welcomeDialogShown.value != true)
+                        welcomeDialogShown.value = true
+
+                } else if (previousSystem.id != newSystem.id) {
+                    welcomeAlertDialogTitleTxt.value = Utils.fromHtml(String.format(getApplication<Application>().resources.getString(R.string.hello_city), getApplication<Application>().resources.getString(R.string.hello_travel), newSystem.city))
+
+                    welcomeAlertDialogMessageTxt.value = Utils.fromHtml(String.format(getApplication<Application>().resources.getString(R.string.bike_network_found_message),
+                            newSystem.name
+                    ))
+
+                    if (welcomeDialogShown.value != true)
+                        welcomeDialogShown.value = true
+                }
+
                 //We have bounds, start watching user location to trigger new attempt at finding a bike system
                 //when getting out of bounds
                 newSystem.boundingBoxNorthEastLatitude?.let { bbNELat ->
