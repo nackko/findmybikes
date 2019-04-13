@@ -46,6 +46,10 @@ object Utils {
         return LatLngBounds(southwestPadded, northeastPadded)
     }
 
+    fun getExponentialDelayMillis(nbAttempt: Int): Long {
+        return Math.round(Math.pow(2.0, nbAttempt.toDouble())) * 1000
+    }
+
     fun extractNearestAvailableStationIdFromDataString(_processedString: String): String {
 
         //int debug0 = _processedString.indexOf(StationTableRecyclerViewAdapter.AOK_AVAILABILITY_POSTFIX);
