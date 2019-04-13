@@ -712,16 +712,16 @@ class FindMyBikesActivity : AppCompatActivity(),
     //TODO: this hole computation should happen in model
     private fun setupActionBarStrings(bs: BikeSystem?) {
 
-        var hashtagableBikeSystemName: String = bs?.name ?: ""
+        var titleBikeSystemName: String = bs?.name ?: ""
 
-        hashtagableBikeSystemName = hashtagableBikeSystemName.replace("\\s".toRegex(), "")
-        hashtagableBikeSystemName = hashtagableBikeSystemName.replace("[^A-Za-z0-9 ]".toRegex(), "")
-        @Suppress("UNUSED_VALUE")
-        hashtagableBikeSystemName = hashtagableBikeSystemName.toLowerCase()
+
+        titleBikeSystemName = titleBikeSystemName.replace(" ", "")
+        titleBikeSystemName = titleBikeSystemName.replace("'", "")
+        titleBikeSystemName = titleBikeSystemName.toLowerCase()
 
         supportActionBar!!.title = Utils.fromHtml(String.format(resources.getString(R.string.appbar_title_formatting),
                 resources.getString(R.string.appbar_title_prefix),
-                bs?.name?.toLowerCase() ?: "",//hashtagableBikeSystemName,
+                titleBikeSystemName,
                 resources.getString(R.string.appbar_title_postfix)))
         //doesn't scale well, but just a little touch for my fellow Montréalers
         @Suppress("CanBeVal") var cityHashtag = ""

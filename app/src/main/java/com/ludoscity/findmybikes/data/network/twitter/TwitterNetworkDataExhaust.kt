@@ -70,7 +70,11 @@ class TwitterNetworkDataExhaust private constructor() {
 
             var firstString = true
             val repo = InjectorUtils.provideRepository(ctx)
-            val hastagCurBikeSystemName = "#findmy${repo.getHashtaggableCurBikeSystemName()}"
+
+            val hastagCurBikeSystemName = Utils.fromHtml(String.format(ctx.getString(R.string.appbar_title_formatting),
+                    ctx.getString(R.string.appbar_title_prefix),
+                    repo.getHashtaggableCurBikeSystemName(),
+                    ctx.getString(R.string.appbar_title_postfix)))
 
             dataToPush.forEach {
                 if (firstString) {

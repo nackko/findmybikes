@@ -89,7 +89,6 @@ object Utils {
         var hashtagableBikeSystemName = toClean
         hashtagableBikeSystemName = hashtagableBikeSystemName.replace("\\s".toRegex(), "")
         hashtagableBikeSystemName = hashtagableBikeSystemName.replace("[^A-Za-z0-9 ]".toRegex(), "")
-        @Suppress("UNUSED_VALUE")
         hashtagableBikeSystemName = hashtagableBikeSystemName.toLowerCase()
 
         return hashtagableBikeSystemName
