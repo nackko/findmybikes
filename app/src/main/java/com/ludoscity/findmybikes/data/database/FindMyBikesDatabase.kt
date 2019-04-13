@@ -7,6 +7,7 @@ import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverters
 import android.arch.persistence.room.migration.Migration
 import android.content.Context
+import com.ludoscity.findmybikes.BuildConfig
 
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao
@@ -33,8 +34,6 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
 
         private val TAG = FindMyBikesDatabase::class.java.simpleName
 
-        private const val DATABASE_NAME = "findmybikes-database"
-
         // For Singleton instantiation
         @Volatile
         private var INSTANCE: FindMyBikesDatabase? = null
@@ -45,8 +44,8 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
                 return tempInstance
             }
             synchronized(this) {
-                val instance = Room.databaseBuilder(ctx.applicationContext,
-                        FindMyBikesDatabase::class.java, DATABASE_NAME)
+                val builder = Room.databaseBuilder(ctx.applicationContext,
+                        FindMyBikesDatabase::class.java, BuildConfig.DATABASE_NAME)
                         .addMigrations(MIGRATION_1_2)
                         .addMigrations(MIGRATION_2_3)
                         .addMigrations(MIGRATION_3_4)
@@ -57,8 +56,12 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
                         .addMigrations(MIGRATION_8_9)
                         .addMigrations(MIGRATION_9_10)
                         .addMigrations(MIGRATION_10_11)
-                        .setJournalMode(JournalMode.TRUNCATE)
-                        .build()
+
+                if (BuildConfig.DEBUG)
+                    builder.setJournalMode(JournalMode.TRUNCATE)
+
+                val instance = builder.build()
+
                 INSTANCE = instance
                 return instance
             }
