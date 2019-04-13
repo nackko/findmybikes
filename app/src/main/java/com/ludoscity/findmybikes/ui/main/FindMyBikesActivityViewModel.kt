@@ -930,8 +930,13 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 favoriteFabShown.value = false
                 clearBSelectionFabShown.value = false
                 directionsToStationAFabShown.value = stationA.value != null && stationB.value == null
+                if (stationA.value?.locationHash != optimalBikeStationId.value)
+                    showSelectNearestBikeFab()
+                else
+                    hideSelectNearestBikeFab()
 
             } else {
+                hideSelectNearestBikeFab()
                 directionsToStationAFabShown.value = false
                 if (stationB.value == null) {
 
