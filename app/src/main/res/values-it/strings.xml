@@ -80,4 +80,5 @@
     <string name="availability_hint_often" />
     <string name="availability_hint_sometime" />
     <string name="availability_hint_veryoften" />
+    <string name="out_of_bounds">fuori dall\'area di servizio</string>
 </resources>

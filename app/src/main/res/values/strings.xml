@@ -23,6 +23,7 @@
     <string name="refreshing_map">#refreshing map…</string>
     <string name="auto_download_failed">#download failed :/ Auto update paused.</string>
     <string name="google_maps_not_installed">Google Maps not installed !</string>
+    <string name="out_of_bounds">#out of current system service area</string>
     <string name="searching_bike_network">#searching nearest bike system on citybik.es…</string>
     <string name="bike_network_found_message"><![CDATA[#bike system been set to <b>%1$s</b>.<br />I\'ll update it if you travel.]]></string>
     <string name="searching_wait_location">#waiting on location…</string>

@@ -98,6 +98,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     //Tentative reply : that should be exposed by repo and channelled through model (like station availability data is)
     private val dataOutOfDate = MutableLiveData<Boolean>()
 
+    private var userLocOutOfBounds = false
+
     val hasLocationPermission: LiveData<Boolean>
         get() = locationPermissionGranted
 
@@ -584,76 +586,79 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         }
 
         nowObserver = Observer {
-            it?.let { now ->
+            it?.let { newNow ->
+                if (userLocOutOfBounds) {
+                    statusBarTxt.value = "${getApplication<Application>().getString(R.string.out_of_bounds)}. ${getApplication<Application>().getString(R.string.pull_to_refresh)}"
+                } else {
 
-                coroutineScopeIO.launch {
+                    coroutineScopeIO.launch {
 
-                    val lastUpdateTimestamp = curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!
-                    val timeDeltaMillis = now - lastUpdateTimestamp
+                        val lastUpdateTimestamp = curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!
+                        val timeDeltaMillis = newNow - lastUpdateTimestamp
 
-                    //first the past
-                    if (timeDeltaMillis < DateUtils.MINUTE_IN_MILLIS)
-                        pastStringBuilder.append(getApplication<Application>().getString(R.string.moments))
-                    else
-                        pastStringBuilder.append(getApplication<Application>().getString(R.string.il_y_a))
-                                .append(nf.format(timeDeltaMillis / DateUtils.MINUTE_IN_MILLIS))
-                                .append(" ").append(getApplication<Application>().getString(R.string.min_abbreviated))
+                        //first the past
+                        if (timeDeltaMillis < DateUtils.MINUTE_IN_MILLIS)
+                            pastStringBuilder.append(getApplication<Application>().getString(R.string.moments))
+                        else
+                            pastStringBuilder.append(getApplication<Application>().getString(R.string.il_y_a))
+                                    .append(nf.format(timeDeltaMillis / DateUtils.MINUTE_IN_MILLIS))
+                                    .append(" ").append(getApplication<Application>().getString(R.string.min_abbreviated))
 
-                    //then the future
-                    if (isConnectivityAvailable.value == true) {
+                        //then the future
+                        if (isConnectivityAvailable.value == true) {
 
-                        if (bikeSystemStatusAutoUpdate.value != true) {
-                            futureStringBuilder.append(getApplication<Application>().getString(R.string.pull_to_refresh))
-                        } else {
-                            //auto
-                            val wishedUpdateTime = lastUpdateTimestamp +
-                                    1 *
-                                    getApplication<Application>().resources.getInteger(R.integer.update_auto_interval_minute) *
-                                    1000 *
-                                    60
+                            if (bikeSystemStatusAutoUpdate.value != true) {
+                                futureStringBuilder.append(getApplication<Application>().getString(R.string.pull_to_refresh))
+                            } else {
+                                //auto
+                                val wishedUpdateTime = lastUpdateTimestamp +
+                                        1 *
+                                        getApplication<Application>().resources.getInteger(R.integer.update_auto_interval_minute) *
+                                        1000 *
+                                        60
 
-                            //Model should keep time since last update
-                            //someone should observe and request Bike system status refresh
-                            if (now >= wishedUpdateTime)
-                                requestCurrentBikeSystemStatusRefresh()
-                            else {
-                                futureStringBuilder.append(getApplication<Application>().getString(R.string.nextUpdate))
-                                        .append(" ")
-                                val deltaSeconds = (wishedUpdateTime - now) / DateUtils.SECOND_IN_MILLIS
+                                //Model should keep time since last update
+                                //someone should observe and request Bike system status refresh
+                                if (newNow >= wishedUpdateTime)
+                                    requestCurrentBikeSystemStatusRefresh()
+                                else {
+                                    futureStringBuilder.append(getApplication<Application>().getString(R.string.nextUpdate))
+                                            .append(" ")
+                                    val deltaSeconds = (wishedUpdateTime - newNow) / DateUtils.SECOND_IN_MILLIS
 
-                                // formatted will be HH:MM:SS or MM:SS
-                                futureStringBuilder.append(DateUtils.formatElapsedTime(deltaSeconds))
+                                    // formatted will be HH:MM:SS or MM:SS
+                                    futureStringBuilder.append(DateUtils.formatElapsedTime(deltaSeconds))
+                                }
                             }
+                        } else {
+
+                            futureStringBuilder.append(getApplication<Application>().getString(R.string.no_connectivity))
+
+                            //TODO: block refresh gesture in tables
+                            //NO : table model observes connectivity
                         }
-                    } else {
 
-                        futureStringBuilder.append(getApplication<Application>().getString(R.string.no_connectivity))
+                        statusBarTxt.postValue(String.format(getApplication<Application>().getString(R.string.status_string),
+                                pastStringBuilder.toString(), futureStringBuilder.toString()))
 
-                        //TODO: block refresh gesture in tables
-                        //NO : table model observes connectivity
-                    }
+                        pastStringBuilder.clear()
+                        futureStringBuilder.clear()
 
-                    statusBarTxt.postValue(String.format(getApplication<Application>().getString(R.string.status_string),
-                            pastStringBuilder.toString(), futureStringBuilder.toString()))
+                        //Log.d("truc", "it.lastStatusUpdateLocalTimestamp : ${curBikeSystem.value?.lastStatusUpdateLocalTimestamp} \nlast update was ${(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!) / 1000L}s ago")
+                        if (isConnectivityAvailable.value == false || newNow - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! >
+                                getApplication<Application>().resources.getInteger(R.integer.outdated_data_time_minute) * 60 * 1000) {
 
-                    pastStringBuilder.clear()
-                    futureStringBuilder.clear()
+                            if (dataOutOfDate.value != true) {
 
-                    //Log.d("truc", "it.lastStatusUpdateLocalTimestamp : ${curBikeSystem.value?.lastStatusUpdateLocalTimestamp} \nlast update was ${(System.currentTimeMillis() - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!!) / 1000L}s ago")
-                    if (isConnectivityAvailable.value == false || now - curBikeSystem.value?.lastStatusUpdateLocalTimestamp!! >
-                            getApplication<Application>().resources.getInteger(R.integer.outdated_data_time_minute) * 60 * 1000) {
+                                dataOutOfDate.postValue(true)
+                                statusBarBckColorResId.postValue(R.color.theme_accent)
+                            }
+                        } else {
+                            if (dataOutOfDate.value != false) {
 
-                        if (dataOutOfDate.value != true) {
-
-                            dataOutOfDate.postValue(true)
-                            statusBarBckColorResId.postValue(R.color.theme_accent)
-                        }
-                    } else {
-
-                        if (dataOutOfDate.value != false) {
-
-                            dataOutOfDate.postValue(false)
-                            statusBarBckColorResId.postValue(R.color.theme_primary_dark)
+                                dataOutOfDate.postValue(false)
+                                statusBarBckColorResId.postValue(R.color.theme_primary_dark)
+                            }
                         }
                     }
                 }
@@ -807,19 +812,15 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
                     userLocObserverForOutOfBounds = Observer { newUserLoc ->
                         newUserLoc?.let {
-                            val lastUpdateTimestamp = newSystem.lastStatusUpdateLocalTimestamp
-                            if (!bounds.contains(newUserLoc) && now.value ?: Int.MAX_VALUE - lastUpdateTimestamp >= getApplication<Application>().resources.getInteger(R.integer.outdated_data_time_minute) * 60 * 1000) {
-                                //TODO: implement exponential backoff when out of bounds of any bike system
-                                //TODO: just maintain out of bounds observable boolean in activity model. Observe where pertinent
-                                Log.d(TAG, "out of bound dected, invalidating current bike system")
+                            if (!bounds.contains(newUserLoc)) {
+                                Log.d(TAG, "out of bound detected")
+                                userLocOutOfBounds = true
                                 userLoc.removeObserver(userLocObserverForOutOfBounds)
-                                statusBarTxt.value = getApplication<Application>().getString(R.string.searching_bike_network)
-                                repo.invalidateCurrentBikeSystem(getApplication())
-                            }
+                            } else
+                                userLocOutOfBounds = false
                         }
                     }
 
-                    //TODO: implement exponential backoff
                     userLoc.observeForever(userLocObserverForOutOfBounds)
                 }
             }
@@ -1102,13 +1103,21 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     }
 
     fun requestCurrentBikeSystemStatusRefresh() {
-        coroutineScopeMAIN.launch {
-            statusBarTxt.value = getApplication<Application>().getString(R.string.downloading)
-            now.removeObserver(nowObserver)
+        if (!userLocOutOfBounds) {
+            coroutineScopeMAIN.launch {
+                statusBarTxt.value = getApplication<Application>().getString(R.string.downloading)
+                now.removeObserver(nowObserver)
+            }
+            repo.invalidateBikeSystemStatus(getApplication(), curBikeSystem.value?.citybikDOTesUrl
+                    ?: "")
+        } else {
+            userLocOutOfBounds = false
+            repo.invalidateCurrentBikeSystem(getApplication())
+            coroutineScopeMAIN.launch {
+                statusBarTxt.value = getApplication<Application>().getString(R.string.searching_bike_network)
+                now.removeObserver(nowObserver)
+            }
         }
-
-        repo.invalidateBikeSystemStatus(getApplication(), curBikeSystem.value?.citybikDOTesUrl
-                ?: "")
     }
 
 
