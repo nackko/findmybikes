@@ -6,6 +6,7 @@ import android.os.SystemClock
 import android.support.v4.app.JobIntentService
 import android.util.Log
 import com.google.android.gms.maps.model.LatLng
+import com.ludoscity.findmybikes.BuildConfig
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import twitter4j.Twitter
@@ -52,7 +53,7 @@ class PushToTwitterDataIntentService : JobIntentService() {
             if (api == null) {
                 Log.d(TAG, "Building a Twitter API instance")
                 val cb = ConfigurationBuilder()
-                cb.setDebugEnabled(true)    //TODO: remove this in release builds
+                        .setDebugEnabled(BuildConfig.DEBUG)
                         .setOAuthConsumerKey(ctx.resources.getString(R.string.twitter_consumer_key))
                         .setOAuthConsumerSecret(ctx.resources.getString(R.string.twitter_consumer_secret))
                         .setOAuthAccessToken(ctx.resources.getString(R.string.twitter_access_token))
