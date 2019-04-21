@@ -1,9 +1,9 @@
 package com.ludoscity.findmybikes.ui.map
 
 import android.app.Application
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
@@ -28,6 +28,7 @@ class MapFragmentModelFactory(private val repository: FindMyBikesRepository,
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
+        @Suppress("UNCHECKED_CAST")
         return MapFragmentViewModel(
                 repository,
                 application,

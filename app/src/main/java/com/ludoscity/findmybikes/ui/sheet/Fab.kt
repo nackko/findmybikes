@@ -1,9 +1,8 @@
 package com.ludoscity.findmybikes.ui.sheet
 
 import android.content.Context
-import android.support.design.widget.FloatingActionButton
 import android.util.AttributeSet
-
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.gordonwong.materialsheetfab.AnimatedFab
 
 /**

@@ -1,8 +1,7 @@
 package com.ludoscity.findmybikes.data.database.favorite
 
-import android.arch.persistence.room.Entity
 import android.content.Context
-
+import androidx.room.Entity
 import com.google.android.gms.maps.model.LatLng
 
 /**

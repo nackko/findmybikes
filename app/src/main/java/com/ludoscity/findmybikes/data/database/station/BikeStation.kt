@@ -1,9 +1,9 @@
 package com.ludoscity.findmybikes.data.database.station
 
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Embedded
-import android.arch.persistence.room.Entity
-import android.arch.persistence.room.PrimaryKey
+import androidx.room.ColumnInfo
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.annotations.SerializedName
@@ -41,7 +41,7 @@ data class BikeStation(
         val locationHash: String) {
 
     val location: LatLng
-        get() = LatLng(latitude!!, longitude!!)
+        get() = LatLng(latitude, longitude)
 
     val isLocked: Boolean
         get() {
@@ -50,10 +50,10 @@ data class BikeStation(
 
             if (extra != null) {
 
-                if (extra!!.renting != null && extra!!.returning != null) {
-                    toReturn = extra!!.renting == 0 || extra!!.returning == 0
-                } else if (extra!!.locked != null) {
-                    toReturn = extra!!.locked!!
+                if (extra.renting != null && extra.returning != null) {
+                    toReturn = extra.renting == 0 || extra.returning == 0
+                } else if (extra.locked != null) {
+                    toReturn = extra.locked
                 }
             }
 

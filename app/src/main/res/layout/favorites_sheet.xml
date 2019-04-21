@@ -1,4 +1,4 @@
-<android.support.v7.widget.CardView
+<androidx.cardview.widget.CardView
     android:id="@+id/fab_sheet"
     style="@style/Widget.MaterialSheetFab.Sheet"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -11,7 +11,7 @@
         android:visibility="visible"
         android:id="@+id/favorites_sheet_content">
 
-    <android.support.percent.PercentRelativeLayout
+        <androidx.percentlayout.widget.PercentRelativeLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/sheet_header_height"
         android:orientation="horizontal"
@@ -26,7 +26,7 @@
             android:id="@+id/favorite_sheet_dummy_edit_fab"
             style="@style/map_floating_action_button_end_aligned"/>
 
-        <android.support.design.widget.FloatingActionButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:id="@+id/favorite_sheet_edit_fab"
@@ -41,7 +41,7 @@
             style="@style/listitem_floating_action_button"
             android:focusable="true" />
 
-        <android.support.design.widget.FloatingActionButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:id="@+id/favorite_sheet_edit_done_fab"
@@ -62,7 +62,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/favorite_sheet_dummy_edit_fab"
                 android:layout_toEndOf="@+id/favorite_sheet_dummy_edit_fab"
 
                 android:textSize="16sp"
@@ -74,7 +73,7 @@
                 android:textColor="@color/primary_text_default_material_dark"
                 android:background="@color/theme_primary"
                 android:id="@+id/favorites_sheet_header_textview" />
-        </android.support.percent.PercentRelativeLayout>
+        </androidx.percentlayout.widget.PercentRelativeLayout>
 
         <!--suppress AndroidDomInspection -->
             <FrameLayout
@@ -85,4 +84,4 @@
             </FrameLayout>
 
     </LinearLayout>
-</android.support.v7.widget.CardView>
+</androidx.cardview.widget.CardView>

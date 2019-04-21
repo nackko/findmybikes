@@ -1,16 +1,16 @@
-<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.percentlayout.widget.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!--suppress AndroidDomInspection -->
-    <android.support.design.widget.CoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:id="@+id/appbar_coordinator"
         app:layout_heightPercent="@dimen/main_layout_list_section">
 
-        <android.support.design.widget.AppBarLayout
+        <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/action_toolbar_layout">
@@ -35,19 +35,18 @@
                     android:text="@string/fromCitibik_es"/>
 
             </LinearLayout>
-        </android.support.design.widget.AppBarLayout>
+        </com.google.android.material.appbar.AppBarLayout>
 
         <!-- VIEWPAGER -->
-        <android.support.v4.view.ViewPager
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/station_table_viewpager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:id="@+id/station_table_viewpager">
-        </android.support.v4.view.ViewPager>
-    </android.support.design.widget.CoordinatorLayout>
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <!--suppress AndroidDomInspection -->
-    <android.support.design.widget.CoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:id="@+id/snackbar_coordinator"
@@ -62,7 +61,7 @@
         >
 
         <!-- TABS -->
-        <android.support.design.widget.TabLayout
+        <com.google.android.material.tabs.TabLayout
             android:id="@+id/sliding_tabs"
             android:layout_width="match_parent"
             android:layout_height="@dimen/tablayout_height"
@@ -73,20 +72,17 @@
         reverts to ?android:attr/selectableItemBackground, which is white with ripple effect. -->
 
         <!-- MAP -->
-        <android.support.design.widget.CoordinatorLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <fragment
-                xmlns:android="http://schemas.android.com/apk/res/android"
                 android:name="com.ludoscity.findmybikes.ui.map.StationMapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/station_map_fragment"
                 tools:layout="@layout/fragment_station_map" />
 
-            <android.support.design.widget.FloatingActionButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:id="@+id/directions_loc_to_a_fab"
@@ -100,7 +96,7 @@
                 android:focusable="true" />
 
             <!-- TRIP DETAILS WIDGET -->
-            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            <fragment
                 android:name="com.ludoscity.findmybikes.ui.trip.TripDetailsFragment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -121,7 +117,7 @@
                     android:id="@+id/search_framelayout"
                     android:layout_height="wrap_content">
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
                         android:id="@+id/favorite_add_remove_fab"
@@ -134,7 +130,7 @@
                         style="@style/map_floating_action_button_top"
                         android:focusable="true" />
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
                         android:id="@+id/search_fab"
@@ -182,7 +178,7 @@
                 style="@style/map_floating_action_button_end_aligned"
                 android:focusable="true" />
 
-            <android.support.design.widget.FloatingActionButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:id="@+id/autoselect_closest_bike"
@@ -195,7 +191,7 @@
                 style="@style/map_floating_action_button_end_aligned"
                 android:focusable="true" />
 
-            <android.support.design.widget.FloatingActionButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:id="@+id/clear_fab"
@@ -225,7 +221,7 @@
                     layout="@layout/favorites_sheet" />
 
             </io.codetail.widget.RevealLinearLayout>
-        </android.support.design.widget.CoordinatorLayout>
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </LinearLayout>
 
     <!--TODO: re add splash screen
@@ -240,4 +236,4 @@
         !-->
 
 
-</android.support.percent.PercentRelativeLayout>
+</androidx.percentlayout.widget.PercentRelativeLayout>

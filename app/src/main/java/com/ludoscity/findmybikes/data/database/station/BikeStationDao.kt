@@ -1,7 +1,7 @@
 package com.ludoscity.findmybikes.data.database.station
 
-import android.arch.lifecycle.LiveData
-import android.arch.persistence.room.*
+import androidx.lifecycle.LiveData
+import androidx.room.*
 
 /**
  * Created by F8Full on 2017-12-17.

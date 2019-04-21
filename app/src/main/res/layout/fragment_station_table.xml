@@ -1,4 +1,4 @@
-<android.support.percent.PercentRelativeLayout
+<androidx.percentlayout.widget.PercentRelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,7 +9,7 @@
 
 
     <!-- COLUMN HEADERS -->
-    <android.support.percent.PercentRelativeLayout
+    <androidx.percentlayout.widget.PercentRelativeLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,13 +34,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
-                    android:id="@+id/proximity_header_from" />
+                    android:id="@+id/proximity_header_from"
+                    tools:ignore="ContentDescription" />
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/ic_walking_24dp_white"
-                    android:id="@+id/proximity_header_to" />
+                    android:id="@+id/proximity_header_to"
+                    tools:ignore="ContentDescription" />
             </LinearLayout>
 
 
@@ -56,7 +58,6 @@
             android:layout_centerVertical="true"
             android:id="@+id/name_header"
             android:layout_toEndOf="@+id/proximity_header"
-            android:layout_toRightOf="@+id/proximity_header"
             />
 
         <!--suppress AndroidDomInspection -->
@@ -80,7 +81,6 @@
             app:layout_widthPercent="@dimen/availability_column_width_percent"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/name_header"
-            android:layout_toRightOf="@+id/name_header"
             android:layout_centerVertical="true"
             android:textSize="16sp"
             android:gravity="center"
@@ -89,7 +89,7 @@
             android:ellipsize="end"
             android:textColor="@color/primary_text_default_material_dark"
             />
-    </android.support.percent.PercentRelativeLayout>
+    </androidx.percentlayout.widget.PercentRelativeLayout>
     <!-- EMPTY TABLE TEXT -->
     <!-- TODO: paging data will make this obsolete (default data for display in view when unloaded) !-->
     <TextView
@@ -105,20 +105,20 @@
         android:layout_centerInParent="true"/>
 
     <!-- PULL TO REFRESH -->
-    <android.support.v4.widget.SwipeRefreshLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/station_table_swipe_refresh_layout"
         android:layout_below="@+id/station_table_headers"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
         <!-- STATION RECYCLERVIEW -->
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/station_table_recyclerview" />
-    </android.support.v4.widget.SwipeRefreshLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <android.support.percent.PercentRelativeLayout
+    <androidx.percentlayout.widget.PercentRelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/station_recap"
@@ -132,7 +132,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/b_tab_pin_a"
             android:layout_centerVertical="true"
-            app:srcCompat="@drawable/ic_pin_a_36dp_black"/>
+            app:srcCompat="@drawable/ic_pin_a_36dp_black"
+            tools:ignore="ContentDescription" />
 
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -140,7 +141,6 @@
             android:id="@+id/station_recap_strings"
             android:orientation="vertical"
             android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/b_tab_pin_a"
             android:layout_toEndOf="@id/b_tab_pin_a">
             <TextView
                 android:layout_width="wrap_content"
@@ -162,10 +162,9 @@
                 android:text="#bikes : XX"
                 />
         </RelativeLayout>
-    </android.support.percent.PercentRelativeLayout>
+    </androidx.percentlayout.widget.PercentRelativeLayout>
 
 
-
-</android.support.percent.PercentRelativeLayout>
+</androidx.percentlayout.widget.PercentRelativeLayout>
 
 

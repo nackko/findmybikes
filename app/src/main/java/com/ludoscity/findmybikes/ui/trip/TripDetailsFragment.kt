@@ -1,16 +1,16 @@
 package com.ludoscity.findmybikes.ui.trip
 
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.utils.InjectorUtils

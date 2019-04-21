@@ -1,19 +1,19 @@
 package com.ludoscity.findmybikes.ui.table
 
-import android.arch.lifecycle.ViewModelProviders
 import android.graphics.Typeface
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.github.amlcurran.showcaseview.targets.ViewTarget
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
@@ -79,7 +79,7 @@ class StationTableFragment : Fragment() {
         mStationRecyclerView!!.layoutManager = ScrollingLinearLayoutManager(activity!!, LinearLayoutManager.VERTICAL, false, 300)
         mStationRecyclerView!!.adapter = StationTableRecyclerViewAdapter(tableFragmentModel)
         mStationRecyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 mRecyclerViewScrollingState = newState
             }
         })
@@ -91,13 +91,13 @@ class StationTableFragment : Fragment() {
                 R.color.stationlist_refresh_spinner_grey,
                 R.color.stationlist_refresh_spinner_green)
 
-        tableFragmentModel.isRefreshEnabled.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.isRefreshEnabled.observe(this, androidx.lifecycle.Observer {
             if (it == null)
                 mSwipeRefreshLayout!!.isEnabled = true
             else mSwipeRefreshLayout!!.isEnabled = it == true
         })
 
-        tableFragmentModel.isRefreshing.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.isRefreshing.observe(this, androidx.lifecycle.Observer {
             if (it != mSwipeRefreshLayout!!.isRefreshing)
                 mSwipeRefreshLayout!!.isRefreshing = it ?: false
         })
@@ -118,7 +118,7 @@ class StationTableFragment : Fragment() {
 
         val isDockTable = arguments?.getBoolean("isDockTable") ?: true
 
-        tableFragmentModel.lastClickedStation.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.lastClickedStation.observe(this, androidx.lifecycle.Observer {
 
             if (isDockTable)
                 nearbyActivityViewModel.setStationB(it)
@@ -126,18 +126,18 @@ class StationTableFragment : Fragment() {
                 nearbyActivityViewModel.setStationA(it)
         })
 
-        tableFragmentModel.nearestAvailabilityStationId.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.nearestAvailabilityStationId.observe(this, androidx.lifecycle.Observer {
             if (isDockTable)
                 nearbyActivityViewModel.setOptimalDockStationId(it)
             else
                 nearbyActivityViewModel.setOptimalBikeStationId(it)
         })
 
-        tableFragmentModel.tableItemDataList.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.tableItemDataList.observe(this, androidx.lifecycle.Observer {
             stationTableRecyclerViewAdapter.loadItems(it ?: emptyList())
         })
 
-        tableFragmentModel.stationRecapVisibility.observe(this, android.arch.lifecycle.Observer { visible ->
+        tableFragmentModel.stationRecapVisibility.observe(this, androidx.lifecycle.Observer { visible ->
 
             if (visible == true)
                 mStationRecap!!.visibility = View.VISIBLE
@@ -145,29 +145,29 @@ class StationTableFragment : Fragment() {
                 mStationRecap!!.visibility = View.GONE
         })
 
-        tableFragmentModel.stationListVisibility.observe(this, android.arch.lifecycle.Observer { visible ->
+        tableFragmentModel.stationListVisibility.observe(this, androidx.lifecycle.Observer { visible ->
             if (visible == true)
                 mStationRecyclerView!!.visibility = View.VISIBLE
             else
                 mStationRecyclerView!!.visibility = View.GONE
         })
 
-        tableFragmentModel.emptyTextVisibility.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.emptyTextVisibility.observe(this, androidx.lifecycle.Observer {
             if (it == true)
                 mEmptyListTextView!!.visibility = View.VISIBLE
             else
                 mEmptyListTextView!!.visibility = View.GONE
         })
 
-        tableFragmentModel.stringIfEmpty.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.stringIfEmpty.observe(this, androidx.lifecycle.Observer {
             mEmptyListTextView!!.text = it ?: ""
         })
 
-        tableFragmentModel.headerAvailabilityText.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.headerAvailabilityText.observe(this, androidx.lifecycle.Observer {
             headerAvailabilityTextView!!.text = it ?: ""
         })
 
-        tableFragmentModel.tableRecapData.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.tableRecapData.observe(this, androidx.lifecycle.Observer {
             mStationRecapName!!.text = it?.name ?: "[[[STATION NAME]]]"
             mStationRecapAvailability!!.text = it?.availabilityText ?: "XX"
             mStationRecapAvailability!!.paint.isStrikeThruText = it?.isAvailabilityPaintStrikeThru
@@ -179,7 +179,7 @@ class StationTableFragment : Fragment() {
 
         })
 
-        tableFragmentModel.showProximityColumn.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.showProximityColumn.observe(this, androidx.lifecycle.Observer {
             //TODO : column width adaptation
             if (it == true) {
                 mProximityHeader!!.visibility = View.VISIBLE
@@ -188,7 +188,7 @@ class StationTableFragment : Fragment() {
             }
         })
 
-        tableFragmentModel.proximityHeaderFromResId.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.proximityHeaderFromResId.observe(this, androidx.lifecycle.Observer {
             if (it != null) {
                 mProximityHeaderFromImageView!!.visibility = View.VISIBLE
                 mProximityHeaderFromImageView!!.setImageResource(it)
@@ -198,13 +198,13 @@ class StationTableFragment : Fragment() {
             }
         })
 
-        tableFragmentModel.proximityHeaderToResId.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.proximityHeaderToResId.observe(this, androidx.lifecycle.Observer {
             if (it != null) {
                 mProximityHeaderToImageView!!.setImageResource(it)
             }
         })
 
-        tableFragmentModel.recyclerViewAdapterPosToSmoothScollInView.observe(this, android.arch.lifecycle.Observer {
+        tableFragmentModel.recyclerViewAdapterPosToSmoothScollInView.observe(this, androidx.lifecycle.Observer {
             if (it != null) {
                 val appBarExpanded = tableFragmentModel.appBarExpanded.value ?: true
 

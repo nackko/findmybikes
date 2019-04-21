@@ -2,19 +2,10 @@ package com.ludoscity.findmybikes.ui.main
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.support.design.widget.*
-import android.support.v4.content.ContextCompat
-import android.support.v4.view.ViewPager
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -24,6 +15,15 @@ import android.view.animation.AnimationUtils
 import android.view.animation.Interpolator
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.viewpager.widget.ViewPager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.fondesa.kpermissions.extension.listeners
 import com.fondesa.kpermissions.extension.permissionsBuilder
@@ -33,6 +33,10 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
@@ -424,15 +428,13 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         appBarLayout = findViewById(R.id.action_toolbar_layout)
 
-        appBarLayout.addOnOffsetChangedListener { appBarLayout: AppBarLayout, verticalOffset: Int ->
-
+        appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout: AppBarLayout, verticalOffset: Int ->
             if (Math.abs(verticalOffset) - appBarLayout.totalScrollRange == 0)
                 findMyBikesActivityViewModel.setAppBarExpanded(false)
             else if (findMyBikesActivityViewModel.isAppBarExpanded().value != true)
                 findMyBikesActivityViewModel.setAppBarExpanded(true)
-        }
 
-
+        })
 
         coordinatorLayout = findViewById(R.id.snackbar_coordinator)
 

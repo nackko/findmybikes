@@ -1,13 +1,13 @@
 package com.ludoscity.findmybikes.ui.table
 
 import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
 import android.graphics.Typeface
 import android.text.SpannableString
 import android.util.Log
 import android.view.View
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.SharedPrefHelper
@@ -103,12 +103,12 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
     private val headerAvailText: MutableLiveData<String> = MutableLiveData()
 
     private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>>
-    private val bikeSystemAvailabilityDataObserver: android.arch.lifecycle.Observer<List<BikeStation>>
+    private val bikeSystemAvailabilityDataObserver: androidx.lifecycle.Observer<List<BikeStation>>
 
-    private val comparatorObserver: android.arch.lifecycle.Observer<FindMyBikesActivityViewModel.BaseBikeStationComparator>
-    private val stationRecapDataSourceObserver: android.arch.lifecycle.Observer<BikeStation>
-    private val stationSelectionDataSourceObserver: android.arch.lifecycle.Observer<BikeStation>
-    private val dataOutdatedObserver: android.arch.lifecycle.Observer<Boolean>
+    private val comparatorObserver: androidx.lifecycle.Observer<FindMyBikesActivityViewModel.BaseBikeStationComparator>
+    private val stationRecapDataSourceObserver: androidx.lifecycle.Observer<BikeStation>
+    private val stationSelectionDataSourceObserver: androidx.lifecycle.Observer<BikeStation>
+    private val dataOutdatedObserver: androidx.lifecycle.Observer<Boolean>
 
     companion object {
         private val TAG = TableFragmentViewModel::class.java.simpleName
@@ -132,7 +132,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
         bikeSystemAvailabilityDataSource = repo.getBikeSystemStationData(getApplication())
 
         //recyclerView
-        bikeSystemAvailabilityDataObserver = android.arch.lifecycle.Observer { newData ->
+        bikeSystemAvailabilityDataObserver = androidx.lifecycle.Observer { newData ->
 
             //TODO: have better Room database update strategy
             //this is to protect against drop table strategy (led to inconsistency crashes in recyclerView)
@@ -146,7 +146,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
             }
         }
 
-        comparatorObserver = android.arch.lifecycle.Observer {
+        comparatorObserver = androidx.lifecycle.Observer {
             comparator = it
 
             computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
@@ -157,7 +157,7 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         comparatorSource.observeForever(comparatorObserver)
 
-        stationSelectionDataSourceObserver = android.arch.lifecycle.Observer { newSelection ->
+        stationSelectionDataSourceObserver = androidx.lifecycle.Observer { newSelection ->
             recapVisibility.value = newSelection == null
             emptyTxtVisibility.value = newSelection == null
             listVisibility.value = newSelection != null
@@ -171,13 +171,13 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
         bikeSystemAvailabilityDataSource.observeForever(bikeSystemAvailabilityDataObserver)
 
-        stationRecapDataSourceObserver = android.arch.lifecycle.Observer {
+        stationRecapDataSourceObserver = androidx.lifecycle.Observer {
             computeAndEmitStationRecapDisplayData(stationRecapDataSource.value, isDataOutOfDate.value != false)
         }
 
         stationRecapDataSource.observeForever(stationRecapDataSourceObserver)
 
-        dataOutdatedObserver = android.arch.lifecycle.Observer {
+        dataOutdatedObserver = androidx.lifecycle.Observer {
 
 
             computeAndEmitStationRecapDisplayData(stationRecapDataSource.value, it != false)

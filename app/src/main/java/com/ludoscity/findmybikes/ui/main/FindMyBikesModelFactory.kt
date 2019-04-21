@@ -1,8 +1,8 @@
 package com.ludoscity.findmybikes.ui.main
 
 import android.app.Application
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 
 class FindMyBikesModelFactory(private val repository: FindMyBikesRepository,
@@ -10,6 +10,7 @@ class FindMyBikesModelFactory(private val repository: FindMyBikesRepository,
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
+        @Suppress("UNCHECKED_CAST")
         return FindMyBikesActivityViewModel(repository, app) as T
     }
 }

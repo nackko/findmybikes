@@ -3,13 +3,13 @@ package com.ludoscity.findmybikes.utils
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.support.annotation.ColorInt
-import android.support.annotation.StringRes
-import android.support.v4.content.res.ResourcesCompat
 import android.text.Html
 import android.text.Spanned
 import android.util.TypedValue
 import android.view.View
+import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
+import androidx.core.content.res.ResourcesCompat
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
@@ -282,7 +282,7 @@ object Utils {
         var toReturn = valueContainer.getFraction(1f, 1f)//http://stackoverflow.com/questions/11734470/how-does-one-use-resources-getfraction
 
         if (_rounded)
-            toReturn = Utils.round(toReturn, 2)
+            toReturn = round(toReturn, 2)
 
         return toReturn
     }
@@ -313,9 +313,9 @@ object Utils {
         //Right now, textColor and action color are controlled through theming,
         //but not background color.
         fun makeStyled(_view: View, @StringRes _textStringResId: Int, _duration: Int,
-                       @ColorInt _backgroundColor: Int/*, @ColorInt int _textColor, @ColorInt int _actionTextColor*/): android.support.design.widget.Snackbar {
+                       @ColorInt _backgroundColor: Int/*, @ColorInt int _textColor, @ColorInt int _actionTextColor*/): com.google.android.material.snackbar.Snackbar {
 
-            val toReturn = android.support.design.widget.Snackbar.make(_view, _textStringResId, _duration)
+            val toReturn = com.google.android.material.snackbar.Snackbar.make(_view, _textStringResId, _duration)
 
             val snackbarView = toReturn.view
 

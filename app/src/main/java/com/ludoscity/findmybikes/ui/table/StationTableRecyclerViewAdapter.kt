@@ -1,15 +1,15 @@
 package com.ludoscity.findmybikes.ui.table
 
 import android.os.Handler
-import android.support.design.widget.FloatingActionButton
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import com.github.amlcurran.showcaseview.targets.ViewTarget
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.ludoscity.findmybikes.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

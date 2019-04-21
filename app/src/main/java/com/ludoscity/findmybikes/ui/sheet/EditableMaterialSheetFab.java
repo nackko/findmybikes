@@ -1,8 +1,8 @@
 package com.ludoscity.findmybikes.ui.sheet;
 
-import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.ludoscity.findmybikes.R;
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel;

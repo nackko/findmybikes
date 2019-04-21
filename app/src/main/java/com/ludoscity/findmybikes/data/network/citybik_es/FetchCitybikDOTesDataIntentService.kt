@@ -3,8 +3,8 @@ package com.ludoscity.findmybikes.data.network.citybik_es
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
-import android.support.v4.app.JobIntentService
 import android.util.Log
+import androidx.core.app.JobIntentService
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

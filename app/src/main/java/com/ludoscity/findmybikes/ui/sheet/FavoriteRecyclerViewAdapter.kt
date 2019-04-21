@@ -4,11 +4,6 @@ import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.os.CountDownTimer
-import android.support.design.widget.FloatingActionButton
-import android.support.percent.PercentRelativeLayout
-import android.support.v4.content.ContextCompat
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -16,8 +11,13 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.percentlayout.widget.PercentRelativeLayout
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import com.dinuscxj.progressbar.CircleProgressBar
 import com.dmitrymalkovich.android.ProgressFloatingActionButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.ludoscity.findmybikes.R
 import java.util.*
 

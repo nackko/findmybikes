@@ -2,8 +2,8 @@ package com.ludoscity.findmybikes.data.network.twitter
 
 import android.content.Context
 import android.content.Intent
-import android.support.v4.util.Pair
 import android.util.Log
+import androidx.core.util.Pair
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.station.BikeStation
@@ -59,7 +59,7 @@ class TwitterNetworkDataExhaust private constructor() {
 
             var selectedStation: BikeStation? = null
             //Pair of station id and availability code (always 'CRI' as of now)
-            val discardedStations = java.util.ArrayList<Pair<String, String>>().toMutableList()
+            val discardedStations = ArrayList<Pair<String, String>>().toMutableList()
 
 
             //dataToPush will contain as first element

@@ -1,9 +1,9 @@
 package com.ludoscity.findmybikes.ui.sheet
 
 import android.app.Application
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 

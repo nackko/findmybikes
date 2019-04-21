@@ -3,8 +3,8 @@ package com.ludoscity.findmybikes.data.network.twitter
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
-import android.support.v4.app.JobIntentService
 import android.util.Log
+import androidx.core.app.JobIntentService
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.BuildConfig
 import com.ludoscity.findmybikes.R

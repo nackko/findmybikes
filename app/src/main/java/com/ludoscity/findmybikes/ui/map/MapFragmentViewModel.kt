@@ -1,11 +1,11 @@
 package com.ludoscity.findmybikes.ui.map
 
 import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.Observer
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -110,10 +110,10 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
     val isScrollGesturesEnabled: LiveData<Boolean>
         get() = scrollGesturesEnabled
 
-    private val userLocationObserver: android.arch.lifecycle.Observer<LatLng>
-    private val stationAObserver: android.arch.lifecycle.Observer<BikeStation>
-    private val stationBObserver: android.arch.lifecycle.Observer<BikeStation>
-    private val isDataOutOfDateObserver: android.arch.lifecycle.Observer<Boolean>
+    private val userLocationObserver: Observer<LatLng>
+    private val stationAObserver: Observer<BikeStation>
+    private val stationBObserver: Observer<BikeStation>
+    private val isDataOutOfDateObserver: Observer<Boolean>
     private val isLookingForBikeObserver: Observer<Boolean>
 
     private val finalDestinationPlaceObserver: Observer<Place>
@@ -121,11 +121,11 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
 
     private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>> = repo.getBikeSystemStationData(getApplication())
-    private val bikeSystemAvailabilityDataObserver: android.arch.lifecycle.Observer<List<BikeStation>>
+    private val bikeSystemAvailabilityDataObserver: Observer<List<BikeStation>>
 
     init {
 
-        bikeSystemAvailabilityDataObserver = android.arch.lifecycle.Observer { newData ->
+        bikeSystemAvailabilityDataObserver = Observer { newData ->
 
             //TODO: have better Room database update strategy
             //this is to protect against drop table strategy (led to inconsistency crashes in recyclerView)
@@ -146,7 +146,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
         }
         bikeSystemAvailabilityDataSource.observeForever(bikeSystemAvailabilityDataObserver)
 
-        isDataOutOfDateObserver = android.arch.lifecycle.Observer {
+        isDataOutOfDateObserver = Observer {
         }
 
         isDataOutOfDate.observeForever(isDataOutOfDateObserver)
@@ -258,7 +258,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
         isLookingForBike.observeForever(isLookingForBikeObserver)
 
-        userLocationObserver = android.arch.lifecycle.Observer {
+        userLocationObserver = Observer {
             //it prepares an updated cameraUpdate for map animation
 
             val latLngBoundbuilder = LatLngBounds.builder()
@@ -291,7 +291,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
         userLoc.observeForever(userLocationObserver)
 
-        stationAObserver = android.arch.lifecycle.Observer { stationA ->
+        stationAObserver = Observer { stationA ->
 
             //looking for bike
             if (isLookingForBike.value != false) {
@@ -334,7 +334,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
         stationA.observeForever(stationAObserver)
 
-        stationBObserver = android.arch.lifecycle.Observer {
+        stationBObserver = Observer {
 
             if (it != null) {
 

@@ -1,11 +1,11 @@
 package com.ludoscity.findmybikes.ui.sheet
 
 import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.Observer
 import android.graphics.Typeface
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
@@ -29,6 +29,7 @@ class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
                                  app: Application) : AndroidViewModel(app) {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
+    private val coroutineScopeMain = CoroutineScope(Dispatchers.Main)
 
     //What we need to expose to fragment for consumption
     val sheetItemDataList: LiveData<List<FavoriteSheetItemData>>
@@ -58,36 +59,41 @@ class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
                     favoriteStationListDataSource = repo.getFavoriteStationList()
                     favoritePlaceListDataSource = repo.getFavoritePlaceList()
 
-                    favoriteStationDataObserver = Observer { favStationData ->
-                        favStationData?.let {
-
-                            val merged = emptyList<FavoriteEntityBase>().toMutableList()
-
-                            merged.addAll(it)
-                            merged.addAll(favoritePlaceListDataSource.value ?: emptyList())
-
-                            merged.sortByDescending { favorite -> favorite.uiIndex }
-
-                            mergeFavoriteEntityList.postValue(merged)
-                        }
+                    coroutineScopeMain.launch {
+                        favoriteStationListDataSource.observeForever(favoriteStationDataObserver)
+                        favoritePlaceListDataSource.observeForever(favoritePlaceDataObserver)
                     }
+                }
+            }
+        }
 
-                    favoriteStationListDataSource.observeForever(favoriteStationDataObserver)
+        favoriteStationDataObserver = Observer { favStationData ->
+            favStationData?.let {
+                coroutineScopeIO.launch {
 
-                    favoritePlaceDataObserver = Observer {
-                        it?.let {
-                            val merged = emptyList<FavoriteEntityBase>().toMutableList()
+                    val merged = emptyList<FavoriteEntityBase>().toMutableList()
 
-                            merged.addAll(it)
-                            merged.addAll(favoriteStationListDataSource.value ?: emptyList())
+                    merged.addAll(it)
+                    merged.addAll(favoritePlaceListDataSource.value ?: emptyList())
 
-                            merged.sortByDescending { favorite -> favorite.uiIndex }
+                    merged.sortByDescending { favorite -> favorite.uiIndex }
 
-                            mergeFavoriteEntityList.postValue(merged)
-                        }
-                    }
+                    mergeFavoriteEntityList.postValue(merged)
+                }
+            }
+        }
 
-                    favoritePlaceListDataSource.observeForever(favoritePlaceDataObserver)
+        favoritePlaceDataObserver = Observer {
+            it?.let {
+                coroutineScopeIO.launch {
+                    val merged = emptyList<FavoriteEntityBase>().toMutableList()
+
+                    merged.addAll(it)
+                    merged.addAll(favoriteStationListDataSource.value ?: emptyList())
+
+                    merged.sortByDescending { favorite -> favorite.uiIndex }
+
+                    mergeFavoriteEntityList.postValue(merged)
                 }
             }
         }
@@ -97,13 +103,49 @@ class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
         favoriteSheetInProgressObserver = Observer {
 
             if (it == true) {
+                coroutineScopeIO.launch {
 
+                    val newFavoriteDisplayData = ArrayList<FavoriteSheetItemData>()
+
+                    mergeFavoriteEntityList.value?.forEach { fav ->
+
+                        val sheeEditInProgress = it == true
+
+                        newFavoriteDisplayData.add(FavoriteSheetItemData(
+                                R.color.theme_accent_transparent,
+                                sheeEditInProgress,
+                                !sheeEditInProgress,
+                                sheeEditInProgress,
+                                when (sheeEditInProgress) {
+                                    true -> Utils.getPercentResource(getApplication(),
+                                            R.dimen.favorite_name_width_sheet_editing,
+                                            true)
+                                    false -> Utils.getPercentResource(getApplication(),
+                                            R.dimen.favorite_name_width_no_sheet_editing,
+                                            true)
+                                },
+                                fav.displayName,
+                                if (fav.isDisplayNameDefault) Typeface.ITALIC else Typeface.BOLD,
+                                fav.id
+                        ))
+                    }
+
+                    sheetItemList.postValue(newFavoriteDisplayData)
+                }
+            }
+        }
+
+        sheetEditInProgress.observeForever(favoriteSheetInProgressObserver)
+
+        mergeFavoriteEntityList.observeForever {
+
+
+            coroutineScopeIO.launch {
                 val newFavoriteDisplayData = ArrayList<FavoriteSheetItemData>()
-                //TODO: in backgorund
 
                 mergeFavoriteEntityList.value?.forEach { fav ->
 
-                    val sheeEditInProgress = it == true
+                    val sheeEditInProgress = sheetEditInProgress.value == true
 
                     newFavoriteDisplayData.add(FavoriteSheetItemData(
                             R.color.theme_accent_transparent,
@@ -124,42 +166,8 @@ class FavoriteSheetListViewModel(private val repo: FindMyBikesRepository,
                     ))
                 }
 
-                sheetItemList.value = newFavoriteDisplayData
+                sheetItemList.postValue(newFavoriteDisplayData)
             }
-        }
-
-        sheetEditInProgress.observeForever(favoriteSheetInProgressObserver)
-
-        mergeFavoriteEntityList.observeForever {
-
-
-            val newFavoriteDisplayData = ArrayList<FavoriteSheetItemData>()
-            //TODO: in backgorund
-
-            mergeFavoriteEntityList.value?.forEach { fav ->
-
-                val sheeEditInProgress = sheetEditInProgress.value == true
-
-                newFavoriteDisplayData.add(FavoriteSheetItemData(
-                        R.color.theme_accent_transparent,
-                        sheeEditInProgress,
-                        !sheeEditInProgress,
-                        sheeEditInProgress,
-                        when (sheeEditInProgress) {
-                            true -> Utils.getPercentResource(getApplication(),
-                                    R.dimen.favorite_name_width_sheet_editing,
-                                    true)
-                            false -> Utils.getPercentResource(getApplication(),
-                                    R.dimen.favorite_name_width_no_sheet_editing,
-                                    true)
-                        },
-                        fav.displayName,
-                        if (fav.isDisplayNameDefault) Typeface.ITALIC else Typeface.BOLD,
-                        fav.id
-                ))
-            }
-
-            sheetItemList.value = newFavoriteDisplayData
         }
     }
 

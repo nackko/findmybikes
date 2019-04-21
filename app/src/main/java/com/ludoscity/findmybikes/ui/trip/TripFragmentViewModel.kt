@@ -1,12 +1,12 @@
 package com.ludoscity.findmybikes.ui.trip
 
 import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.net.Uri
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.utils.Utils
@@ -26,7 +26,7 @@ class TripFragmentViewModel(app: Application,
     private val stationBToFinalDestWalkingDurationMin = MutableLiveData<Int>()
     private val totalTripDurationMin = MutableLiveData<Int>()
 
-    private val stationALatLngObserver: android.arch.lifecycle.Observer<LatLng>
+    private val stationALatLngObserver: Observer<LatLng>
     private val stationBLatLngObserver: Observer<LatLng>
     private val userLocObserver: Observer<LatLng>
     private val finalDestObserver: Observer<LatLng>

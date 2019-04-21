@@ -1,9 +1,9 @@
 package com.ludoscity.findmybikes.data
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem

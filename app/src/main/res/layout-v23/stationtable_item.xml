@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- used so that fabs can be anchored -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!-- used so that fabs can be anchored -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:clickable="true"
     android:id="@+id/list_item_root"
+    android:foreground="?android:attr/selectableItemBackground"
     android:baselineAligned="true"
     android:focusable="true">
 
@@ -24,8 +23,7 @@
             android:ellipsize="end"
             android:gravity="center"
             android:layout_centerVertical="true"
-            android:textStyle="bold"
-            />
+            android:textStyle="bold" />
 
         <!--suppress AndroidDomInspection -->
         <!--app:layout_widthPercent="27%"-->
@@ -40,8 +38,7 @@
             android:id="@+id/station_name"
             android:ellipsize="end"
 
-            style="@style/layout_compat_textview_minheight"
-            />
+            style="@style/layout_compat_textview_minheight" />
 
         <!-- width = 2*fabmini width="40dp" + fabfavorite layout_marginRight="2dp" + fabdirections layout_marginStart="2dp" - fabmini width-->
         <!-- height = fabmini height="40dp" + fabfavorite layout_marginTop="3dp" + fabdirections layout_marginBottom="3dp"-->
@@ -55,8 +52,7 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="9dp"
             android:id="@+id/fabs_anchor"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
 
         <!--suppress AndroidDomInspection -->
         <TextView
@@ -67,8 +63,7 @@
             android:gravity="center"
             android:layout_centerVertical="true"
             android:id="@+id/station_availability"
-            android:textStyle="bold"
-            />
+            android:textStyle="bold" />
 
     </androidx.percentlayout.widget.PercentRelativeLayout>
 

@@ -4,9 +4,9 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.View
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 /*
  * Copyright (C) 2014 The Android Open Source Project
@@ -43,7 +43,7 @@ class DividerItemDecoration(context: Context, orientation: Int) : RecyclerView.I
         mOrientation = orientation
     }
 
-    override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State?) {
+    override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         if (mOrientation == VERTICAL_LIST) {
             drawVertical(c, parent)
         } else {
@@ -83,7 +83,7 @@ class DividerItemDecoration(context: Context, orientation: Int) : RecyclerView.I
         }
     }
 
-    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State?) {
+    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
         if (mOrientation == VERTICAL_LIST) {
             outRect.set(0, 0, 0, mDivider!!.intrinsicHeight)
         } else {

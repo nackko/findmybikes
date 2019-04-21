@@ -1,9 +1,9 @@
 package com.ludoscity.findmybikes.ui.main
 
-import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProviders
 import com.ludoscity.findmybikes.ui.table.StationTableFragment
 import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel
