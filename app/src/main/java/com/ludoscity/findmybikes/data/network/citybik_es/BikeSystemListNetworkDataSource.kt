@@ -38,7 +38,7 @@ class BikeSystemListNetworkDataSource private constructor() {
                 downloadedBikeSystemList.postValue(listAnswerRootAnswerRootAnswer.body()!!)
             } catch (e: IOException) {
                 //server level error, could not retrieve bike system data
-                Log.w(TAG, "Exception raised trying to fetch bike system list -- Aborted")
+                Log.w(TAG, "Exception raised trying to fetch bike system list -- Aborted", e)
             }
         }
     }
