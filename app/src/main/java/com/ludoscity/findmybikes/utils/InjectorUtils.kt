@@ -3,8 +3,8 @@ package com.ludoscity.findmybikes.utils
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.LiveData
-import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.compat.Place
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.FindMyBikesDatabase
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
