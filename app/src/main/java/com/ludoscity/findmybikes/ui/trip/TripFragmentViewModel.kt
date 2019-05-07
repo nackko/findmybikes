@@ -43,6 +43,18 @@ class TripFragmentViewModel(app: Application,
     private val aToBGoogleMapDirectionsIntent = MutableLiveData<Intent>()
     private val bToDestGoogleMapDirectionsIntent = MutableLiveData<Intent>()
 
+    private val lastStartActData = MutableLiveData<Intent>()
+    val lastStartActivityIntent: LiveData<Intent>
+        get() = lastStartActData
+
+    fun requestStartActivity(intent: Intent) {
+        lastStartActData.value = intent
+    }
+
+    fun clearLastStartActivityRequest() {
+        lastStartActData.value = null
+    }
+
     val locToStationAText: LiveData<String>
         get() = locToStationADurationString
 
@@ -196,15 +208,15 @@ class TripFragmentViewModel(app: Application,
     }
 
     fun locToStationADirectionsFabClick() {
-        getApplication<Application>().startActivity(locToAGoogleMapDirectionsIntent.value)
+        lastStartActData.value = locToAGoogleMapDirectionsIntent.value
     }
 
     fun stationAToStationBDirectionsFabClick() {
-        getApplication<Application>().startActivity(aToBGoogleMapDirectionsIntent.value)
+        lastStartActData.value = aToBGoogleMapDirectionsIntent.value
     }
 
     fun stationBTofinalDestinationDirectionsFabClick() {
-        getApplication<Application>().startActivity(bToDestGoogleMapDirectionsIntent.value)
+        lastStartActData.value = bToDestGoogleMapDirectionsIntent.value
     }
 
     private fun recalculateTripTotal(statBToFinal: Int?, statAToStatB: Int?, locToA: Int?) {

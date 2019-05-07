@@ -105,6 +105,13 @@ class TripDetailsFragment : Fragment() {
             }
         })
 
+        fragmentModel.lastStartActivityIntent.observe(this, Observer {
+            it?.let { intent ->
+                fragmentModel.clearLastStartActivityRequest()
+                startActivity(intent)
+            }
+        })
+
         inflatedView.findViewById<View>(R.id.trip_details_directions_loc_to_a).setOnClickListener {
             fragmentModel.locToStationADirectionsFabClick()
         }
