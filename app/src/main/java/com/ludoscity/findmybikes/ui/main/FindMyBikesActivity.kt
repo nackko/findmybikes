@@ -41,6 +41,7 @@ import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
+import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.DOCK_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
 import com.ludoscity.findmybikes.ui.settings.SettingsActivity
 import com.ludoscity.findmybikes.ui.sheet.EditableMaterialSheetFab
@@ -152,24 +153,6 @@ class FindMyBikesActivity : AppCompatActivity(),
             Log.e(TAG, "GooglePlayServicesNotAvailableException raised with error code :$mapInit")
         }
 
-        //variables to retore state from bundle. TODO: Model will take care of that
-
-        //var showcaseTripTotalPlaceName: String? = null
-
-        /*if (savedInstanceState != null) {
-
-            mSavedInstanceCameraPosition = savedInstanceState.getParcelable("saved_camera_pos")
-            mRequestingLocationUpdates = savedInstanceState.getBoolean("requesting_location_updates")
-            mCurrentUserLatLng = savedInstanceState.getParcelable<LatLng>("user_location_latlng")
-            mClosestBikeAutoSelected = savedInstanceState.getBoolean("closest_bike_auto_selected")
-            //mFavoriteSheetVisible = savedInstanceState.getBoolean("favorite_sheet_visible");
-            autoCompleteLoadingProgressBarVisible = savedInstanceState.getBoolean("place_autocomplete_loading")
-            mRefreshTabs = savedInstanceState.getBoolean("refresh_tabs")
-            mFavoritePicked = savedInstanceState.getBoolean("favorite_picked")
-            mDataOutdated = savedInstanceState.getBoolean("data_outdated")
-            showcaseTripTotalPlaceName = savedInstanceState.getString("onboarding_showcase_trip_total_place_name", null)
-        }*/
-
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(FindMyBikesActivityViewModel::class.java)
 
@@ -187,6 +170,7 @@ class FindMyBikesActivity : AppCompatActivity(),
         //TODO: Model should prepare desired app bar expansion state. !!!appBarExpanded already in model tracks if it *is* expanded or not!!!
         findMyBikesActivityViewModel.isLookingForBike.observe(this, Observer {
             appBarLayout.setExpanded(it != true, true)
+            stationTableViewPager.setCurrentItem(if (it != true) DOCK_STATIONS else BIKE_STATIONS, true)
         })
 
         findMyBikesActivityViewModel.stationData.observe(this, Observer { stationDataList ->

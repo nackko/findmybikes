@@ -24,6 +24,9 @@ import java.text.NumberFormat
 
 class StationTableFragment : Fragment() {
 
+    //TODO: eurk !
+    private var initialStatusLoadedCount = 0
+
     private lateinit var tableFragmentModel: TableFragmentViewModel
     private var mStationRecyclerView: RecyclerView? = null
     private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
@@ -137,6 +140,13 @@ class StationTableFragment : Fragment() {
             stationTableRecyclerViewAdapter.loadItems(it ?: emptyList())
 
             tableFragmentModel.smoothScrollSelectionInView()
+
+            //TODO: eurk !
+            if (initialStatusLoadedCount < 2) {
+
+                nearbyActivityViewModel.setSelectedTable(false)
+                ++initialStatusLoadedCount
+            }
         })
 
         tableFragmentModel.stationRecapVisibility.observe(this, androidx.lifecycle.Observer { visible ->
