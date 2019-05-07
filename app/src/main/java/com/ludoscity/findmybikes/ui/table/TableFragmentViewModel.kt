@@ -164,7 +164,6 @@ class TableFragmentViewModel(repo: FindMyBikesRepository, app: Application,
 
             computeAndEmitTableDisplayData(bikeSystemAvailabilityDataSource.value,
                     isDataOutOfDate.value != false, numFormat, isDockTable)
-            smoothScrollSelectionInView()
         }
 
         stationSelectionDataSource.observeForever(stationSelectionDataSourceObserver)

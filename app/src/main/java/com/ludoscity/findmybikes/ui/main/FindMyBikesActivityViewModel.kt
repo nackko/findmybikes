@@ -69,6 +69,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val myCurBikeSystem = MutableLiveData<BikeSystem>()
     private var lastBikeSystemId: String? = null
 
+    private val bikeSystemAvailabilityDataSource: LiveData<List<BikeStation>>
+
     val curBikeSystem: LiveData<BikeSystem>
         get() = myCurBikeSystem
 
@@ -574,6 +576,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             bikeSystemStatusAutoUpdate.postValue(SharedPrefHelper.getInstance().getAutoUpdate(getApplication()))
         }
 
+        bikeSystemAvailabilityDataSource = repo.getBikeSystemStationData(getApplication())
+
         val nf = NumberFormat.getInstance()
         val pastStringBuilder = StringBuilder()
         val futureStringBuilder = StringBuilder()
@@ -673,9 +677,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             }
         }
 
-        repo.getBikeSystemStationData(getApplication()).observeForever {
-            //TODO deactivate refresh gesture in tables
-            //TODO: bike and dock should be re selected based on new availability
+        bikeSystemAvailabilityDataSource.observeForever {
             statusBarTxt.value = getApplication<Application>().getString(R.string.refreshing_map)
         }
 

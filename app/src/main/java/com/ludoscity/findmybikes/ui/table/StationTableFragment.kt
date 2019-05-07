@@ -135,6 +135,8 @@ class StationTableFragment : Fragment() {
 
         tableFragmentModel.tableItemDataList.observe(this, androidx.lifecycle.Observer {
             stationTableRecyclerViewAdapter.loadItems(it ?: emptyList())
+
+            tableFragmentModel.smoothScrollSelectionInView()
         })
 
         tableFragmentModel.stationRecapVisibility.observe(this, androidx.lifecycle.Observer { visible ->
