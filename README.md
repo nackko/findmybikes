@@ -31,7 +31,7 @@ sample *#findmyvlovbikes discarded closer! Bikes:0 CRI at 962c34a494d29737aa7c53
 All status updates (root or replies) are geotagged with the location of the described station.
 
 Station names are provided for readability. Station id is provided by citibik.es API
-To retrieve corresponding station data, see the great API and fantastic project : http://citybik.es/#about
+To retrieve corresponding station data, see the great API and fantastic project : https://citybik.es/#about
 
 [privacy policy]:https://github.com/f8full/ludOScity/blob/master/FindMyBikes/Privacy_policy.md
 [@findmybikesdata]:https://twitter.com/findmybikesdata

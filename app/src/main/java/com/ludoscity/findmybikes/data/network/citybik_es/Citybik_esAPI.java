@@ -9,16 +9,17 @@ import retrofit2.http.QueryMap;
 
 /**
  * Created by F8Full on 2015-09-29.
- * Retrofit interface to access http://api.citybik.es/v2
+ * Retrofit interface to access https://api.citybik.es/v2
  */
 public interface Citybik_esAPI {
 
-    //Endpoint : //http://api.citybik.es
+    //Endpoint : //https://api.citybik.es
 
-    //http://api.citybik.es/v2/networks/bixi-montreal?fields=stations
+    //https://api.citybik.es/v2/networks/bixi-montreal?fields=stations
     @GET("{href}")
     Call<BikeSystemStatusAnswerRoot> getBikeNetworkStatus(@Path("href") String href, @QueryMap Map<String, String> options);
-    //http://api.citybik.es/v2/networks/
+
+    //https://api.citybik.es/v2/networks/
     @GET("/v2/networks")
     Call<BikeSystemListAnswerRoot> getBikeNetworkList();
 }

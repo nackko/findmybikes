@@ -42,7 +42,7 @@ class FetchCitybikDOTesDataIntentService : JobIntentService() {
 
         const val ACTION_FETCH_SYSTEM_STATUS = "systemStatus"
         const val ACTION_FETCH_SYSTEM_LIST = "systemList"
-        internal const val BASE_URL = "http://api.citybik.es"
+        internal const val BASE_URL = "https://api.citybik.es"
 
 
         private const val JOB_ID = 1000

@@ -498,7 +498,7 @@ class FindMyBikesActivity : AppCompatActivity(),
                                 when (which) {
                                     0 -> {
                                         val intent = Intent(this@FindMyBikesActivity, WebViewActivity::class.java)
-                                        intent.putExtra(WebViewActivity.EXTRA_URL, "http://www.citybik.es")
+                                        intent.putExtra(WebViewActivity.EXTRA_URL, "https://www.citybik.es")
                                         intent.putExtra(WebViewActivity.EXTRA_ACTIONBAR_SUBTITLE, text.toString())
                                         intent.putExtra(WebViewActivity.EXTRA_JAVASCRIPT_ENABLED, true)
                                         startActivity(intent)
@@ -617,7 +617,7 @@ class FindMyBikesActivity : AppCompatActivity(),
             if (findMyBikesActivityViewModel.isConnectivityAvailable.value == true) {
                 // use the android system webview
                 val intent = Intent(this@FindMyBikesActivity, WebViewActivity::class.java)
-                intent.putExtra(WebViewActivity.EXTRA_URL, "http://www.citybik.es")
+                intent.putExtra(WebViewActivity.EXTRA_URL, "https://www.citybik.es")
                 intent.putExtra(WebViewActivity.EXTRA_ACTIONBAR_SUBTITLE, getString(R.string.hashtag_cities))
                 intent.putExtra(WebViewActivity.EXTRA_JAVASCRIPT_ENABLED, true)
                 startActivity(intent)
