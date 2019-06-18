@@ -125,10 +125,16 @@ dependencies {
     implementation 'com.google.maps.android:android-maps-utils:0.5'
     implementation 'com.google.code.gson:gson:2.8.5'
 
+    implementation 'androidx.browser:browser:1.0.0'
+
+    //TODO: upgrade to 2.1.0 https://developer.android.com/jetpack/androidx/releases/room#2.1.0
     implementation 'androidx.room:room-runtime:2.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     kapt 'androidx.room:room-compiler:2.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+
+    // https://mvnrepository.com/artifact/com.nimbusds/oauth2-oidc-sdk
+    implementation 'com.nimbusds:oauth2-oidc-sdk:6.13'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.0'

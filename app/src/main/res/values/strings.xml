@@ -96,4 +96,13 @@
     <string name="connectivity_rationale">#internet connection required for initial setup !</string>
     <string name="onboarding_showcase_itinerary_title">#last tip</string>
     <string name="onboarding_showcase_itinerary_favorite_text">To view your itinerary and a more precise time estimate in Google Maps, use the \'directions\' buttons. Press back when done.</string>
+
+    <string name="prompt_cozy" translatable="false">.mycozy.cloud</string>
+    <string name="client_info_default" translatable="false">Tap \'Register\'</string>
+    <string name="action_registering" translatable="false">Register</string>
+    <string name="tap_authenticate" translatable="false">Tap \'Authenticate\'</string>
+    <string name="authenticate" translatable="false">AUTHENTICATE</string>
+    <string name="registration_failed" translatable="false">"Registration failed"</string>
+    <string name="action_unregistering" translatable="false">Unregister</string>
+    <string name="pref_cozy_login_dialog_title" translatable="false">Cozy cloud setup</string>
 </resources>

@@ -12,10 +12,12 @@ import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetworkDataSource
+import com.ludoscity.findmybikes.data.network.cozy.CozyDataPipe
 import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
+import com.ludoscity.findmybikes.ui.settings.SettingsActivityModelFactory
 import com.ludoscity.findmybikes.ui.sheet.FavoriteSheetListFragmentModelFactory
 import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
 import com.ludoscity.findmybikes.ui.trip.TripFragmentModelFactory
@@ -52,13 +54,16 @@ class InjectorUtils {
             val systemListNetworkDataSource = BikeSystemListNetworkDataSource.getInstance()
             val systemStatusNetworkDataSource = BikeSystemStatusNetworkDataSource.getInstance()
             val twitterNetworkDataExhaust = TwitterNetworkDataExhaust.getInstance()
+            val cozyNetworkDataPipe = CozyDataPipe.getInstance()
+
             return FindMyBikesRepository.getInstance(database.bikeSystemDao(),
                     database.bikeStationDao(),
                     database.favoriteEntityPlaceDao(),
                     database.favoriteEntityStationDao(),
                     systemListNetworkDataSource,
                     systemStatusNetworkDataSource,
-                    twitterNetworkDataExhaust)
+                    twitterNetworkDataExhaust,
+                    cozyNetworkDataPipe)
         }
 
         fun provideMainActivityViewModelFactory(app: Application): FindMyBikesModelFactory {
@@ -117,6 +122,12 @@ class InjectorUtils {
                     proximityHeaderToResId,
                     comparatorSource,
                     numFormat)
+        }
+
+        fun provideSettingsActivityViewModelFactory(app: Application): SettingsActivityModelFactory {
+            val repository = provideRepository(app.applicationContext)
+
+            return SettingsActivityModelFactory(repository, app)
         }
 
         fun provideFavoriteSheetListFragmentViewModelFactory(app: Application,

@@ -33,7 +33,19 @@
         </activity>
         <activity
             android:name=".ui.settings.SettingsActivity"
-            android:parentActivityName=".ui.main.FindMyBikesActivity" />
+            android:launchMode="singleTask"
+            android:parentActivityName=".ui.main.FindMyBikesActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="com.f8full.findmybikes.oauth2redirect"
+                    android:scheme="findmybikes" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.webview.WebViewActivity"
             android:parentActivityName=".ui.main.FindMyBikesActivity" />

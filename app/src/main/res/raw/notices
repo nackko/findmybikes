@@ -7,10 +7,10 @@
         <license>MIT License</license>
     </notice>
     <notice>
-            <name>material-dialogs</name>
-            <url>https://github.com/afollestad/material-dialogs</url>
-            <copyright>Copyright © 2014-2016 Aidan Michael Follestad</copyright>
-            <license>MIT License</license>
+        <name>material-dialogs</name>
+        <url>https://github.com/afollestad/material-dialogs</url>
+        <copyright>Copyright © 2014-2016 Aidan Michael Follestad</copyright>
+        <license>MIT License</license>
     </notice>
     <notice>
         <name>Retrofit</name>
@@ -28,6 +28,12 @@
         <name>LicensesDialog</name>
         <url>https://github.com/PSDev/LicensesDialog</url>
         <copyright>Copyright © 2013 Philip Schiffer</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>Nimbus OAuth 2.0 SDK with OpenID Connect extensions</name>
+        <url>https://connect2id.com/products/nimbus-oauth-openid-connect-sdk</url>
+        <copyright>Copyright © 2012-2016, Connect2id Ltd and contributors.</copyright>
         <license>Apache Software License 2.0</license>
     </notice>
     <notice>

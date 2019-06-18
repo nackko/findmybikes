@@ -15,12 +15,26 @@ import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoo
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetworkDataSource
+import com.ludoscity.findmybikes.data.network.cozy.CozyDataPipe
+import com.ludoscity.findmybikes.data.network.cozy.RegisteredOAuthClient
+import com.ludoscity.findmybikes.data.network.cozy.UserCredentialTokens
 import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
 import com.ludoscity.findmybikes.utils.Utils
+import com.nimbusds.oauth2.sdk.ResponseType
+import com.nimbusds.oauth2.sdk.Scope
+import com.nimbusds.oauth2.sdk.id.ClientID
+import com.nimbusds.oauth2.sdk.id.State
+import com.nimbusds.openid.connect.sdk.AuthenticationRequest
+import com.nimbusds.openid.connect.sdk.Nonce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.URI
 
+/**
+ * Created by F8Full on 2019-03-01. This file is part of #findmybikes
+ *
+ */
 class FindMyBikesRepository private constructor(
         private val currentBikeSystemDao: BikeSystemDao,
         private val stationDao: BikeStationDao,
@@ -28,7 +42,8 @@ class FindMyBikesRepository private constructor(
         private val favoriteEntityStationDao: FavoriteEntityStationDao,
         private val bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
         private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
-        private val twitterNetworkDataExhaust: TwitterNetworkDataExhaust) {
+        private val twitterNetworkDataExhaust: TwitterNetworkDataExhaust,
+        private val cozyNetworkDataPipe: CozyDataPipe) {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
@@ -53,7 +68,19 @@ class FindMyBikesRepository private constructor(
     val previousBikeSystem: LiveData<BikeSystem>
         get() = prevBikeSystem
 
+    // in-memory cache of the registeredOAuthClient object for Cozy
+    var cozyOAuthClient: RegisteredOAuthClient? = null
+        private set
+
+    val isCozyOAuthClientRegistered: Boolean
+        get() = cozyOAuthClient != null
+
     init {
+
+        // If user credentials will be cached in local storage, it is recommended it be encrypted
+        // @see https://developer.android.com/training/articles/keystore
+        //TODO: store credentials properly and retrieve them from DB to restore client
+        cozyOAuthClient = null
 
         coroutineScopeIO.launch {
             prevBikeSystem.postValue(currentBikeSystemDao.singleSynchronous)
@@ -334,6 +361,105 @@ class FindMyBikesRepository private constructor(
         return currentBikeSystemDao.singleNameForHashtagUse
     }
 
+    ///////////////////////////
+    //Cozy
+
+    fun unregisterCozyOAuthClient(cozyBaseUrlString: String): Result<Boolean> {
+        val result = cozyNetworkDataPipe.unregister(
+                cozyBaseUrlString = cozyBaseUrlString,
+                clientId = cozyOAuthClient?.clientId!!,
+                masterAccessToken = cozyOAuthClient?.registrationAccessToken!!)
+
+        if (result is Result.Success) {
+            this.cozyOAuthClient = null
+        }
+
+        return result
+    }
+
+    fun registerCozyOAuthClient(cozyBaseUrlString: String): Result<RegisteredOAuthClient> {
+        // handle registration
+        val result = cozyNetworkDataPipe.register(cozyBaseUrlString)
+
+        if (result is Result.Success) {
+            setRegisteredOAuthClient(result.data)
+        }
+
+        return result
+    }
+
+    private fun setRegisteredOAuthClient(registeredClient: RegisteredOAuthClient) {
+        this.cozyOAuthClient = registeredClient
+        // If user credentials will be cached in local storage, it is recommended it be encrypted
+        // @see https://developer.android.com/training/articles/keystore
+    }
+
+    // in-memory cache of the authRequest State object
+    private var authRequestState: State? = null
+    // in-memory cache of the authRequest Nonce object
+    var authRequestNonce: Nonce? = null
+        private set
+
+    // If user credentials will be cached in local storage, it is recommended it be encrypted
+    // @see https://developer.android.com/training/articles/keystore
+    var userCred: UserCredentialTokens? = null
+        private set
+
+    private fun setUserCredentials(userCred: UserCredentialTokens) {
+        this.userCred = userCred
+    }
+
+    fun exchangeCozyAuthCodeForTokenCouple(
+            cozyBaseUrlString: String,
+            redirectIntentData: String,
+            clientID: String,
+            clientSecret: String):
+            Result<UserCredentialTokens> {
+
+        val result = cozyNetworkDataPipe.exchangeAuthCodeForTokenCouple(
+                cozyBaseUrlString,
+                redirectIntentData,
+                clientID,
+                clientSecret,
+                authRequestState!!)
+
+        //Repo captures data
+        if (result is Result.Success) {
+            setUserCredentials(result.data)
+        }
+
+        return result
+    }
+
+    fun buildCozyAuthenticationUri(cozyBaseUrlString: String, authClientId: RegisteredOAuthClient?): Result<URI> {
+
+        //we just publish URI for Activity consumption
+        // Generate random state string for pairing the response to the request
+        authRequestState = State()
+// Generate nonce
+        authRequestNonce = Nonce()
+// Specify scope
+        //TODO: custom scope from UI
+        val scope = Scope.parse("openid io.cozy.files io.cozy.oauth.clients")
+
+// Compose the request
+        val authenticationRequest = AuthenticationRequest(
+                URI("$cozyBaseUrlString/auth/authorize"),
+                ResponseType(ResponseType.Value.CODE),
+                //TODO: from configuration file
+                scope, ClientID(authClientId?.clientId), URI("findmybikes://com.f8full.findmybikes.oauth2redirect"),
+                authRequestState,
+                authRequestNonce
+        )
+
+        return Result.Success(authenticationRequest.toURI())
+
+    }
+
+
+    //end cozy
+    /////////////////////////////////////////////
+
     companion object {
         private val TAG = FindMyBikesRepository::class.java.simpleName
 
@@ -349,7 +475,8 @@ class FindMyBikesRepository private constructor(
                 favoriteEntityStationDao: FavoriteEntityStationDao,
                 bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
                 bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
-                twitterNetworkDataExhaust: TwitterNetworkDataExhaust): FindMyBikesRepository {
+                twitterNetworkDataExhaust: TwitterNetworkDataExhaust,
+                cozyNetworkDataPipe: CozyDataPipe): FindMyBikesRepository {
             //Log.d(TAG, "Getting the repository")
             if (sInstance == null) {
                 synchronized(LOCK) {
@@ -359,7 +486,8 @@ class FindMyBikesRepository private constructor(
                             favoriteEntityStationDao,
                             bikeSystemListNetworkDataSource,
                             bikeSystemStatusNetworkDataSource,
-                            twitterNetworkDataExhaust)
+                            twitterNetworkDataExhaust,
+                            cozyNetworkDataPipe)
                     Log.d(TAG, "Made new repository")
                 }
             }

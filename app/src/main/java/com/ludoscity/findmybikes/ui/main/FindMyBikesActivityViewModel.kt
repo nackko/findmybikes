@@ -561,6 +561,8 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             }
             FindMyBikesActivity.SETTINGS_ACTIVITY_REQUEST_CODE -> {
                 coroutineScopeIO.launch {
+                    //TODO: go through repository for auto update value
+                    //Here we are on being back from settings activity !!
                     bikeSystemStatusAutoUpdate.postValue(SharedPrefHelper.getInstance().getAutoUpdate(getApplication()))
                 }
             }
@@ -573,6 +575,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         setStationB(null)
 
         coroutineScopeIO.launch {
+            //TODO: go through repository for auto update value
             bikeSystemStatusAutoUpdate.postValue(SharedPrefHelper.getInstance().getAutoUpdate(getApplication()))
         }
 
