@@ -95,6 +95,13 @@ class FindMyBikesRepository private constructor(
                         secureSharedPref.getString(OAUTH_CLIENT_SECRET_PREF_KEY, null)!!,
                         secureSharedPref.getString(OAUTH_CLIENT_REG_TOKEN_PREF_KEY, null)!!
                 ))
+
+                if (secureSharedPref.contains(OAUTH_ACCESS_TOKEN_PREF_KEY)) {
+                    setUserCredentials(UserCredentialTokens(
+                            secureSharedPref.getString(OAUTH_ACCESS_TOKEN_PREF_KEY, null)!!,
+                            secureSharedPref.getString(OAUTH_REFRESH_TOKEN_PREF_KEY, null)!!
+                    ))
+                }
             }
         }
 
@@ -384,14 +391,16 @@ class FindMyBikesRepository private constructor(
                 masterAccessToken = cozyOAuthClient?.registrationAccessToken!!)
 
         if (result is Result.Success) {
-            //TODO: also remove tokens
             secureSharedPref.edit().remove(OAUTH_CLIENT_REG_TOKEN_PREF_KEY)
                     .remove(OAUTH_CLIENT_ID_PREF_KEY)
                     .remove(OAUTH_CLIENT_SECRET_PREF_KEY)
                     .remove(OAUTH_STACK_BASEURL_PREF_KEY)
+                    .remove(OAUTH_ACCESS_TOKEN_PREF_KEY)
+                    .remove(OAUTH_REFRESH_TOKEN_PREF_KEY)
                     .commit()
 
             this.cozyOAuthClient = null
+            this.userCred = null
         }
 
         return result
@@ -438,6 +447,7 @@ class FindMyBikesRepository private constructor(
         this.userCred = userCred
     }
 
+    @SuppressLint("ApplySharedPref")
     fun exchangeCozyAuthCodeForTokenCouple(
             cozyBaseUrlString: String,
             redirectIntentData: String,
@@ -454,6 +464,15 @@ class FindMyBikesRepository private constructor(
 
         //Repo captures data
         if (result is Result.Success) {
+
+            // If user credentials will be cached in local storage, it is recommended it be encrypted
+            // @see https://developer.android.com/training/articles/keystore
+            //We're using androix security library
+            //https://developer.android.com/jetpack/androidx/releases/security
+            secureSharedPref.edit().putString(OAUTH_ACCESS_TOKEN_PREF_KEY, result.data.accessToken)
+                    .putString(OAUTH_REFRESH_TOKEN_PREF_KEY, result.data.refreshToken)
+                    .commit()
+
             setUserCredentials(result.data)
         }
 
@@ -496,6 +515,8 @@ class FindMyBikesRepository private constructor(
         private const val OAUTH_CLIENT_ID_PREF_KEY = "fmb_oauth_client_id"
         private const val OAUTH_CLIENT_SECRET_PREF_KEY = "fmb_oauth_client_secret"
         private const val OAUTH_CLIENT_REG_TOKEN_PREF_KEY = "fmb_oauth_client_registration_token"
+        private const val OAUTH_ACCESS_TOKEN_PREF_KEY = "fmb_oauth_access_token"
+        private const val OAUTH_REFRESH_TOKEN_PREF_KEY = "fmb_oauth_refresh_token"
 
         // For Singleton instantiation
         private val LOCK = Any()

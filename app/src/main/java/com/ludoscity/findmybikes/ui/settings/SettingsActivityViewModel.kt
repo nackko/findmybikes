@@ -50,6 +50,15 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
                                 clientSecret = repo.cozyOAuthClient!!.clientSecret
                         )
                 ))
+
+                if (repo.userCred != null) {
+                    _authLoginResult.postValue(AuthLoginResult(
+                            success = AuthLoggedInUserView(
+                                    accesstoken = repo.userCred!!.accessToken,
+                                    refreshToken = repo.userCred!!.refreshToken
+                            )
+                    ))
+                }
             }
         }
     }
@@ -132,7 +141,6 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
         clientRegistrationResult.value?.let {
             coroutineScopeIO.launch {
 
-                //TODO: merge everything to have a single repo and a single data source (which is cozy data source)
                 val result = repo.exchangeCozyAuthCodeForTokenCouple(
                         it.success?.stackBaseUrl!!,
                         redirectIntentData,
