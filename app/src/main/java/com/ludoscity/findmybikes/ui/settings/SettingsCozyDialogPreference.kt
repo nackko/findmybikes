@@ -131,6 +131,12 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
         })
 
         model?.authLoginResult?.observe(context as SettingsActivity, Observer {
+
+            if (it == null) {
+                accessToken?.text = ""
+                refreshToken?.text = ""
+            }
+
             val authLoginResult = it ?: return@Observer
 
             accessToken?.text = "access token : ${authLoginResult.success?.accesstoken}"

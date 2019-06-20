@@ -111,6 +111,8 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
 
                 if (result is Result.Success) {
                     _OAuthClientRegistrationResult.postValue(null)
+                    _authLoginResult.postValue(null)
+                    _authenticationUri.postValue(null)
                     Log.i("TAG", "OAuth client deleted")
                 }
             }
