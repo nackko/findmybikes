@@ -63,7 +63,8 @@ class InjectorUtils {
                     systemListNetworkDataSource,
                     systemStatusNetworkDataSource,
                     twitterNetworkDataExhaust,
-                    cozyNetworkDataPipe)
+                    cozyNetworkDataPipe,
+                    Utils.getSecureSharedPref(ctx))
         }
 
         fun provideMainActivityViewModelFactory(app: Application): FindMyBikesModelFactory {

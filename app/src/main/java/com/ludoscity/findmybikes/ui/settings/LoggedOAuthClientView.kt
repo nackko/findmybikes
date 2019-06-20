@@ -10,6 +10,7 @@ package com.ludoscity.findmybikes.ui.settings
 // @see https://developer.android.com/training/articles/keystore
  */
 data class LoggedOAuthClientView(
+        val stackBaseUrl: String,
         val registrationAccessToken: String,
         val clientId: String,
         val clientSecret: String

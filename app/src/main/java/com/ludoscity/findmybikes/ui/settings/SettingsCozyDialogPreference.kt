@@ -52,8 +52,46 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
         negativeButtonText = null
     }
 
-    override fun onAttachedToActivity() {
-        super.onAttachedToActivity()
+    @SuppressLint("StringFormatInvalid")
+    override fun onBindDialogView(view: View) {
+        super.onBindDialogView(view)
+
+        root = view.findViewById(R.id.cozy_root)
+        username = view.findViewById(R.id.username)
+        cozyUrl = view.findViewById(R.id.final_url)
+        clientInfo = view.findViewById(R.id.client_info)
+        accessToken = view.findViewById(R.id.access_token)
+        refreshToken = view.findViewById(R.id.refresh_token)
+        registering = view.findViewById(R.id.registering)
+        authenticate = view.findViewById(R.id.authenticate)
+        registering?.isEnabled = true
+        loading = view.findViewById(R.id.loading)
+
+        username?.apply {
+
+            setOnEditorActionListener { _, actionId, _ ->
+                when (actionId) {
+                    EditorInfo.IME_ACTION_DONE ->
+                        model?.registerOAuthClient(
+                                (username as EditText).text.toString())
+                }
+                false
+            }
+
+            registering?.setOnClickListener {
+                loading?.visibility = View.VISIBLE
+                if (model?.isRegistered() != true) {
+                    model?.registerOAuthClient((username as EditText).text.toString())
+
+                } else
+                    model?.unregisterAuthclient()
+            }
+
+            authenticate?.setOnClickListener {
+                if (model?.isRegistered() == true)
+                    model?.authenticate()
+            }
+        }
 
         model = ViewModelProviders.of(context as SettingsActivity, InjectorUtils.provideSettingsActivityViewModelFactory((context as SettingsActivity).application))
                 .get(SettingsActivityViewModel::class.java)
@@ -62,6 +100,7 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
             if (it == null) {
                 registering?.text = (context as Activity).getString(R.string.action_registering)
                 username?.isEnabled = true
+                cozyUrl?.text = ""
                 authenticate?.isEnabled = false
                 clientInfo?.text = (context as Activity).getString(R.string.client_info_default)
                 accessToken?.text = ""
@@ -80,6 +119,7 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
 
             if (registrationResult.success != null) {
                 clientInfo?.text = "OAuth client registration token : ${registrationResult.success.registrationAccessToken}"
+                cozyUrl?.text = registrationResult.success.stackBaseUrl
                 accessToken?.text = (context as Activity).getString(R.string.tap_authenticate)
                 refreshToken?.text = (context as Activity).getString(R.string.tap_authenticate)
                 registering?.text = (context as Activity).getString(R.string.action_unregistering)
@@ -88,12 +128,6 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
                 val imm = (context as Activity).getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(username?.windowToken, 0)
             }
-        })
-
-        model?.cozyBaseUrlString?.observe(context as SettingsActivity, Observer {
-            val url = it ?: return@Observer
-
-            cozyUrl?.text = url
         })
 
         model?.authLoginResult?.observe(context as SettingsActivity, Observer {
@@ -148,48 +182,6 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
                 "12345"//password.text.toString()
             )
         }*/
-    }
-
-    @SuppressLint("StringFormatInvalid")
-    override fun onBindDialogView(view: View) {
-        super.onBindDialogView(view)
-
-        root = view.findViewById(R.id.cozy_root)
-        username = view.findViewById(R.id.username)
-        cozyUrl = view.findViewById(R.id.final_url)
-        clientInfo = view.findViewById(R.id.client_info)
-        accessToken = view.findViewById(R.id.access_token)
-        refreshToken = view.findViewById(R.id.refresh_token)
-        registering = view.findViewById(R.id.registering)
-        authenticate = view.findViewById(R.id.authenticate)
-        registering?.isEnabled = true
-        loading = view.findViewById(R.id.loading)
-
-        username?.apply {
-
-            setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_DONE ->
-                        model?.registerOAuthClient(
-                                (username as EditText).text.toString())
-                }
-                false
-            }
-
-            registering?.setOnClickListener {
-                loading?.visibility = View.VISIBLE
-                if (model?.isRegistered() != true) {
-                    model?.registerOAuthClient((username as EditText).text.toString())
-
-                } else
-                    model?.unregisterAuthclient()
-            }
-
-            authenticate?.setOnClickListener {
-                if (model?.isRegistered() == true)
-                    model?.authenticate()
-            }
-        }
     }
 
 

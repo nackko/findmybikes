@@ -59,6 +59,7 @@ class CozyDataPipe {
 
         return Result.Success(
                 RegisteredOAuthClient(
+                        stackBaseUrl = cozyBaseUrlString,
                         clientId = clientInformation.id.value,
                         clientSecret = clientInformation.secret.value,
                         registrationAccessToken = clientInformation.registrationAccessToken.value

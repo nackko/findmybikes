@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId "com.ludoscity.findmybikes"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 28
         versionCode 999
         versionName "v2019.1 (99)"
@@ -126,6 +126,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
 
     implementation 'androidx.browser:browser:1.0.0'
+
+    implementation "androidx.security:security-crypto:1.0.0-alpha02"
 
     //TODO: upgrade to 2.1.0 https://developer.android.com/jetpack/androidx/releases/room#2.1.0
     implementation 'androidx.room:room-runtime:2.0.0'

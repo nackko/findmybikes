@@ -8,6 +8,7 @@ package com.ludoscity.findmybikes.data.network.cozy
  * Data class that captures user information for logged in users retrieved from Repository
  */
 data class RegisteredOAuthClient(
+        val stackBaseUrl: String,
         val clientId: String,
         val clientSecret: String,
         val registrationAccessToken: String

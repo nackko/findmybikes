@@ -37,15 +37,26 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
     private val _authenticationUri = MutableLiveData<URI>()
     val authenticationUri: LiveData<URI> = _authenticationUri
 
-    //Maybe this should also live in repo after repos fusion ?
-    private val _cozyBaseUrlString = MutableLiveData<String>()
-    val cozyBaseUrlString: LiveData<String> = _cozyBaseUrlString
+    init {
+
+        //TODO: could being in a background thread lead to issues ?
+        coroutineScopeIO.launch {
+            if (repo.isCozyOAuthClientRegistered) {
+                _OAuthClientRegistrationResult.postValue(OAuthClientRegistrationResult(
+                        success = LoggedOAuthClientView(
+                                stackBaseUrl = repo.cozyOAuthClient!!.stackBaseUrl,
+                                registrationAccessToken = repo.cozyOAuthClient!!.registrationAccessToken,
+                                clientId = repo.cozyOAuthClient!!.clientId,
+                                clientSecret = repo.cozyOAuthClient!!.clientSecret
+                        )
+                ))
+            }
+        }
+    }
 
     fun registerOAuthClient(cozyUrlUserInput: String) {
 
         val finalUrl = getCozyUrl(cozyUrlUserInput)
-
-        _cozyBaseUrlString.value = finalUrl
 
         coroutineScopeIO.launch {
             val result = repo.registerCozyOAuthClient(finalUrl)
@@ -55,6 +66,7 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
                         OAuthClientRegistrationResult(
                                 success =
                                 LoggedOAuthClientView(
+                                        stackBaseUrl = result.data.stackBaseUrl,
                                         registrationAccessToken = result.data.registrationAccessToken,
                                         clientId = result.data.clientId,
                                         clientSecret = result.data.clientSecret
@@ -84,9 +96,9 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
 
     fun unregisterAuthclient() {
 
-        cozyBaseUrlString.value?.let {
+        clientRegistrationResult.value?.let {
             coroutineScopeIO.launch {
-                val result = repo.unregisterCozyOAuthClient(it)
+                val result = repo.unregisterCozyOAuthClient(it.success?.stackBaseUrl!!)
 
                 if (result is Result.Success) {
                     _OAuthClientRegistrationResult.postValue(null)
@@ -102,10 +114,10 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
 
     fun authenticate() {
 
-        _cozyBaseUrlString.value?.let {
+        clientRegistrationResult.value?.let {
             coroutineScopeIO.launch {
 
-                val result = repo.buildCozyAuthenticationUri(it, repo.cozyOAuthClient)
+                val result = repo.buildCozyAuthenticationUri(it.success?.stackBaseUrl!!, repo.cozyOAuthClient)
 
                 if (result is Result.Success) {
                     _authenticationUri.postValue(result.data)
@@ -117,12 +129,12 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
 
     fun retrieveAccessTokenAndRefreshToken(redirectIntentData: String) {
 
-        cozyBaseUrlString.value?.let {
+        clientRegistrationResult.value?.let {
             coroutineScopeIO.launch {
 
                 //TODO: merge everything to have a single repo and a single data source (which is cozy data source)
                 val result = repo.exchangeCozyAuthCodeForTokenCouple(
-                        it,
+                        it.success?.stackBaseUrl!!,
                         redirectIntentData,
                         repo.cozyOAuthClient?.clientId!!,
                         repo.cozyOAuthClient?.clientSecret!!

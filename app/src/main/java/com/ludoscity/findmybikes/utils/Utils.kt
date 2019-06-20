@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.utils
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.text.Html
@@ -10,6 +11,8 @@ import android.view.View
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.core.content.res.ResourcesCompat
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
@@ -27,6 +30,21 @@ import java.util.*
  * Class with static utilities
  */
 object Utils {
+
+    private const val sharedPrefFilename = "findmybikes_secure_prefs"
+
+    fun getSecureSharedPref(ctx: Context): SharedPreferences {
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+
+        return EncryptedSharedPreferences
+                .create(
+                        sharedPrefFilename,
+                        masterKeyAlias,
+                        ctx,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                )
+    }
 
     fun getBikeSpeedPaddedBounds(ctx: Context, boundsToPad: LatLngBounds): LatLngBounds {
         return padLatLngBounds(boundsToPad, getAverageBikingSpeedKmh(ctx).toDouble())
