@@ -51,6 +51,7 @@ class BikeSystemStatusNetworkDataSource private constructor() {
     }*/
 
     fun fetchBikeSystemStatus(citybik_esAPI: Citybik_esAPI, bikeSystemHRef: String) {
+        //TODO: is that necessary when called from an intent service context ?
         coroutineScopeIO.launch {
             val UrlParams = HashMap<String, String>()
             UrlParams["fields"] = "stations,id"

@@ -18,6 +18,7 @@ import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDa
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetworkDataSource
 import com.ludoscity.findmybikes.data.network.cozy.CozyDataPipe
+import com.ludoscity.findmybikes.data.network.cozy.CozyFileDescAnswerRoot
 import com.ludoscity.findmybikes.data.network.cozy.RegisteredOAuthClient
 import com.ludoscity.findmybikes.data.network.cozy.UserCredentialTokens
 import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
@@ -51,6 +52,8 @@ class FindMyBikesRepository private constructor(
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     private var mInitialized = false
+    private val networkCozyDirectoryData: LiveData<Result<CozyFileDescAnswerRoot>> = cozyNetworkDataPipe.createDirectoryResult
+
     private val networkBikeSystemStatusData: LiveData<BikeSystemStatus> = bikeSystemStatusNetworkDataSource.data
     private val networkBikeSystemListAnswerRootData: LiveData<BikeSystemListAnswerRoot> = bikeSystemListNetworkDataSource.data
 
@@ -75,6 +78,9 @@ class FindMyBikesRepository private constructor(
     var cozyOAuthClient: RegisteredOAuthClient? = null
         private set
 
+    var cozyDirectoryId: String? = null
+        private set
+
     val isCozyOAuthClientRegistered: Boolean
         get() = cozyOAuthClient != null
 
@@ -89,6 +95,7 @@ class FindMyBikesRepository private constructor(
             prevBikeSystem.postValue(currentBikeSystemDao.singleSynchronous)
 
             if (secureSharedPref.contains(OAUTH_CLIENT_REG_TOKEN_PREF_KEY)) {
+                Log.i(TAG, "Cozy OAuth client registration found in secure shared pref, deserializing...")
                 setRegisteredOAuthClient(RegisteredOAuthClient(
                         secureSharedPref.getString(OAUTH_STACK_BASEURL_PREF_KEY, null)!!,
                         secureSharedPref.getString(OAUTH_CLIENT_ID_PREF_KEY, null)!!,
@@ -97,10 +104,36 @@ class FindMyBikesRepository private constructor(
                 ))
 
                 if (secureSharedPref.contains(OAUTH_ACCESS_TOKEN_PREF_KEY)) {
+                    Log.i(TAG, "Cozy OAuth authorization found in secure shared pref, deserializing...")
                     setUserCredentials(UserCredentialTokens(
                             secureSharedPref.getString(OAUTH_ACCESS_TOKEN_PREF_KEY, null)!!,
                             secureSharedPref.getString(OAUTH_REFRESH_TOKEN_PREF_KEY, null)!!
                     ))
+                }
+            }
+
+            if (secureSharedPref.contains(COZY_DIRECTORY_ID_PREF_KEY)) {
+                Log.i(TAG, "Cozy directory Id found in secure shared pref, deserializing...")
+                setCozyDirectoryId(secureSharedPref.getString(COZY_DIRECTORY_ID_PREF_KEY, null)!!)
+            }
+        }
+
+        networkCozyDirectoryData.observeForever {
+            it?.let { mkdirAnswerData ->
+
+                if (mkdirAnswerData is Result.Success && mkdirAnswerData.data.data?.id != null) {
+                    secureSharedPref.edit()
+                            .putString(COZY_DIRECTORY_ID_PREF_KEY, mkdirAnswerData.data.data.id)
+                            .apply()
+
+                    Log.i(TAG, "saved Cozy directory Id in secure shared preferences")
+
+                    setCozyDirectoryId(mkdirAnswerData.data.data.id)
+                } else {
+                    if (mkdirAnswerData is Result.Error) {
+                        Log.e(TAG, mkdirAnswerData.exception.message, mkdirAnswerData.exception)
+                    }
+                    cozyDirectoryId = null
                 }
             }
         }
@@ -390,6 +423,7 @@ class FindMyBikesRepository private constructor(
                 clientId = cozyOAuthClient?.clientId!!,
                 masterAccessToken = cozyOAuthClient?.registrationAccessToken!!)
 
+        //TODO: this is a problem if the client is unregistered out of the app
         if (result is Result.Success) {
             secureSharedPref.edit().remove(OAUTH_CLIENT_REG_TOKEN_PREF_KEY)
                     .remove(OAUTH_CLIENT_ID_PREF_KEY)
@@ -397,10 +431,12 @@ class FindMyBikesRepository private constructor(
                     .remove(OAUTH_STACK_BASEURL_PREF_KEY)
                     .remove(OAUTH_ACCESS_TOKEN_PREF_KEY)
                     .remove(OAUTH_REFRESH_TOKEN_PREF_KEY)
+                    .remove(COZY_DIRECTORY_ID_PREF_KEY)
                     .commit()
 
             this.cozyOAuthClient = null
             this.userCred = null
+            this.cozyDirectoryId = null
         }
 
         return result
@@ -432,6 +468,10 @@ class FindMyBikesRepository private constructor(
         this.cozyOAuthClient = registeredClient
     }
 
+    private fun setCozyDirectoryId(toSet: String) {
+        this.cozyDirectoryId = toSet
+    }
+
     // in-memory cache of the authRequest State object
     private var authRequestState: State? = null
     // in-memory cache of the authRequest Nonce object
@@ -445,6 +485,32 @@ class FindMyBikesRepository private constructor(
 
     private fun setUserCredentials(userCred: UserCredentialTokens) {
         this.userCred = userCred
+    }
+
+    @SuppressLint("ApplySharedPref")
+    fun refreshCozyAccessToken(): Result<UserCredentialTokens> {
+        val result = cozyNetworkDataPipe.refreshAccessToken(
+                cozyOAuthClient?.stackBaseUrl!!,
+                userCred!!,
+                cozyOAuthClient?.clientId!!,
+                cozyOAuthClient?.clientSecret!!
+        )
+
+        //Repo captures data
+        if (result is Result.Success) {
+
+            // If user credentials will be cached in local storage, it is recommended it be encrypted
+            // @see https://developer.android.com/training/articles/keystore
+            //We're using androix security library
+            //https://developer.android.com/jetpack/androidx/releases/security
+            secureSharedPref.edit().putString(OAUTH_ACCESS_TOKEN_PREF_KEY, result.data.accessToken)
+                    .putString(OAUTH_REFRESH_TOKEN_PREF_KEY, result.data.refreshToken)
+                    .commit()
+
+            setUserCredentials(result.data)
+        }
+
+        return result
     }
 
     @SuppressLint("ApplySharedPref")
@@ -517,6 +583,8 @@ class FindMyBikesRepository private constructor(
         private const val OAUTH_CLIENT_REG_TOKEN_PREF_KEY = "fmb_oauth_client_registration_token"
         private const val OAUTH_ACCESS_TOKEN_PREF_KEY = "fmb_oauth_access_token"
         private const val OAUTH_REFRESH_TOKEN_PREF_KEY = "fmb_oauth_refresh_token"
+
+        private const val COZY_DIRECTORY_ID_PREF_KEY = "fmb_cozy_directory_id"
 
         // For Singleton instantiation
         private val LOCK = Any()

@@ -1,6 +1,8 @@
 package com.ludoscity.findmybikes.data.network.cozy
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.ludoscity.findmybikes.BuildConfig
 import com.ludoscity.findmybikes.data.Result
 import com.nimbusds.oauth2.sdk.*
@@ -12,12 +14,17 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse
 import com.nimbusds.oauth2.sdk.id.ClientID
 import com.nimbusds.oauth2.sdk.id.State
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken
+import com.nimbusds.oauth2.sdk.token.RefreshToken
 import com.nimbusds.oauth2.sdk.util.JSONObjectUtils
 import com.nimbusds.openid.connect.sdk.*
 import com.nimbusds.openid.connect.sdk.rp.OIDCClientInformationResponse
 import com.nimbusds.openid.connect.sdk.rp.OIDCClientMetadata
 import com.nimbusds.openid.connect.sdk.rp.OIDCClientRegistrationRequest
 import com.nimbusds.openid.connect.sdk.rp.OIDCClientRegistrationResponseParser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.Response
 import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
@@ -27,6 +34,8 @@ import java.net.URISyntaxException
  *
  */
 class CozyDataPipe {
+
+    private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
     fun register(cozyBaseUrlString: String): Result<RegisteredOAuthClient> {
 
@@ -96,6 +105,124 @@ class CozyDataPipe {
 
     }
 
+
+    /////////////////////////////
+    //FILES API
+
+    private val _mkDirResult: MutableLiveData<Result<CozyFileDescAnswerRoot>> = MutableLiveData()
+
+    val createDirectoryResult: LiveData<Result<CozyFileDescAnswerRoot>> = _mkDirResult
+
+
+    fun createDirectory(api: CozyCloudAPI,
+                        dirName: String,
+                        dirTagCollection: List<String>) {
+
+        coroutineScopeIO.launch {
+            val call = api.createFile(type = "directory", dirName = dirName, tagList = dirTagCollection)
+
+            val createAnswer: Response<CozyFileDescAnswerRoot>
+
+            try {
+                createAnswer = call.execute()
+
+                when (createAnswer.code()) {
+                    201 -> _mkDirResult.postValue(Result.Success(createAnswer.body()!!))
+                    409 -> {    //folder already exist
+                        Log.w(TAG, "Directory '$dirName' already exist." +
+                                " Attempting existing directory id retrieval via metadata...")
+                        val metadataCall = api.getFileMetadata("/$dirName")
+
+                        val metadataAnswer: Response<CozyFileDescAnswerRoot>
+
+                        try {
+                            metadataAnswer = metadataCall.execute()
+
+                            if (metadataAnswer.code() == 200) {
+                                //we recovered
+                                Log.i(TAG, "...SUCCESS :)")
+                                _mkDirResult.postValue(Result.Success(metadataAnswer.body()!!))
+                            } else {
+                                val error = metadataAnswer.errorBody()
+                                _mkDirResult.postValue(Result.Error(IOException("...FAILURE ><" +
+                                        "with error: $error")))
+
+                            }
+                        } catch (e: Exception) {
+                            _mkDirResult.postValue(Result.Error(e))
+                        }
+                    }
+                    else -> {
+                        val error = createAnswer.errorBody()
+                        _mkDirResult.postValue(Result.Error(IOException("Unexpected error " +
+                                "when creating cozy '$dirName' directory: $error ")))
+                    }
+                }
+
+            } catch (e: Exception) {
+                _mkDirResult.postValue(Result.Error(e))
+            }
+        }
+    }
+
+    /////////////////////////////////
+
+    fun refreshAccessToken(cozyBaseUrlString: String,
+                           expiredCred: UserCredentialTokens,
+                           clientId: String,
+                           clientSecret: String
+    ): Result<UserCredentialTokens> {
+
+        Log.i(TAG, "About to refresh access token using refresh token")
+
+        val tokenReq = TokenRequest(
+                URI("$cozyBaseUrlString/auth/access_token"),
+                ClientSecretBasic(
+                        ClientID(clientId),
+                        Secret(clientSecret)
+                ),
+                RefreshTokenGrant(RefreshToken(expiredCred.refreshToken))
+        )
+
+        val tokenHTTPResp: HTTPResponse?
+        try {
+            //TODO: Find how to properly construct the TokenRequest object so that the request doesn't have to be altered here
+            val truc = tokenReq.toHTTPRequest()
+
+            truc.query = "${truc.query}&client_id=$clientId&client_secret=$clientSecret"
+            //tokenHTTPResp = tokenReq.toHTTPRequest().send()
+            tokenHTTPResp = truc.send()
+        } catch (e: SerializeException) {
+            return Result.Error(e)
+        } catch (e: IOException) {
+            return Result.Error(e)
+        }
+
+        // Parse and check response
+        val tokenResponse: TokenResponse?
+        try {
+            tokenResponse = OIDCTokenResponseParser.parse(tokenHTTPResp)
+        } catch (e: ParseException) {
+            return Result.Error(e)
+        }
+
+
+        if (tokenResponse is TokenErrorResponse) {
+            val error = tokenResponse.errorObject
+            return Result.Error(IOException("Error while refreshing token : ${error.toJSONObject()}"))
+        }
+
+        val accessTokenResponse = tokenResponse as OIDCTokenResponse?
+
+        return Result.Success(
+                UserCredentialTokens(
+                        accessToken = accessTokenResponse?.oidcTokens?.accessToken?.value!!,
+                        refreshToken = expiredCred.refreshToken//,
+                        //idToken = accessTokenResponse.oidcTokens?.idTokenString!!
+                )
+        )
+    }
+
     fun exchangeAuthCodeForTokenCouple(
             cozyBaseUrlString: String,
             redirectIntentData: String,
@@ -144,7 +271,7 @@ class CozyDataPipe {
                 AuthorizationCodeGrant(authCode, URI("findmybikes://com.f8full.findmybikes.oauth2redirect"))
         )
 
-        var tokenHTTPResp: HTTPResponse? = null
+        val tokenHTTPResp: HTTPResponse?
         try {
             //TODO: Find how to properly construct the TokenRequest object so that the request doesn't have to be altered here
             val truc = tokenReq.toHTTPRequest()
@@ -159,10 +286,10 @@ class CozyDataPipe {
         }
 
 
-// Parse and check response
+        // Parse and check response
         val tokenResponse: TokenResponse?
         try {
-            tokenResponse = OIDCTokenResponseParser.parse(tokenHTTPResp!!)
+            tokenResponse = OIDCTokenResponseParser.parse(tokenHTTPResp)
         } catch (e: ParseException) {
             return Result.Error(e)
         }

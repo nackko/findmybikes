@@ -2,13 +2,10 @@ package com.ludoscity.findmybikes.ui.settings
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
-
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
 import androidx.lifecycle.ViewModelProviders
-
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.utils.InjectorUtils
 
@@ -27,7 +24,7 @@ class SettingsActivity : AppCompatActivity() {
         val data = intent?.dataString
 
         if (action == Intent.ACTION_VIEW && data != null) {
-            Log.e("SettingsActivity", "Intent data string : $data")
+            //Log.e("SettingsActivity", "Intent data string : $data")
 
             ViewModelProviders.of(this, InjectorUtils.provideSettingsActivityViewModelFactory(application))
                     .get(SettingsActivityViewModel::class.java).retrieveAccessTokenAndRefreshToken(data)

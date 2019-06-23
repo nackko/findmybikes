@@ -39,13 +39,21 @@ class InjectorUtils {
         }
 
         fun provideTwitterNetworkDataExhaust(ctx: Context): TwitterNetworkDataExhaust {
+            //see provideBikeSystemStatusNetworkDataSource
             provideRepository(ctx)
             return TwitterNetworkDataExhaust.getInstance()
         }
 
         fun provideBikeSystemListNetworkDataSource(ctx: Context): BikeSystemListNetworkDataSource {
+            //see provideBikeSystemStatusNetworkDataSource
             provideRepository(ctx)
             return BikeSystemListNetworkDataSource.getInstance()
+        }
+
+        fun provideCozyNetworkDataPipe(ctx: Context): CozyDataPipe {
+            //see provideBikeSystemStatusNetworkDataSource
+            provideRepository(ctx)
+            return CozyDataPipe.getInstance()
         }
 
         fun provideRepository(ctx: Context): FindMyBikesRepository {

@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.ui.settings
 
 import android.app.Application
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -8,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.Result
+import com.ludoscity.findmybikes.data.network.cozy.CozyDataPipeIntentService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,6 +63,24 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
                 }
             }
         }
+    }
+
+    private fun createCozyDirectory() {
+        val ctx = getApplication<Application>()
+        val intentToFetch = Intent(ctx, CozyDataPipeIntentService::class.java)
+
+        Log.i("SettingsActivityViewMod",
+                "Requesting creation of Cozy directory '#findmybikes_raw'")
+
+        intentToFetch.action = CozyDataPipeIntentService.ACTION_CREATE_DIRECTORY
+        intentToFetch.putExtra(CozyDataPipeIntentService.EXTRA_CREATE_DIRECTORY_NAME,
+                "#findmybikes_raw")
+        intentToFetch.putStringArrayListExtra(
+                CozyDataPipeIntentService.EXTRA_CREATE_DIRECTORY_TAG_LIST,
+                ArrayList(listOf("tag0", "tag_1"))
+        )
+
+        CozyDataPipeIntentService.enqueueWork(ctx, intentToFetch)
     }
 
     fun registerOAuthClient(cozyUrlUserInput: String) {
@@ -151,6 +171,7 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
                 )
 
                 if (result is Result.Success) {
+                    createCozyDirectory()
                     _authLoginResult.postValue(AuthLoginResult(AuthLoggedInUserView(result.data.accessToken, result.data.refreshToken)))
                 }
             }
