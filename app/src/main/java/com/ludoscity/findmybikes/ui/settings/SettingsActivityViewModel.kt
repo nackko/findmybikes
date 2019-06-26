@@ -9,6 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.Result
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
+import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDatapoint
 import com.ludoscity.findmybikes.data.network.cozy.CozyDataPipeIntentService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -141,6 +143,39 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
 
     fun isRegistered(): Boolean {
         return repo.isCozyOAuthClientRegistered
+    }
+
+    fun isAuthorized(): Boolean {
+        return repo.isAuthorizedOnCozy
+    }
+
+    fun addTestGeoTrackingDatapointToDb() {
+
+        val newDatapoint = GeoTrackingDatapoint(
+                altitude = 666.0,
+                latitude = 5.5,
+                longitude = 4.4,
+                accuracyHorizontalMeters = 3.3000F,
+                accuracyVerticalMeters = 2.2000F
+        )
+
+        repo.insertInDatabase(newDatapoint)
+    }
+
+    fun addTestAnalyticTrackingDatapointToDb() {
+        //TODO: have poper key table
+        addAnalDatapoint("Test button pressed")
+    }
+
+    private fun addAnalDatapoint(analDesc: String) {
+
+        val newDatapoint = AnalTrackingDatapoint(
+                analDesc = analDesc,
+                ctx = getApplication()
+        )
+
+        repo.insertInDatabase(newDatapoint)
+
     }
 
     fun authenticate() {

@@ -102,6 +102,7 @@
     <string name="action_registering" translatable="false">Register</string>
     <string name="tap_authenticate" translatable="false">Tap \'Authenticate\'</string>
     <string name="authenticate" translatable="false">AUTHENTICATE</string>
+    <string name="cozy_test" translatable="false">TEST</string>
     <string name="registration_failed" translatable="false">"Registration failed"</string>
     <string name="action_unregistering" translatable="false">Unregister</string>
     <string name="pref_cozy_login_dialog_title" translatable="false">Cozy cloud setup</string>

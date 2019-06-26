@@ -68,6 +68,8 @@ class InjectorUtils {
                     database.bikeStationDao(),
                     database.favoriteEntityPlaceDao(),
                     database.favoriteEntityStationDao(),
+                    database.geoTrackingDao(),
+                    database.analTrackingDao(),
                     systemListNetworkDataSource,
                     systemStatusNetworkDataSource,
                     twitterNetworkDataExhaust,

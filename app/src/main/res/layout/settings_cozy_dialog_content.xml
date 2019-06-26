@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cozy_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -36,13 +37,11 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="24dp"
-
-
             android:text="@string/client_info_default"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.843"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/registering" />
+            app:layout_constraintTop_toBottomOf="@+id/authenticate" />
 
         <TextView
             android:id="@+id/access_token"
@@ -79,10 +78,12 @@
             android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:layout_gravity="start"
-            android:layout_marginStart="48dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="32dp"
+            android:layout_marginEnd="8dp"
             android:enabled="false"
             android:text="@string/action_registering"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/final_url" />
 
@@ -106,21 +107,33 @@
             android:id="@+id/authenticate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:enabled="false"
             android:text="@string/authenticate"
-            app:layout_constraintBottom_toBottomOf="@+id/registering"
-            app:layout_constraintStart_toEndOf="@+id/registering"
-            app:layout_constraintTop_toTopOf="@+id/registering" />
+            app:layout_constraintEnd_toEndOf="@+id/registering"
+            app:layout_constraintStart_toStartOf="@+id/registering"
+            app:layout_constraintTop_toBottomOf="@+id/registering" />
 
         <TextView
             android:id="@+id/final_url"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
+            android:layout_marginStart="32dp"
             android:layout_marginTop="8dp"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/username"
             app:layout_constraintTop_toBottomOf="@+id/username"
             tools:text="https://truc.mycozy.cloud" />
+
+        <Button
+            android:id="@+id/cozy_test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/cozy_test"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/refresh_token" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

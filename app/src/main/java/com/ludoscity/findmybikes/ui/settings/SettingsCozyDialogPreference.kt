@@ -38,6 +38,7 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
     private var refreshToken: TextView? = null
     private var registering: Button? = null
     private var authenticate: Button? = null
+    private var cozyTest: Button? = null
     private var loading: ProgressBar? = null
     private var root: View? = null
 
@@ -64,6 +65,7 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
         refreshToken = view.findViewById(R.id.refresh_token)
         registering = view.findViewById(R.id.registering)
         authenticate = view.findViewById(R.id.authenticate)
+        cozyTest = view.findViewById(R.id.cozy_test)
         registering?.isEnabled = true
         loading = view.findViewById(R.id.loading)
 
@@ -90,6 +92,13 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
             authenticate?.setOnClickListener {
                 if (model?.isRegistered() == true)
                     model?.authenticate()
+            }
+
+            cozyTest?.setOnClickListener {
+                //if (model?.isAuthorized() == true){
+                model?.addTestGeoTrackingDatapointToDb()
+                model?.addTestAnalyticTrackingDatapointToDb()
+                //}
             }
         }
 

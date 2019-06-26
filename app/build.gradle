@@ -125,6 +125,8 @@ dependencies {
     implementation 'com.google.maps.android:android-maps-utils:0.5'
     implementation 'com.google.code.gson:gson:2.8.5'
 
+    implementation 'com.jaredrummler:android-device-names:1.1.7'
+
     implementation 'androidx.browser:browser:1.0.0'
 
     implementation "androidx.security:security-crypto:1.0.0-alpha02"

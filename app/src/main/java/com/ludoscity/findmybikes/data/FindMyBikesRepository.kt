@@ -13,6 +13,10 @@ import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao
 import com.ludoscity.findmybikes.data.database.favorite.*
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.database.station.BikeStationDao
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDao
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
+import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDao
+import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDatapoint
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
@@ -43,6 +47,8 @@ class FindMyBikesRepository private constructor(
         private val stationDao: BikeStationDao,
         private val favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
         private val favoriteEntityStationDao: FavoriteEntityStationDao,
+        private val geoTrackingDao: GeoTrackingDao,
+        private val analTrackingDao: AnalTrackingDao,
         private val bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
         private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
         private val twitterNetworkDataExhaust: TwitterNetworkDataExhaust,
@@ -89,7 +95,7 @@ class FindMyBikesRepository private constructor(
         // If user credentials will be cached in local storage, it is recommended it be encrypted
         // @see https://developer.android.com/training/articles/keystore
         //TODO: store credentials properly and retrieve them from DB to restore client
-        cozyOAuthClient = null
+        setRegisteredOAuthClient(null)
 
         coroutineScopeIO.launch {
             prevBikeSystem.postValue(currentBikeSystemDao.singleSynchronous)
@@ -133,7 +139,7 @@ class FindMyBikesRepository private constructor(
                     if (mkdirAnswerData is Result.Error) {
                         Log.e(TAG, mkdirAnswerData.exception.message, mkdirAnswerData.exception)
                     }
-                    cozyDirectoryId = null
+                    setCozyDirectoryId(null)
                 }
             }
         }
@@ -434,9 +440,9 @@ class FindMyBikesRepository private constructor(
                     .remove(COZY_DIRECTORY_ID_PREF_KEY)
                     .commit()
 
-            this.cozyOAuthClient = null
-            this.userCred = null
-            this.cozyDirectoryId = null
+            setRegisteredOAuthClient(null)
+            setUserCredentials(null)
+            setCozyDirectoryId(null)
         }
 
         return result
@@ -464,12 +470,21 @@ class FindMyBikesRepository private constructor(
         return result
     }
 
-    private fun setRegisteredOAuthClient(registeredClient: RegisteredOAuthClient) {
+    private fun setRegisteredOAuthClient(registeredClient: RegisteredOAuthClient?) {
         this.cozyOAuthClient = registeredClient
+
+        val analDesc = if (registeredClient != null) "Cozy OAuth client registered" else "Cozy OAuth client unregistered"
+        insertInDatabase(AnalTrackingDatapoint(
+                analDesc = analDesc
+        ))
     }
 
-    private fun setCozyDirectoryId(toSet: String) {
+    private fun setCozyDirectoryId(toSet: String?) {
         this.cozyDirectoryId = toSet
+
+        insertInDatabase(AnalTrackingDatapoint(
+                analDesc = "Cozy Cloud directory created or retrieved with id: $toSet"
+        ))
     }
 
     // in-memory cache of the authRequest State object
@@ -483,8 +498,31 @@ class FindMyBikesRepository private constructor(
     var userCred: UserCredentialTokens? = null
         private set
 
-    private fun setUserCredentials(userCred: UserCredentialTokens) {
+    val isAuthorizedOnCozy: Boolean
+        get() = userCred != null
+
+    //TODO: return a result or expose a live data so that UI updates only when operations really completed
+    fun insertInDatabase(toInsert: GeoTrackingDatapoint) {
+        coroutineScopeIO.launch {
+            geoTrackingDao.insert(toInsert)
+        }
+    }
+
+    //TODO: return a result or expose a live data so that UI updates only when operations really completed
+    fun insertInDatabase(toInsert: AnalTrackingDatapoint) {
+        coroutineScopeIO.launch {
+            analTrackingDao.insert(toInsert)
+        }
+    }
+
+    private fun setUserCredentials(userCred: UserCredentialTokens?) {
         this.userCred = userCred
+
+        userCred?.let {
+            insertInDatabase(AnalTrackingDatapoint(
+                    analDesc = "Cozy Cloud file API access configured"
+            ))
+        }
     }
 
     @SuppressLint("ApplySharedPref")
@@ -508,6 +546,10 @@ class FindMyBikesRepository private constructor(
                     .commit()
 
             setUserCredentials(result.data)
+
+            insertInDatabase(AnalTrackingDatapoint(
+                    analDesc = "Cozy Cloud file API access token refreshed"
+            ))
         }
 
         return result
@@ -596,6 +638,8 @@ class FindMyBikesRepository private constructor(
                 bikeStationDao: BikeStationDao,
                 favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
                 favoriteEntityStationDao: FavoriteEntityStationDao,
+                geoTrackingDao: GeoTrackingDao,
+                analTrackingDao: AnalTrackingDao,
                 bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
                 bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
                 twitterNetworkDataExhaust: TwitterNetworkDataExhaust,
@@ -608,6 +652,8 @@ class FindMyBikesRepository private constructor(
                             bikeStationDao,
                             favoriteEntityPlaceDao,
                             favoriteEntityStationDao,
+                            geoTrackingDao,
+                            analTrackingDao,
                             bikeSystemListNetworkDataSource,
                             bikeSystemStatusNetworkDataSource,
                             twitterNetworkDataExhaust,

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.os.Build
 import android.text.Html
 import android.text.Spanned
 import android.util.TypedValue
@@ -30,6 +31,15 @@ import java.util.*
  * Class with static utilities
  */
 object Utils {
+
+    fun getSimpleDateFormatPattern(): String {
+        //see: https://developer.android.com/reference/java/text/SimpleDateFormat
+        //https://stackoverflow.com/questions/28373610/android-parse-string-to-date-unknown-pattern-character-x
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            "yyyy-MM-dd'T'HH:mm:ssXXX"
+        else
+            "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+    }
 
     private const val sharedPrefFilename = "findmybikes_secure_prefs"
 
