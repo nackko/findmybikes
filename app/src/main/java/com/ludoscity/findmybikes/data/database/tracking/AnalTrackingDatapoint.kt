@@ -23,7 +23,7 @@ data class AnalTrackingDatapoint(
         var description: String,
         @Transient val ctx: Context? = null //Room ignores it because no ColumnInfo
         //Gson ignores it
-) : BaseTrackingDatapoint(timestampEpoch, "ANALYTICS_") {
+) : BaseTrackingDatapoint(timestampEpoch, "_ANALYTICS") {
     @SerializedName("app_version")
     @ColumnInfo(name = "app_version")
     var appVersion: String =

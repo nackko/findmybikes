@@ -25,7 +25,7 @@ interface CozyCloudAPI {
             @Path("dir-id") parentDirectoryId: String = "",
             @QueryMap specifications: Map<String, String>,
             @Header("Content-MD5") contentMD5: String,
-            @Header("Content-Type") contentType: String = "application/json"//,
+            @Header("Content-Type") contentType: String = "text/plain"//,
     ): Call<CozyFileDescAnswerRoot>
 
     @POST("/files/{dir-id}")
@@ -34,7 +34,7 @@ interface CozyCloudAPI {
             @Path("dir-id") parentDirectoryId: String = "",
             @QueryMap specifications: Map<String, String>,
             @Header("Content-MD5") contentMD5: String,
-            @Header("Content-Type") contentType: String = "application/json"//,
+            @Header("Content-Type") contentType: String = "text/plain"//,
     ): Call<CozyFileDescAnswerRoot>
 
     @GET("/files/{id}")

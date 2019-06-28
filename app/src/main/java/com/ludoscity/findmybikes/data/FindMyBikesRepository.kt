@@ -426,7 +426,7 @@ class FindMyBikesRepository private constructor(
                 parentDirectoryId = cozyDirectoryId,
                 gson = gson,
                 api = api,
-                fileName = "${toUpload.filenamePrefix}${toUpload.timestamp}.json",
+                fileName = "${toUpload.timestamp}${toUpload.filenamePostfix}.json",
                 fileTagCollection = tagList
         )
 

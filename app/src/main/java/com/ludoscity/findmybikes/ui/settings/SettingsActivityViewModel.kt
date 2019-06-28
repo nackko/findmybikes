@@ -188,8 +188,8 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
                 accuracyVerticalMeters = 2.2000F
         )
 
-        newAnalDatapoint.filenamePrefix = "TEST_${newAnalDatapoint.filenamePrefix}"
-        newGeoDatapoint.filenamePrefix = "TEST_${newGeoDatapoint.filenamePrefix}"
+        newAnalDatapoint.filenamePostfix = "${newAnalDatapoint.filenamePostfix}_TEST"
+        newGeoDatapoint.filenamePostfix = "${newGeoDatapoint.filenamePostfix}_TEST"
 
         coroutineScopeIO.launch {
             val analTestResult =

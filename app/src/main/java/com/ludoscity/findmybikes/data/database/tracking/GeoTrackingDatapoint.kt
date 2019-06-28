@@ -20,4 +20,4 @@ data class GeoTrackingDatapoint(
         val accuracyVerticalMeters: Float?,
         val latitude: Double,
         val longitude: Double
-) : BaseTrackingDatapoint(timestampEpoch, "GEOLOCATION_")
+) : BaseTrackingDatapoint(timestampEpoch, "_GEOLOCATION")
