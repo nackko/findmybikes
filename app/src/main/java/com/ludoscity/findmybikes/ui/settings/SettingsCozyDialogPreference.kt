@@ -22,6 +22,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import com.ludoscity.findmybikes.R
+import com.ludoscity.findmybikes.data.Result
 import com.ludoscity.findmybikes.utils.InjectorUtils
 
 /**
@@ -96,8 +97,8 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
 
             cozyTest?.setOnClickListener {
                 //if (model?.isAuthorized() == true){
-                model?.addTestGeoTrackingDatapointToDb()
-                model?.addTestAnalyticTrackingDatapointToDb()
+                loading?.visibility = View.VISIBLE
+                model?.testCozyCloud()
                 //}
             }
         }
@@ -111,6 +112,7 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
                 username?.isEnabled = true
                 cozyUrl?.text = ""
                 authenticate?.isEnabled = false
+                cozyTest?.isEnabled = false
                 clientInfo?.text = (context as Activity).getString(R.string.client_info_default)
                 accessToken?.text = ""
                 refreshToken?.text = ""
@@ -151,6 +153,27 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
             accessToken?.text = "access token : ${authLoginResult.success?.accesstoken}"
             refreshToken?.text = "refresh token : ${authLoginResult.success?.refreshToken}"
             authenticate?.isEnabled = false
+            cozyTest?.isEnabled = true
+        })
+
+        model?.cozyTestResult?.observe(context as SettingsActivity, Observer {
+            it?.let { testResult ->
+                loading?.visibility = View.GONE
+                if (testResult is Result.Success) {
+                    Snackbar.make(root!!, "Test successful", Snackbar.LENGTH_LONG)
+                            .setAction("View in Cozy") {
+                                val intent = Intent(Intent.ACTION_VIEW)
+                                intent.data = Uri.parse(model?.getCozyDriveUrl())
+                                if (intent.resolveActivity((context as Activity).packageManager) != null) {
+                                    (context as Activity).startActivity(intent)
+                                }
+                            }
+                            .show()
+                } else {
+                    Snackbar.make(root!!, "Test failed", Snackbar.LENGTH_LONG)
+                            .show()
+                }
+            }
         })
 
         model?.authenticationUri?.observe(context as SettingsActivity, Observer {

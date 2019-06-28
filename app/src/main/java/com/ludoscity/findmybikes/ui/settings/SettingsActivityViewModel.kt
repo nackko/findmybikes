@@ -6,15 +6,18 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.Gson
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.Result
 import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
 import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDatapoint
 import com.ludoscity.findmybikes.data.network.cozy.CozyDataPipeIntentService
+import com.ludoscity.findmybikes.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.net.URI
 
 /**
@@ -40,6 +43,9 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
 
     private val _authenticationUri = MutableLiveData<URI>()
     val authenticationUri: LiveData<URI> = _authenticationUri
+
+    private val _cozyTestResult = MutableLiveData<Result<Boolean>>()
+    val cozyTestResult: LiveData<Result<Boolean>> = _cozyTestResult
 
     init {
 
@@ -149,7 +155,7 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
         return repo.isAuthorizedOnCozy
     }
 
-    fun addTestGeoTrackingDatapointToDb() {
+/*    fun addTestGeoTrackingDatapointToDb() {
 
         val newDatapoint = GeoTrackingDatapoint(
                 altitude = 666.0,
@@ -165,17 +171,51 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
     fun addTestAnalyticTrackingDatapointToDb() {
         //TODO: have poper key table
         addAnalDatapoint("Test button pressed")
-    }
+    }*/
 
-    private fun addAnalDatapoint(analDesc: String) {
+    fun testCozyCloud() {
 
-        val newDatapoint = AnalTrackingDatapoint(
-                analDesc = analDesc,
+        val newAnalDatapoint = AnalTrackingDatapoint(
+                description = "Test button pressed",
                 ctx = getApplication()
         )
 
-        repo.insertInDatabase(newDatapoint)
+        val newGeoDatapoint = GeoTrackingDatapoint(
+                altitude = 666.0,
+                latitude = 5.5,
+                longitude = 4.4,
+                accuracyHorizontalMeters = 3.3000F,
+                accuracyVerticalMeters = 2.2000F
+        )
 
+        newAnalDatapoint.filenamePrefix = "TEST_${newAnalDatapoint.filenamePrefix}"
+        newGeoDatapoint.filenamePrefix = "TEST_${newGeoDatapoint.filenamePrefix}"
+
+        coroutineScopeIO.launch {
+            val analTestResult =
+                    repo.uploadDatapoint(Gson(),
+                            Utils.getCozyCloudAPI(getApplication()),
+                            newAnalDatapoint, ArrayList(listOf("tag0", "tag_1")))
+            val geoResult =
+                    repo.uploadDatapoint(Gson(),
+                            Utils.getCozyCloudAPI(getApplication()),
+                            newGeoDatapoint, ArrayList(listOf("tag0", "tag_1")))
+
+            if (analTestResult is Result.Success &&
+                    geoResult is Result.Success) {
+                _cozyTestResult.postValue(analTestResult)
+            } else
+                _cozyTestResult.postValue(Result.Error(IOException()))
+        }
+    }
+
+    fun getCozyDriveUrl(): String? {
+        val baseUrl = repo.cozyOAuthClient?.stackBaseUrl
+
+        val prefix = baseUrl?.substringBefore(".")
+        val drivePrefix = "$prefix-drive"
+
+        return "${baseUrl?.replace(prefix!!, drivePrefix)}/#/folder/${repo.cozyDirectoryId}"
     }
 
     fun authenticate() {
