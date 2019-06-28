@@ -8,23 +8,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.gson.Gson
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao
 import com.ludoscity.findmybikes.data.database.favorite.*
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.database.station.BikeStationDao
-import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDao
-import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
-import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDao
-import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDatapoint
+import com.ludoscity.findmybikes.data.database.tracking.*
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetworkDataSource
-import com.ludoscity.findmybikes.data.network.cozy.CozyDataPipe
-import com.ludoscity.findmybikes.data.network.cozy.CozyFileDescAnswerRoot
-import com.ludoscity.findmybikes.data.network.cozy.RegisteredOAuthClient
-import com.ludoscity.findmybikes.data.network.cozy.UserCredentialTokens
+import com.ludoscity.findmybikes.data.network.cozy.*
 import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
 import com.ludoscity.findmybikes.utils.Utils
 import com.nimbusds.oauth2.sdk.ResponseType
@@ -422,6 +417,38 @@ class FindMyBikesRepository private constructor(
     ///////////////////////////
     //Cozy
 
+    fun uploadDatapoint(gson: Gson,
+                        api: CozyCloudAPI,
+                        toUpload: BaseTrackingDatapoint,
+                        tagList: List<String>): Result<Boolean> {
+        val result = cozyNetworkDataPipe.postFile(
+                fileContent = toUpload,
+                parentDirectoryId = cozyDirectoryId,
+                gson = gson,
+                api = api,
+                fileName = "${toUpload.filenamePrefix}${toUpload.timestamp}.json",
+                fileTagCollection = tagList
+        )
+
+        if (result is Result.Success ||
+                (result is Result.Error && result.exception.message?.contains("Code 409") == true)) {
+            when (toUpload) {
+                is GeoTrackingDatapoint -> {
+                    val completed = toUpload
+                    completed.uploadCompleted = true
+                    geoTrackingDao.update(completed)
+                }
+                is AnalTrackingDatapoint -> {
+                    val completed = toUpload
+                    completed.uploadCompleted = true
+                    analTrackingDao.update(completed)
+                }
+            }
+        }
+
+        return result
+    }
+
     @SuppressLint("ApplySharedPref")
     fun unregisterCozyOAuthClient(cozyBaseUrlString: String): Result<Boolean> {
         val result = cozyNetworkDataPipe.unregister(
@@ -471,11 +498,11 @@ class FindMyBikesRepository private constructor(
     }
 
     private fun setRegisteredOAuthClient(registeredClient: RegisteredOAuthClient?) {
-        this.cozyOAuthClient = registeredClient
 
-        val analDesc = if (registeredClient != null) "Cozy OAuth client registered" else "Cozy OAuth client unregistered"
+        val analDesc = if (this.cozyOAuthClient == null) "Cozy OAuth client registered" else "Cozy OAuth client unregistered"
+        this.cozyOAuthClient = registeredClient
         insertInDatabase(AnalTrackingDatapoint(
-                analDesc = analDesc
+                description = analDesc
         ))
     }
 
@@ -483,7 +510,7 @@ class FindMyBikesRepository private constructor(
         this.cozyDirectoryId = toSet
 
         insertInDatabase(AnalTrackingDatapoint(
-                analDesc = "Cozy Cloud directory created or retrieved with id: $toSet"
+                description = "Cozy Cloud directory created or retrieved with id: $toSet"
         ))
     }
 
@@ -520,7 +547,7 @@ class FindMyBikesRepository private constructor(
 
         userCred?.let {
             insertInDatabase(AnalTrackingDatapoint(
-                    analDesc = "Cozy Cloud file API access configured"
+                    description = "Cozy Cloud file API access configured"
             ))
         }
     }
@@ -548,7 +575,7 @@ class FindMyBikesRepository private constructor(
             setUserCredentials(result.data)
 
             insertInDatabase(AnalTrackingDatapoint(
-                    analDesc = "Cozy Cloud file API access token refreshed"
+                    description = "Cozy Cloud file API access token refreshed"
             ))
         }
 

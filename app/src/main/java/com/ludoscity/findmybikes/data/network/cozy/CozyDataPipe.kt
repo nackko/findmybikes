@@ -1,10 +1,15 @@
 package com.ludoscity.findmybikes.data.network.cozy
 
+import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.Gson
 import com.ludoscity.findmybikes.BuildConfig
 import com.ludoscity.findmybikes.data.Result
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
+import com.ludoscity.findmybikes.data.database.tracking.BaseTrackingDatapoint
+import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDatapoint
 import com.nimbusds.oauth2.sdk.*
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic
 import com.nimbusds.oauth2.sdk.auth.Secret
@@ -23,11 +28,12 @@ import com.nimbusds.openid.connect.sdk.rp.OIDCClientRegistrationRequest
 import com.nimbusds.openid.connect.sdk.rp.OIDCClientRegistrationResponseParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
+import java.security.MessageDigest
+import java.util.*
 
 /**
  * Created by F8Full on 2019-06-17. This file is part of #findmybikes
@@ -114,55 +120,132 @@ class CozyDataPipe {
     val createDirectoryResult: LiveData<Result<CozyFileDescAnswerRoot>> = _mkDirResult
 
 
-    fun createDirectory(api: CozyCloudAPI,
-                        dirName: String,
-                        dirTagCollection: List<String>) {
+    fun postDirectory(api: CozyCloudAPI,
+                      dirName: String,
+            //TODO: add parent directory id ?
+                      dirTagCollection: List<String>) {
 
-        coroutineScopeIO.launch {
-            val call = api.createFile(type = "directory", dirName = dirName, tagList = dirTagCollection)
+        val queryMap = HashMap<String, String>()
 
-            val createAnswer: Response<CozyFileDescAnswerRoot>
+        queryMap["Type"] = "directory"
+        queryMap["Name"] = dirName
+        queryMap["Tags"] = dirTagCollection.joinToString(prefix = "[", postfix = "]")
+        val call = api.postFile(specifications = queryMap)
 
-            try {
-                createAnswer = call.execute()
+        val createAnswer: Response<CozyFileDescAnswerRoot>
 
-                when (createAnswer.code()) {
-                    201 -> _mkDirResult.postValue(Result.Success(createAnswer.body()!!))
-                    409 -> {    //folder already exist
-                        Log.w(TAG, "Directory '$dirName' already exist." +
-                                " Attempting existing directory id retrieval via metadata...")
-                        val metadataCall = api.getFileMetadata("/$dirName")
+        try {
+            createAnswer = call.execute()
 
-                        val metadataAnswer: Response<CozyFileDescAnswerRoot>
+            when (createAnswer.code()) {
+                201 -> _mkDirResult.postValue(Result.Success(createAnswer.body()!!))
+                409 -> {    //folder already exist
+                    Log.w(TAG, "Directory '$dirName' already exist." +
+                            " Attempting existing directory id retrieval via metadata...")
+                    val metadataCall = api.getFileMetadata("/$dirName")
 
-                        try {
-                            metadataAnswer = metadataCall.execute()
+                    val metadataAnswer: Response<CozyFileDescAnswerRoot>
 
-                            if (metadataAnswer.code() == 200) {
-                                //we recovered
-                                Log.i(TAG, "...SUCCESS :)")
-                                _mkDirResult.postValue(Result.Success(metadataAnswer.body()!!))
-                            } else {
-                                val error = metadataAnswer.errorBody()
-                                _mkDirResult.postValue(Result.Error(IOException("...FAILURE ><" +
-                                        "with error: $error")))
+                    try {
+                        metadataAnswer = metadataCall.execute()
 
-                            }
-                        } catch (e: Exception) {
-                            _mkDirResult.postValue(Result.Error(e))
+                        if (metadataAnswer.code() == 200) {
+                            //we recovered
+                            Log.i(TAG, "...SUCCESS :)")
+                            _mkDirResult.postValue(Result.Success(metadataAnswer.body()!!))
+                        } else {
+                            val error = metadataAnswer.errorBody()
+                            _mkDirResult.postValue(Result.Error(IOException("...FAILURE ><" +
+                                    "with error: $error")))
+
                         }
-                    }
-                    else -> {
-                        val error = createAnswer.errorBody()
-                        _mkDirResult.postValue(Result.Error(IOException("Unexpected error " +
-                                "when creating cozy '$dirName' directory: $error ")))
+                    } catch (e: Exception) {
+                        _mkDirResult.postValue(Result.Error(e))
                     }
                 }
-
-            } catch (e: Exception) {
-                _mkDirResult.postValue(Result.Error(e))
+                else -> {
+                    val error = createAnswer.errorBody()
+                    _mkDirResult.postValue(Result.Error(IOException("Unexpected error " +
+                            "when creating cozy '$dirName' directory: $error ")))
+                }
             }
+
+        } catch (e: Exception) {
+            _mkDirResult.postValue(Result.Error(e))
         }
+    }
+
+    fun postFile(fileContent: BaseTrackingDatapoint,
+                 gson: Gson,
+                 api: CozyCloudAPI,
+                 parentDirectoryId: String? = "",
+                 fileName: String,
+                 metadataId: String = "",
+                 createdAt: String = "",
+                 fileTagCollection: List<String>): Result<Boolean> {
+
+        val queryMap = HashMap<String, String>()
+
+        queryMap["Type"] = "file"
+        queryMap["Name"] = fileName
+        queryMap["Tags"] = fileTagCollection.joinToString(prefix = "[", postfix = "]")
+        if (!metadataId.isBlank())
+            queryMap["MetadataID"] = metadataId
+        if (!createdAt.isBlank())
+            queryMap["CreatedAt"] = createdAt
+
+        //Calculate MD5 hash required by cozy server
+        var base64MD5 = Base64.encodeToString(
+                MessageDigest.getInstance("MD5")
+                        .digest(gson.toJson(fileContent).toByteArray(Charsets.UTF_8)),
+                Base64.DEFAULT)
+
+        base64MD5 = base64MD5.replace("\n", "")
+
+        val call = when (fileContent) {
+            is AnalTrackingDatapoint -> api.postFile(fileContent,
+                    parentDirectoryId = parentDirectoryId ?: "",
+                    specifications = queryMap,
+                    contentMD5 = base64MD5
+            )
+            is GeoTrackingDatapoint -> api.postFile(fileContent,
+                    parentDirectoryId = parentDirectoryId ?: "",
+                    specifications = queryMap,
+                    contentMD5 = base64MD5
+            )
+            else -> null
+        }
+
+        val createAnswer: Response<CozyFileDescAnswerRoot>?
+
+        var toReturn: Result<Boolean>
+
+        try {
+            createAnswer = call?.execute()
+
+            when (createAnswer?.code()) {
+                201 -> {
+                    Log.i(TAG, "1 file uploaded")
+                    toReturn = Result.Success(true)
+                }
+                409 -> {    //folder already exist
+                    Log.w(TAG, "File '$fileName' already exist. Aborted")
+                    toReturn = Result.Error(IOException("Code 409, File '$fileName' already exist. Aborted"))
+                }
+                else -> {
+                    val error = createAnswer?.errorBody()
+                    toReturn = Result.Error(IOException("Unexpected error " +
+                            "when creating cozy '$fileName' file: ${error.toString()} "))
+
+                    Log.e(TAG, error?.string() ?: "")
+                }
+            }
+
+        } catch (e: Exception) {
+            toReturn = Result.Error(e)
+        }
+
+        return toReturn
     }
 
     /////////////////////////////////

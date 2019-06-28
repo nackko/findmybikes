@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.os.Build
 import android.text.Html
 import android.text.Spanned
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import androidx.annotation.ColorInt
@@ -20,7 +21,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.R
+import com.ludoscity.findmybikes.data.network.cozy.CozyCloudAPI
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.util.*
@@ -32,6 +37,8 @@ import java.util.*
  */
 object Utils {
 
+    val TAG = Utils::class.java.simpleName
+
     fun getSimpleDateFormatPattern(): String {
         //see: https://developer.android.com/reference/java/text/SimpleDateFormat
         //https://stackoverflow.com/questions/28373610/android-parse-string-to-date-unknown-pattern-character-x
@@ -39,6 +46,39 @@ object Utils {
             "yyyy-MM-dd'T'HH:mm:ssXXX"
         else
             "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+    }
+
+    fun getCozyCloudAPI(ctx: Context): CozyCloudAPI {
+        //see: https://www.coderdump.net/2018/04/automatic-refresh-api-token-with-retrofit-and-okhttp-authenticator.html
+        val httpClientBuilder = OkHttpClient.Builder()
+
+
+        //interceptor to add authorization header with token to every request
+        httpClientBuilder.addInterceptor {
+            it.proceed(it.request().newBuilder().addHeader("Authorization",
+                    "Bearer ${InjectorUtils.provideRepository(ctx).userCred?.accessToken}").build()
+            )
+        }
+
+        //authenticator to grab 401 errors, refresh access token and retry the original request
+        httpClientBuilder.authenticator { _, response ->
+
+            val refreshResult = InjectorUtils.provideRepository(ctx).refreshCozyAccessToken()
+
+            if (refreshResult is com.ludoscity.findmybikes.data.Result.Success)
+                response.request().newBuilder().addHeader("Authorization", "Bearer ${refreshResult.data.accessToken}").build()
+            else
+                null
+        }
+
+        Log.d(TAG, "Building a Cozy API instance")
+        return Retrofit.Builder()
+                //TODO: should auth also happen through this intent service ?
+                .baseUrl(InjectorUtils.provideRepository(ctx).cozyOAuthClient?.stackBaseUrl!!)
+                .client(httpClientBuilder.build())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(CozyCloudAPI::class.java)
     }
 
     private const val sharedPrefFilename = "findmybikes_secure_prefs"
