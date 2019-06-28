@@ -6,7 +6,6 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import com.google.gson.annotations.SerializedName
 import com.jaredrummler.android.device.DeviceName
 import com.ludoscity.findmybikes.BuildConfig
@@ -17,12 +16,14 @@ import java.util.*
  * A data model class to handle analtracking datapoints, extends base with analytics data
  */
 @Entity
-data class AnalTrackingDatapoint(var timestampEpoch: Long = System.currentTimeMillis(),
-                                 var analDesc: String,
-                                 @Ignore val ctx: Context? = null
-
-
-) : BaseTrackingDatapoint(timestampEpoch) {
+data class AnalTrackingDatapoint(
+        @SerializedName("timestamp_epoch")
+        @ColumnInfo(name = "timestamp_epoch")
+        var timestampEpoch: Long = System.currentTimeMillis(),
+        var description: String,
+        @Transient val ctx: Context? = null //Room ignores it because no ColumnInfo
+        //Gson ignores it
+) : BaseTrackingDatapoint(timestampEpoch, "ANALYTICS_") {
     @SerializedName("app_version")
     @ColumnInfo(name = "app_version")
     var appVersion: String =
@@ -42,7 +43,7 @@ data class AnalTrackingDatapoint(var timestampEpoch: Long = System.currentTimeMi
     var batteryLevel: Int?
 
     //Required by Room
-    constructor() : this(analDesc = "usable constructor", ctx = null)
+    constructor() : this(description = "usable constructor for Room", ctx = null)
 
     init {
 

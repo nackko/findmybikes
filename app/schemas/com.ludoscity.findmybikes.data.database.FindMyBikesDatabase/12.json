@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 12,
-    "identityHash": "0e9d8bef07fff877377da257a5695ad8",
+    "identityHash": "ee515b42b9f42bf3635d5463c4b5366a",
     "entities": [
       {
         "tableName": "BikeSystem",
@@ -302,11 +302,11 @@
       },
       {
         "tableName": "GeoTrackingDatapoint",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestampEpoch` INTEGER NOT NULL, `altitude` REAL, `accuracy_horizontal_meters` REAL NOT NULL, `accuracy_vertical_meters` REAL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp_epoch` INTEGER NOT NULL, `altitude` REAL, `accuracy_horizontal_meters` REAL NOT NULL, `accuracy_vertical_meters` REAL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "timestampEpoch",
-            "columnName": "timestampEpoch",
+            "columnName": "timestamp_epoch",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -370,7 +370,7 @@
       },
       {
         "tableName": "AnalTrackingDatapoint",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`app_version` TEXT NOT NULL, `os_version` TEXT NOT NULL, `device_model` TEXT NOT NULL, `language` TEXT NOT NULL, `country` TEXT NOT NULL, `battery_level` INTEGER, `timestampEpoch` INTEGER NOT NULL, `analDesc` TEXT NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`app_version` TEXT NOT NULL, `os_version` TEXT NOT NULL, `device_model` TEXT NOT NULL, `language` TEXT NOT NULL, `country` TEXT NOT NULL, `battery_level` INTEGER, `timestamp_epoch` INTEGER NOT NULL, `description` TEXT NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "appVersion",
@@ -410,13 +410,13 @@
           },
           {
             "fieldPath": "timestampEpoch",
-            "columnName": "timestampEpoch",
+            "columnName": "timestamp_epoch",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "analDesc",
-            "columnName": "analDesc",
+            "fieldPath": "description",
+            "columnName": "description",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -451,7 +451,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"0e9d8bef07fff877377da257a5695ad8\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"ee515b42b9f42bf3635d5463c4b5366a\")"
     ]
   }
 }

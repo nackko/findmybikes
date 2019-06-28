@@ -25,5 +25,5 @@ interface AnalTrackingDao {
     fun getAllList(): LiveData<List<AnalTrackingDatapoint>>
 
     @Query("SELECT * from analtrackingdatapoint WHERE upload_completed='0'")
-    fun getNonUploadedList(): LiveData<List<AnalTrackingDatapoint>>
+    fun getNonUploadedList(): List<AnalTrackingDatapoint>
 }
