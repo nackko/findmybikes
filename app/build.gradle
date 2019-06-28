@@ -24,8 +24,8 @@ android {
         applicationId "com.ludoscity.findmybikes"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 1001
-        versionName "v2019.1 (101)"
+        versionCode 1002
+        versionName "v2019.1 (102)"
 
         vectorDrawables.useSupportLibrary = true
 
@@ -126,6 +126,12 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
 
     implementation 'com.jaredrummler:android-device-names:1.1.7'
+    def work_version = "2.1.0-beta02"
+
+    // Kotlin + coroutines
+    implementation "androidx.work:work-runtime-ktx:$work_version"
+    // optional - Test helpers
+    androidTestImplementation "androidx.work:work-testing:$work_version"
 
     implementation 'androidx.browser:browser:1.0.0'
 
