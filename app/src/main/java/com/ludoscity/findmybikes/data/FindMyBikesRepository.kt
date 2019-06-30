@@ -6,9 +6,14 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.work.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.gson.Gson
+import com.ludoscity.findmybikes.data.database.AnalDatapointPurgeWorker
+import com.ludoscity.findmybikes.data.database.AnalDatapointUploadWorker
+import com.ludoscity.findmybikes.data.database.GeoDatapointPurgeWorker
+import com.ludoscity.findmybikes.data.database.GeoDatapointUploadWorker
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao
 import com.ludoscity.findmybikes.data.database.favorite.*
@@ -32,6 +37,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.URI
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by F8Full on 2019-03-01. This file is part of #findmybikes
@@ -48,9 +54,11 @@ class FindMyBikesRepository private constructor(
         private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
         private val twitterNetworkDataExhaust: TwitterNetworkDataExhaust,
         private val cozyNetworkDataPipe: CozyDataPipe,
-        private val secureSharedPref: SharedPreferences) {
+        private val secureSharedPref: SharedPreferences,
+        private val workManager: WorkManager) {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
+    private val coroutineScopeMain = CoroutineScope(Dispatchers.Main)
 
     private var mInitialized = false
     private val networkCozyDirectoryData: LiveData<Result<CozyFileDescAnswerRoot>> = cozyNetworkDataPipe.createDirectoryResult
@@ -119,122 +127,134 @@ class FindMyBikesRepository private constructor(
             }
         }
 
-        networkCozyDirectoryData.observeForever {
-            it?.let { mkdirAnswerData ->
-
-                if (mkdirAnswerData is Result.Success && mkdirAnswerData.data.data?.id != null) {
-                    secureSharedPref.edit()
-                            .putString(COZY_DIRECTORY_ID_PREF_KEY, mkdirAnswerData.data.data.id)
-                            .apply()
-
-                    Log.i(TAG, "saved Cozy directory Id in secure shared preferences")
-
-                    setCozyDirectoryId(mkdirAnswerData.data.data.id)
-                } else {
-                    if (mkdirAnswerData is Result.Error) {
-                        Log.e(TAG, mkdirAnswerData.exception.message, mkdirAnswerData.exception)
-                    }
-                    setCozyDirectoryId(null)
-                }
-            }
-        }
-
-        networkBikeSystemStatusData.observeForever { newStatusDataFromNetwork ->
-
-            if (newStatusDataFromNetwork == null) {
-                statusFetchErrored.value = true
-            }
-
-            newStatusDataFromNetwork?.let {
-
+        //Some thread trampolining to register an observer forever
+        coroutineScopeMain.launch {
+            networkCozyDirectoryData.observeForever {
                 coroutineScopeIO.launch {
+                    it?.let { mkdirAnswerData ->
 
-                    if (prevBikeSystem.value == null || (prevBikeSystem.value?.id != getCurrentBikeSystem().value?.id))
-                        prevBikeSystem.postValue(getCurrentBikeSystem().value)
+                        if (mkdirAnswerData is Result.Success && mkdirAnswerData.data.data?.id != null) {
+                            secureSharedPref.edit()
+                                    .putString(COZY_DIRECTORY_ID_PREF_KEY, mkdirAnswerData.data.data.id)
+                                    .apply()
 
-                    currentBikeSystemDao.updateLastUpdateTimestamp(it.id, System.currentTimeMillis())
+                            Log.i(TAG, "saved Cozy directory Id in secure shared preferences")
 
-                    Log.d(TAG, "New data from network, begin processing of " +
-                            "${newStatusDataFromNetwork.bikeStationList?.size} stations for saving in Room")
-
-                    val boundsBuilder = LatLngBounds.Builder()
-
-                    newStatusDataFromNetwork.bikeStationList?.forEach {
-
-                        boundsBuilder.include(it.location)
-
-                        it.uid = it.locationHash
-
-                        if (it.extra != null) {
-                            if (it.extra.uid != null) {
-                                it.uid = "${newStatusDataFromNetwork.id}:${it.extra.uid}"
+                            setCozyDirectoryId(mkdirAnswerData.data.data.id)
+                        } else {
+                            if (mkdirAnswerData is Result.Error) {
+                                Log.e(TAG, mkdirAnswerData.exception.message, mkdirAnswerData.exception)
                             }
-
-                            if (it.name == null) {
-                                it.name = it.extra.name ?: "null"
-                            }
+                            setCozyDirectoryId(null)
                         }
                     }
-
-                    Log.d(TAG, "Calculating bounds")
-                    val bounds = boundsBuilder.build()
-
-                    Log.d(TAG, "Saving bounds")
-                    currentBikeSystemDao.updateBounds(it.id,
-                            bounds.northeast.latitude,
-                            bounds.northeast.longitude,
-                            bounds.southwest.latitude,
-                            bounds.southwest.longitude)
-
-                    Log.d(TAG, "Processing done")
-                    //TODO: smarter update algorithm that purges obsolete stations from DB without dropping the whole table
-                    //deleteOldData
-                    //TODO: in relation to previous : do that only when switching from a bike network to an other one
-                    //BUT, even when updating in place, some strategy should be in place to detect 'orphans' and purge them
-                    //especially if they are a user's favourite.
-                    //For now, live with the visual glitch on launch where the UI table empties itself and refills
-                    stationDao.deleteAllBikeStation()
-                    Log.d(TAG, "Old station data deleted")
-                    //Insert new data into database
-                    stationDao.insertBikeStationList(newStatusDataFromNetwork.bikeStationList!!)
-                    Log.d(TAG, "New values inserted with replace strategy")
                 }
             }
         }
-        networkBikeSystemListAnswerRootData.observeForever { newBikeSystemListData ->
 
-            newBikeSystemListData?.let { newBikeSystemListFromNetwork ->
-                Log.d(TAG, "New complete list of bike system available, size: ${newBikeSystemListFromNetwork.networks?.size}")
+        //Some thread trampolining to register an observer forever
+        coroutineScopeMain.launch {
+            networkBikeSystemStatusData.observeForever { newStatusDataFromNetwork ->
 
-                coroutineScopeIO.launch {
-                    Log.d(TAG, "Backgorund thread, turning BikeSystemListanswerRoot into List<BikeSystem>")
+                if (newStatusDataFromNetwork == null) {
+                    statusFetchErrored.value = true
+                }
 
-                    val bikeSystemList = ArrayList<BikeSystem>()
-                    //TODO: behave if networks is null (that should be a test)
-                    newBikeSystemListData.networks!!.forEach {
+                newStatusDataFromNetwork?.let {
 
-                        bikeSystemList.add(BikeSystem(
-                                it.id,
-                                System.currentTimeMillis(),
-                                it.href,
-                                it.name,
-                                Utils.cleanStringForHashtagUse(it.name),
-                                it.location.latitude,
-                                it.location.longitude,
-                                it.location.city,
-                                //TODO: also have country. Bounds will be calculated when network status is available
-                                "to add country here",
-                                null,
-                                null,
-                                null,
-                                null
-                        ))
+                    coroutineScopeIO.launch {
 
+                        if (prevBikeSystem.value == null || (prevBikeSystem.value?.id != getCurrentBikeSystem().value?.id))
+                            prevBikeSystem.postValue(getCurrentBikeSystem().value)
+
+                        currentBikeSystemDao.updateLastUpdateTimestamp(it.id, System.currentTimeMillis())
+
+                        Log.d(TAG, "New data from network, begin processing of " +
+                                "${newStatusDataFromNetwork.bikeStationList?.size} stations for saving in Room")
+
+                        val boundsBuilder = LatLngBounds.Builder()
+
+                        newStatusDataFromNetwork.bikeStationList?.forEach {
+
+                            boundsBuilder.include(it.location)
+
+                            it.uid = it.locationHash
+
+                            if (it.extra != null) {
+                                if (it.extra.uid != null) {
+                                    it.uid = "${newStatusDataFromNetwork.id}:${it.extra.uid}"
+                                }
+
+                                if (it.name == null) {
+                                    it.name = it.extra.name ?: "null"
+                                }
+                            }
+                        }
+
+                        Log.d(TAG, "Calculating bounds")
+                        val bounds = boundsBuilder.build()
+
+                        Log.d(TAG, "Saving bounds")
+                        currentBikeSystemDao.updateBounds(it.id,
+                                bounds.northeast.latitude,
+                                bounds.northeast.longitude,
+                                bounds.southwest.latitude,
+                                bounds.southwest.longitude)
+
+                        Log.d(TAG, "Processing done")
+                        //TODO: smarter update algorithm that purges obsolete stations from DB without dropping the whole table
+                        //deleteOldData
+                        //TODO: in relation to previous : do that only when switching from a bike network to an other one
+                        //BUT, even when updating in place, some strategy should be in place to detect 'orphans' and purge them
+                        //especially if they are a user's favourite.
+                        //For now, live with the visual glitch on launch where the UI table empties itself and refills
+                        stationDao.deleteAllBikeStation()
+                        Log.d(TAG, "Old station data deleted")
+                        //Insert new data into database
+                        stationDao.insertBikeStationList(newStatusDataFromNetwork.bikeStationList!!)
+                        Log.d(TAG, "New values inserted with replace strategy")
                     }
+                }
+            }
+        }
 
-                    //act model observes transient full list and then update repo for current bike system
-                    //(it knows user location)
-                    availableBikeSystemList.postValue(bikeSystemList)
+        //Some thread trampolining to register an observer forever
+        coroutineScopeMain.launch {
+            networkBikeSystemListAnswerRootData.observeForever { newBikeSystemListData ->
+
+                newBikeSystemListData?.let { newBikeSystemListFromNetwork ->
+                    Log.d(TAG, "New complete list of bike system available, size: ${newBikeSystemListFromNetwork.networks?.size}")
+
+                    coroutineScopeIO.launch {
+                        Log.d(TAG, "Backgorund thread, turning BikeSystemListanswerRoot into List<BikeSystem>")
+
+                        val bikeSystemList = ArrayList<BikeSystem>()
+                        //TODO: behave if networks is null (that should be a test)
+                        newBikeSystemListData.networks!!.forEach {
+
+                            bikeSystemList.add(BikeSystem(
+                                    it.id,
+                                    System.currentTimeMillis(),
+                                    it.href,
+                                    it.name,
+                                    Utils.cleanStringForHashtagUse(it.name),
+                                    it.location.latitude,
+                                    it.location.longitude,
+                                    it.location.city,
+                                    //TODO: also have country. Bounds will be calculated when network status is available
+                                    "to add country here",
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                            ))
+
+                        }
+
+                        //act model observes transient full list and then update repo for current bike system
+                        //(it knows user location)
+                        availableBikeSystemList.postValue(bikeSystemList)
+                    }
                 }
             }
         }
@@ -499,11 +519,11 @@ class FindMyBikesRepository private constructor(
 
     private fun setRegisteredOAuthClient(registeredClient: RegisteredOAuthClient?) {
 
-        val analDesc = if (this.cozyOAuthClient == null) "Cozy OAuth client registered" else "Cozy OAuth client unregistered"
+        //val analDesc = if (this.cozyOAuthClient == null) "Cozy OAuth client registered" else "Cozy OAuth client unregistered"
         this.cozyOAuthClient = registeredClient
-        insertInDatabase(AnalTrackingDatapoint(
-                description = analDesc
-        ))
+        //insertInDatabase(AnalTrackingDatapoint(
+        //        description = analDesc
+        //))
     }
 
     private fun setCozyDirectoryId(toSet: String?) {
@@ -529,26 +549,101 @@ class FindMyBikesRepository private constructor(
         get() = userCred != null
 
     //TODO: return a result or expose a live data so that UI updates only when operations really completed
-    fun insertInDatabase(toInsert: GeoTrackingDatapoint) {
+    fun insertInDatabase(toInsert: BaseTrackingDatapoint) {
         coroutineScopeIO.launch {
-            geoTrackingDao.insert(toInsert)
+            when (toInsert) {
+                is AnalTrackingDatapoint -> {
+                    analTrackingDao.insert(toInsert)
+                }
+                is GeoTrackingDatapoint -> {
+                    geoTrackingDao.insert(toInsert)
+                }
+            }
         }
     }
 
-    //TODO: return a result or expose a live data so that UI updates only when operations really completed
-    fun insertInDatabase(toInsert: AnalTrackingDatapoint) {
-        coroutineScopeIO.launch {
-            analTrackingDao.insert(toInsert)
-        }
+    fun purgeAnalTable() {
+        analTrackingDao.deleteUploadedAll()
+    }
+
+    fun purgeGeoTable() {
+        geoTrackingDao.deleteAll()
+    }
+
+    fun getAnalDatapointListReadyForUpload(): List<AnalTrackingDatapoint> {
+        return analTrackingDao.getNonUploadedList()
+    }
+
+    fun getGeoDatapointListReadyForUpload(): List<GeoTrackingDatapoint> {
+        return geoTrackingDao.getNonUploadedList()
     }
 
     private fun setUserCredentials(userCred: UserCredentialTokens?) {
         this.userCred = userCred
 
-        userCred?.let {
+        if (userCred != null) {
+            Log.d(TAG, "Setting up upload and purge tasks")
+            //WorkManager task for periodic db upload
+            //https://medium.com/androiddevelopers/workmanager-periodicity-ff35185ff006
+            val constraints = Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+
+            //TODO: intervals should be different in debug and release builds.
+            // Debug upload and purge more frequently
+            val uploadAnalRequest =
+                    PeriodicWorkRequestBuilder<AnalDatapointUploadWorker>(1, TimeUnit.HOURS)
+                            .setConstraints(constraints)
+                            .setInitialDelay(5, TimeUnit.SECONDS)
+                            .build()
+            val purgeAnalRequest =
+                    PeriodicWorkRequestBuilder<AnalDatapointPurgeWorker>(1, TimeUnit.DAYS)
+                            .setConstraints(constraints)
+                            .setInitialDelay(30, TimeUnit.MINUTES)
+                            .build()
+
+            val uploadGeoRequest =
+                    PeriodicWorkRequestBuilder<GeoDatapointUploadWorker>(15, TimeUnit.MINUTES)
+                            .setConstraints(constraints)
+                            .setInitialDelay(10, TimeUnit.SECONDS)
+                            .build()
+            val purgeGeoRequest =
+                    PeriodicWorkRequestBuilder<GeoDatapointPurgeWorker>(1, TimeUnit.DAYS)
+                            .setConstraints(constraints)
+                            .setInitialDelay(30, TimeUnit.MINUTES)
+                            .build()
+
+            workManager.enqueueUniquePeriodicWork(
+                    UPLOAD_ANAL_PERIODIC_WORKER_UNIQUE_NAME,
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    uploadAnalRequest
+            )
+
+            workManager.enqueueUniquePeriodicWork(
+                    PURGE_ANAL_PERIODIC_WORKER_UNIQUE_NAME,
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    purgeAnalRequest
+            )
+
+            workManager.enqueueUniquePeriodicWork(
+                    UPLOAD_GEO_PERIODIC_WORKER_UNIQUE_NAME,
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    uploadGeoRequest
+            )
+
+            workManager.enqueueUniquePeriodicWork(
+                    PURGE_GEO_PERIODIC_WORKER_UNIQUE_NAME,
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    purgeGeoRequest
+            )
+
             insertInDatabase(AnalTrackingDatapoint(
                     description = "Cozy Cloud file API access configured"
             ))
+        } else {
+            Log.d(TAG, "Cancelling uploading recurring tasks")
+            workManager.cancelUniqueWork(UPLOAD_ANAL_PERIODIC_WORKER_UNIQUE_NAME)
+            workManager.cancelUniqueWork(UPLOAD_GEO_PERIODIC_WORKER_UNIQUE_NAME)
         }
     }
 
@@ -655,6 +750,11 @@ class FindMyBikesRepository private constructor(
 
         private const val COZY_DIRECTORY_ID_PREF_KEY = "fmb_cozy_directory_id"
 
+        private const val UPLOAD_ANAL_PERIODIC_WORKER_UNIQUE_NAME = "findmybikes-upload-anal-worker"
+        private const val PURGE_ANAL_PERIODIC_WORKER_UNIQUE_NAME = "findmybikes-purge-anal-worker"
+        private const val UPLOAD_GEO_PERIODIC_WORKER_UNIQUE_NAME = "findmybikes-upload-geo-worker"
+        private const val PURGE_GEO_PERIODIC_WORKER_UNIQUE_NAME = "findmybikes-purge-geo-worker"
+
         // For Singleton instantiation
         private val LOCK = Any()
         private var sInstance: FindMyBikesRepository? = null
@@ -671,7 +771,8 @@ class FindMyBikesRepository private constructor(
                 bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
                 twitterNetworkDataExhaust: TwitterNetworkDataExhaust,
                 cozyNetworkDataPipe: CozyDataPipe,
-                secureSharedPref: SharedPreferences): FindMyBikesRepository {
+                secureSharedPref: SharedPreferences,
+                workManager: WorkManager): FindMyBikesRepository {
             //Log.d(TAG, "Getting the repository")
             if (sInstance == null) {
                 synchronized(LOCK) {
@@ -685,7 +786,8 @@ class FindMyBikesRepository private constructor(
                             bikeSystemStatusNetworkDataSource,
                             twitterNetworkDataExhaust,
                             cozyNetworkDataPipe,
-                            secureSharedPref)
+                            secureSharedPref,
+                            workManager)
                     Log.d(TAG, "Made new repository")
                 }
             }

@@ -21,9 +21,12 @@ interface GeoTrackingDao {
     @Query("DELETE FROM geotrackingdatapoint")
     fun deleteAll()
 
+    @Query("DELETE FROM geotrackingdatapoint WHERE upload_completed='1'")
+    fun deleteUploadedAll()
+
     @Query("SELECT * from geotrackingdatapoint ORDER BY id ASC")
     fun getAllList(): LiveData<List<GeoTrackingDatapoint>>
 
     @Query("SELECT * from geotrackingdatapoint WHERE upload_completed='0'")
-    fun getNonUploadedList(): LiveData<List<GeoTrackingDatapoint>>
+    fun getNonUploadedList(): List<GeoTrackingDatapoint>
 }

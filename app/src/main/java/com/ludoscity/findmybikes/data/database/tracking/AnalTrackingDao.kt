@@ -21,6 +21,9 @@ interface AnalTrackingDao {
     @Query("DELETE FROM analtrackingdatapoint")
     fun deleteAll()
 
+    @Query("DELETE FROM analtrackingdatapoint WHERE upload_completed='1'")
+    fun deleteUploadedAll()
+
     @Query("SELECT * from analtrackingdatapoint ORDER BY id ASC")
     fun getAllList(): LiveData<List<AnalTrackingDatapoint>>
 

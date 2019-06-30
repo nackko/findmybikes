@@ -3,6 +3,7 @@ package com.ludoscity.findmybikes.utils
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.LiveData
+import androidx.work.WorkManager
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.compat.Place
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
@@ -74,7 +75,8 @@ class InjectorUtils {
                     systemStatusNetworkDataSource,
                     twitterNetworkDataExhaust,
                     cozyNetworkDataPipe,
-                    Utils.getSecureSharedPref(ctx))
+                    Utils.getSecureSharedPref(ctx),
+                    WorkManager.getInstance(ctx))
         }
 
         fun provideMainActivityViewModelFactory(app: Application): FindMyBikesModelFactory {
