@@ -40,6 +40,7 @@ import com.google.android.material.tabs.TabLayout
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.DOCK_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
@@ -156,6 +157,9 @@ class FindMyBikesActivity : AppCompatActivity(),
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(FindMyBikesActivityViewModel::class.java)
 
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onCreate"
+        ))
 
         setContentView(R.layout.activity_findmybikes)
         setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
@@ -585,7 +589,32 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     }
 
+    override fun onPause() {
+        super.onPause()
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onPause"
+        ))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onStop"
+        ))
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onDestroy"
+        ))
+    }
+
     override fun onResume() {
+
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onResume"
+        ))
 
         if (findMyBikesActivityViewModel.hasLocationPermission.value != true) {
             val request = permissionsBuilder(android.Manifest.permission.ACCESS_FINE_LOCATION).build()

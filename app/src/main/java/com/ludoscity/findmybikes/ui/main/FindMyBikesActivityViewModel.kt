@@ -35,6 +35,8 @@ import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityPlace
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
 import com.ludoscity.findmybikes.data.database.station.BikeStation
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
+import com.ludoscity.findmybikes.data.database.tracking.BaseTrackingDatapoint
 import com.ludoscity.findmybikes.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -106,7 +108,12 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         get() = locationPermissionGranted
 
     fun setLocationPermissionGranted(toSet: Boolean) {
+        addDatapoint(AnalTrackingDatapoint(description = "setLocationPermissionGranted: $toSet"))
         locationPermissionGranted.value = toSet
+    }
+
+    fun addDatapoint(toAdd: BaseTrackingDatapoint) {
+        repo.insertInDatabase(toAdd)
     }
 
     private val bikeTableComp = MutableLiveData<BaseBikeStationComparator>()
