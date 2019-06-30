@@ -10,6 +10,7 @@ import com.ludoscity.findmybikes.data.Result
 import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
 import com.ludoscity.findmybikes.data.database.tracking.BaseTrackingDatapoint
 import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDatapoint
+import com.ludoscity.findmybikes.utils.Utils
 import com.nimbusds.oauth2.sdk.*
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic
 import com.nimbusds.oauth2.sdk.auth.Secret
@@ -33,6 +34,7 @@ import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -191,8 +193,12 @@ class CozyDataPipe {
         queryMap["Tags"] = fileTagCollection.joinToString(prefix = "[", postfix = "]")
         if (!metadataId.isBlank())
             queryMap["MetadataID"] = metadataId
-        if (!createdAt.isBlank())
-            queryMap["CreatedAt"] = createdAt
+
+        queryMap["CreatedAt"] = if (createdAt.isNotEmpty()) createdAt else {
+            val createdAtOriginal = SimpleDateFormat(Utils.getSimpleDateFormatPattern(), Locale.US)
+                    .parse(fileContent.timestamp)
+            Utils.toISO8601UTC(createdAtOriginal) ?: ""
+        }
 
         //Calculate MD5 hash required by cozy server
         var base64MD5 = Base64.encodeToString(
@@ -405,7 +411,7 @@ class CozyDataPipe {
          * Get the singleton for this class
          */
         fun getInstance(): CozyDataPipe {
-            Log.d(TAG, "Getting cozy network data pipe")
+            //Log.d(TAG, "Getting cozy network data pipe")
             if (sInstance == null) {
                 synchronized(LOCK) {
                     sInstance = CozyDataPipe()

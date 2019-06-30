@@ -28,6 +28,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -43,9 +44,33 @@ object Utils {
         //see: https://developer.android.com/reference/java/text/SimpleDateFormat
         //https://stackoverflow.com/questions/28373610/android-parse-string-to-date-unknown-pattern-character-x
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            "yyyy-MM-dd'T'HH:mm:ssXXX"
+            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
         else
-            "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+    }
+
+    fun toISO8601UTC(date: Date?): String? {
+        val tz = TimeZone.getTimeZone("UTC")
+        val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.US)
+        df.timeZone = tz
+        return if (date != null) df.format(date) else null
+    }
+
+    fun fromISO8601UTC(dateStr: String): Date? {
+        val tz = TimeZone.getTimeZone("UTC")
+        val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.US)
+        df.timeZone = tz
+
+        var toReturn: Date? = null
+
+        try {
+            toReturn = df.parse(dateStr)
+        } catch (e: Exception) {
+
+        }
+
+        return toReturn
+
     }
 
     fun getCozyCloudAPI(ctx: Context): CozyCloudAPI {
