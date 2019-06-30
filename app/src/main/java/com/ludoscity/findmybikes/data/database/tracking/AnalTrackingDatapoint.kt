@@ -28,10 +28,9 @@ data class AnalTrackingDatapoint(
     @ColumnInfo(name = "app_version")
     var appVersion: String =
             BuildConfig.VERSION_NAME
-    @SerializedName("os_version")
-    @ColumnInfo(name = "os_version")
-    var osVersion: String =
-            "android_api_level ${android.os.Build.VERSION.SDK_INT}"
+    @SerializedName("api_level")
+    @ColumnInfo(name = "api_level")
+    var osVersion: Int = android.os.Build.VERSION.SDK_INT
     @SerializedName("device_model")
     @ColumnInfo(name = "device_model")
     var deviceModel: String =

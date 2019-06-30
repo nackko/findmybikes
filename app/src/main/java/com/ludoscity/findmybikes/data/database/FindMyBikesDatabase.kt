@@ -27,7 +27,7 @@ import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDatapoint
  */
 @Database(entities = [BikeSystem::class, BikeStation::class,
     FavoriteEntityStation::class, FavoriteEntityPlace::class,
-    GeoTrackingDatapoint::class, AnalTrackingDatapoint::class], version = 12)
+    GeoTrackingDatapoint::class, AnalTrackingDatapoint::class], version = 13)
 @TypeConverters(LatLngTypeConverter::class)
 abstract class FindMyBikesDatabase : RoomDatabase() {
     abstract fun bikeSystemDao(): BikeSystemDao
@@ -64,6 +64,7 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
                         .addMigrations(MIGRATION_9_10)
                         .addMigrations(MIGRATION_10_11)
                         .addMigrations(MIGRATION_11_12)
+                        .addMigrations(MIGRATION_12_13)
 
                 if (BuildConfig.DEBUG)
                     builder.setJournalMode(JournalMode.TRUNCATE)
@@ -168,8 +169,15 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
 
         val MIGRATION_11_12: Migration = object : Migration(11, 12) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `GeoTrackingDatapoint` (`timestampEpoch` INTEGER NOT NULL, `altitude` REAL, `accuracy_horizontal_meters` REAL NOT NULL, `accuracy_vertical_meters` REAL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
-                database.execSQL("CREATE TABLE IF NOT EXISTS `AnalTrackingDatapoint` (`app_version` TEXT NOT NULL, `os_version` TEXT NOT NULL, `device_model` TEXT NOT NULL, `language` TEXT NOT NULL, `country` TEXT NOT NULL, `battery_level` INTEGER, `timestampEpoch` INTEGER NOT NULL, `analDesc` TEXT NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `GeoTrackingDatapoint` (`timestamp_epoch` INTEGER NOT NULL, `altitude` REAL, `accuracy_horizontal_meters` REAL NOT NULL, `accuracy_vertical_meters` REAL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `AnalTrackingDatapoint` (`app_version` TEXT NOT NULL, `os_version` TEXT NOT NULL, `device_model` TEXT NOT NULL, `language` TEXT NOT NULL, `country` TEXT NOT NULL, `battery_level` INTEGER, `timestamp_epoch` INTEGER NOT NULL, `description` TEXT NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
+            }
+        }
+
+        val MIGRATION_12_13: Migration = object : Migration(12, 13) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE AnalTrackingDatapoint")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `AnalTrackingDatapoint` (`app_version` TEXT NOT NULL, `api_level` INTEGER NOT NULL, `device_model` TEXT NOT NULL, `language` TEXT NOT NULL, `country` TEXT NOT NULL, `battery_level` INTEGER, `timestamp_epoch` INTEGER NOT NULL, `description` TEXT NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
             }
         }
     }
