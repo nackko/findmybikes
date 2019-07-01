@@ -19,7 +19,7 @@ class CozyDataPipeIntentService : JobIntentService() {
         when (intent.action) {
             ACTION_CREATE_DIRECTORY ->
                 InjectorUtils.provideCozyNetworkDataPipe(applicationContext)
-                        .createDirectory(
+                        .postDirectory(
                                 api,
                                 intent.getStringExtra(EXTRA_CREATE_DIRECTORY_NAME)!!,
                                 intent.getStringArrayListExtra(EXTRA_CREATE_DIRECTORY_TAG_LIST)!!)
@@ -35,6 +35,8 @@ class CozyDataPipeIntentService : JobIntentService() {
 
     override fun onCreate() {
         super.onCreate()
+
+        repo = InjectorUtils.provideRepository(applicationContext)
 
         //see: https://www.coderdump.net/2018/04/automatic-refresh-api-token-with-retrofit-and-okhttp-authenticator.html
         val httpClientBuilder = OkHttpClient.Builder()
