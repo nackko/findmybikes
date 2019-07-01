@@ -2,6 +2,7 @@ package com.ludoscity.findmybikes.utils
 
 import android.app.Application
 import android.content.Context
+import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.work.WorkManager
 import com.google.android.gms.maps.model.LatLng
@@ -88,7 +89,7 @@ class InjectorUtils {
                                                hasLocationPermission: LiveData<Boolean>,
                                                isLookingForBike: LiveData<Boolean>,
                                                isDataOutOfDate: LiveData<Boolean>,
-                                               userLoc: LiveData<LatLng>,
+                                               userLoc: LiveData<Location>,
                                                stationA: LiveData<BikeStation>,
                                                stationB: LiveData<BikeStation>,
                                                finalDestPlace: LiveData<Place>,
@@ -152,7 +153,7 @@ class InjectorUtils {
         }
 
         fun provideTripFragmentViewModelFactory(app: Application,
-                                                userLoc: LiveData<LatLng>,
+                                                userLoc: LiveData<Location>,
                                                 stationALoc: LiveData<LatLng>,
                                                 stationBLoc: LiveData<LatLng>,
                                                 finalDestLoc: LiveData<LatLng>,

@@ -2,6 +2,7 @@ package com.ludoscity.findmybikes.ui.trip
 
 import android.app.Application
 import android.content.Intent
+import android.location.Location
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -10,10 +11,11 @@ import androidx.lifecycle.Observer
 import com.google.android.gms.maps.model.LatLng
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.utils.Utils
+import com.ludoscity.findmybikes.utils.asLatLng
 import java.text.NumberFormat
 
 class TripFragmentViewModel(app: Application,
-                            private val userLoc: LiveData<LatLng>,
+                            private val userLoc: LiveData<Location>,
                             private val stationALatLng: LiveData<LatLng>,
                             private val stationBLatLng: LiveData<LatLng>,
                             private val finalDestination: LiveData<LatLng>,
@@ -28,7 +30,7 @@ class TripFragmentViewModel(app: Application,
 
     private val stationALatLngObserver: Observer<LatLng>
     private val stationBLatLngObserver: Observer<LatLng>
-    private val userLocObserver: Observer<LatLng>
+    private val userLocObserver: Observer<Location>
     private val finalDestObserver: Observer<LatLng>
     private val isFinalDestFavoriteObserver: Observer<Boolean>
 
@@ -77,7 +79,7 @@ class TripFragmentViewModel(app: Application,
 
         userLocObserver = Observer {
 
-            val locToA = Utils.getWalkingDurationBetweenInMinutes(it,
+            val locToA = Utils.getWalkingDurationBetweenInMinutes(it.asLatLng(),
                     stationALatLng.value,
                     getApplication())
 
@@ -88,7 +90,7 @@ class TripFragmentViewModel(app: Application,
 
             recalculateTripTotal(statBToFinal, statAToStatB, locToA)
 
-            locToAGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(it,
+            locToAGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(it.asLatLng(),
                     stationALatLng.value,
                     true)
         }
@@ -97,7 +99,7 @@ class TripFragmentViewModel(app: Application,
 
         stationALatLngObserver = Observer {
 
-            val locToA = Utils.getWalkingDurationBetweenInMinutes(userLoc.value,
+            val locToA = Utils.getWalkingDurationBetweenInMinutes(userLoc.value?.asLatLng(),
                     it,
                     getApplication())
 
@@ -113,7 +115,7 @@ class TripFragmentViewModel(app: Application,
 
             recalculateTripTotal(statBToFinal, statAToStatB, locToA)
 
-            locToAGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(userLoc.value,
+            locToAGoogleMapDirectionsIntent.value = prepareLaunchGoogleMapsForDirections(userLoc.value?.asLatLng(),
                     it,
                     true)
 

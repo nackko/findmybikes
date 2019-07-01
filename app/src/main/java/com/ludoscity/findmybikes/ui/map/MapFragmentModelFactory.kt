@@ -1,10 +1,10 @@
 package com.ludoscity.findmybikes.ui.map
 
 import android.app.Application
+import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.compat.Place
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
@@ -19,7 +19,7 @@ class MapFragmentModelFactory(private val repository: FindMyBikesRepository,
                               private val hasLocationPermission: LiveData<Boolean>,
                               private val isLookingForBike: LiveData<Boolean>,
                               private val isDataOutOfDate: LiveData<Boolean>,
-                              private val userLoc: LiveData<LatLng>,
+                              private val userLoc: LiveData<Location>,
                               private val stationA: LiveData<BikeStation>,
                               private val stationB: LiveData<BikeStation>,
                               private val finalDestPlace: LiveData<Place>,

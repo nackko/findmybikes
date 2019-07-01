@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.location.Location
 import android.os.Build
 import android.text.Html
 import android.text.Spanned
@@ -27,6 +28,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
+import java.text.DateFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -36,9 +38,17 @@ import java.util.*
  *
  * Class with static utilities
  */
+fun Location.asLatLng(): LatLng = LatLng(latitude, longitude)
+
+fun LatLng.asString(): String = "$latitude|$longitude"
 object Utils {
 
     val TAG = Utils::class.java.simpleName
+
+    fun getTracingNotificationTitle(ctx: Context): String {
+        return ctx.getString(R.string.location_updated,
+                DateFormat.getDateTimeInstance().format(Date()))
+    }
 
     fun getSimpleDateFormatPattern(): String {
         //see: https://developer.android.com/reference/java/text/SimpleDateFormat

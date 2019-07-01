@@ -82,4 +82,6 @@
     <string name="onboarding_showcase_itinerary_favorite_text">Pour voir l\'itinéraire et une durée estimée plus précise dans Google Maps, utilisez les boutons \'itinéraire\'. Puis pressez retour.</string>
     <string name="onboarding_showcase_itinerary_title">#dernier truc</string>
     <string name="out_of_bounds">#hors de la zone de service</string>
+    <string name="open_app">ouvrir app</string>
+    <string name="cancel_tracing">annuler</string>
 </resources>

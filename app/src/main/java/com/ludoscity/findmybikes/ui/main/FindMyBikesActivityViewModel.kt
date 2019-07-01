@@ -6,6 +6,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
@@ -18,10 +19,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.libraries.places.compat.Place
@@ -38,6 +35,7 @@ import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
 import com.ludoscity.findmybikes.data.database.tracking.BaseTrackingDatapoint
 import com.ludoscity.findmybikes.utils.Utils
+import com.ludoscity.findmybikes.utils.asLatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -86,7 +84,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val favListClickedFavId = MutableLiveData<String>()
 
     private val lastStationStatusDataUpdateTimestampEpoch = MutableLiveData<Long>()
-    private val userLoc = MutableLiveData<LatLng>()
+
     private val stationA = MutableLiveData<BikeStation>()
     private val statALatLng = MutableLiveData<LatLng>()
     private val stationB = MutableLiveData<BikeStation>()
@@ -123,9 +121,6 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     private val dockTableComp = MutableLiveData<BaseBikeStationComparator>()
     val dockTableComparator: LiveData<BaseBikeStationComparator>
         get() = dockTableComp
-
-    val userLocation: LiveData<LatLng>
-        get() = userLoc
 
     val finalDestinationLatLng: LiveData<LatLng>
         get() = finalDestLatLng
@@ -361,7 +356,6 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
     private val coroutineScopeMAIN = CoroutineScope(Dispatchers.Main)
-    private var locationCallback: LocationCallback
     private var connectivityManagerNetworkCallback: ConnectivityManager.NetworkCallback
     private val repository : FindMyBikesRepository = repo
     val stationData: LiveData<List<BikeStation>>
@@ -415,9 +409,9 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         get() = dockTableProxHeaderToResId
 
 
-    private lateinit var userLocObserverForInitialDownload: Observer<LatLng>
-    private lateinit var userLocObserverForOutOfBounds: Observer<LatLng>
-    private val userLocObserverForComparatorUpdate: Observer<LatLng>
+    private lateinit var userLocObserverForInitialDownload: Observer<Location>
+    private lateinit var userLocObserverForOutOfBounds: Observer<Location>
+    private val userLocObserverForComparatorUpdate: Observer<Location>
 
     private val nowObserver: Observer<Long>
 
@@ -469,6 +463,9 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     fun clearLastStartActivityForResultRequest() {
         lastStartActForResultData.value = null
     }
+
+    val userLocation: LiveData<Location>
+        get() = repo.userLocation
 
     //TODO: have finalDesBikeStation the same way we have finalDestPlace and finalDestFavoriteEntityBase
     fun addFinalDestToFavoriteList() {
@@ -701,7 +698,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         optimalDockStationId.observeForever(optimalDockStationIdObserver)
 
         optimalBikeStationIdObserver = Observer {
-            if (it != null && userLoc.value != null && stationA.value == null) {
+            if (it != null && repo.userLocation.value != null && stationA.value == null) {
                 Log.d(TAG, "Conditions met for A auto select, selecting")
                 setStationAById(it)
             }
@@ -749,17 +746,19 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
         bikeSystemListData.observeForever {
 
             it?.let { newList ->
-                if (userLoc.value != null) {
-                    findNearestBikeSystemAndSetInRepo(newList, userLoc.value, repo)
+                if (repo.userLocation.value != null) {
+                    findNearestBikeSystemAndSetInRepo(
+                            newList, repo.userLocation.value?.asLatLng(), repo
+                    )
                 } else {
                     userLocObserverForInitialDownload = Observer { newUserLoc ->
 
                         newUserLoc?.let {
-                            findNearestBikeSystemAndSetInRepo(newList, newUserLoc, repo)
-                            userLoc.removeObserver(userLocObserverForInitialDownload)
+                            findNearestBikeSystemAndSetInRepo(newList, newUserLoc.asLatLng(), repo)
+                            repo.userLocation.removeObserver(userLocObserverForInitialDownload)
                         }
                     }
-                    userLoc.observeForever(userLocObserverForInitialDownload)
+                    repo.userLocation.observeForever(userLocObserverForInitialDownload)
                 }
             }
         }
@@ -786,7 +785,9 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
             if (newSystem == null) {
                 bikeSystemListData.value?.let { bikeSystemList ->
-                    findNearestBikeSystemAndSetInRepo(bikeSystemList, userLoc.value, repo)
+                    findNearestBikeSystemAndSetInRepo(
+                            bikeSystemList, repo.userLocation.value?.asLatLng(), repo
+                    )
                 }
             } else {
                 val previousSystem = repo.previousBikeSystem.value
@@ -824,16 +825,16 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
                     userLocObserverForOutOfBounds = Observer { newUserLoc ->
                         newUserLoc?.let {
-                            if (!bounds.contains(newUserLoc)) {
+                            if (!bounds.contains(newUserLoc.asLatLng())) {
                                 Log.d(TAG, "out of bound detected")
                                 userLocOutOfBounds = true
-                                userLoc.removeObserver(userLocObserverForOutOfBounds)
+                                repo.userLocation.removeObserver(userLocObserverForOutOfBounds)
                             } else
                                 userLocOutOfBounds = false
                         }
                     }
 
-                    userLoc.observeForever(userLocObserverForOutOfBounds)
+                    repo.userLocation.observeForever(userLocObserverForOutOfBounds)
                 }
             }
         }
@@ -896,44 +897,6 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             }
         }
 
-
-        //user location
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication() as Context)
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-
-                var toEmit: LatLng? = null
-                val userLat = locationResult?.locations?.getOrNull(0)?.latitude
-                val userLng = locationResult?.locations?.getOrNull(0)?.longitude
-
-                if (userLat != null && userLng != null) {
-                    toEmit = LatLng(userLat, userLng)
-                }
-
-                if (SphericalUtil.computeDistanceBetween(userLoc.value ?: LatLng(0.0, 0.0),
-                                toEmit) >= 5.0) {
-                    Log.d(TAG, "Emitting new Location !! : $toEmit")
-                    userLoc.value = toEmit
-                }
-            }
-        }
-
-        val locationRequest = LocationRequest()
-        locationRequest.interval = 2000 //TODO: make that flexible
-        locationRequest.fastestInterval = 5000 //TODO: make that flexible
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-
-        hasLocationPermission.observeForever {
-            if (it == true) {
-                fusedLocationClient.requestLocationUpdates(locationRequest,
-                        locationCallback, null)
-            } else {
-                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-            }
-        }
-
-        //
         isLookingForBike.observeForever {
             if (it == true) {
                 appBarExpanded.value = false
@@ -976,21 +939,21 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 finalDest = stationBLatLng.value
 
             dockTableComp.value = TotalTripTimeComparatorForDockTable(
-                    userLatLng = newUserLoc,
+                    userLatLng = newUserLoc.asLatLng(),
                     stationALatLng = stationALatLng.value,
                     destinationLatLng = finalDest
             )
 
             newUserLoc?.let {
                 bikeTableComp.value = TotalTripTimeComparatorForBikeTable(
-                        userLatLng = newUserLoc,
+                        userLatLng = newUserLoc.asLatLng(),
                         stationBLatLng = stationBLatLng.value,
                         destinationLatLng = finalDest
                 )
             }
         }
 
-        userLoc.observeForever(userLocObserverForComparatorUpdate)
+        repo.userLocation.observeForever(userLocObserverForComparatorUpdate)
 
 
 
@@ -1019,7 +982,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
             }
 
             dockTableComp.value = TotalTripTimeComparatorForDockTable(
-                    userLatLng = userLoc.value,
+                    userLatLng = repo.userLocation.value?.asLatLng(),
                     stationALatLng = it?.location,
                     destinationLatLng = finalDestinationLatLng.value
             )
@@ -1061,13 +1024,13 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 finalDest = it?.location
 
             dockTableComp.value = TotalTripTimeComparatorForDockTable(
-                    userLatLng = userLoc.value,
+                    userLatLng = repo.userLocation.value?.asLatLng(),
                     stationALatLng = stationALatLng.value,
                     destinationLatLng = finalDest
             )
 
             bikeTableComp.value = TotalTripTimeComparatorForBikeTable(
-                    userLatLng = userLoc.value,
+                    userLatLng = repo.userLocation.value?.asLatLng(),
                     stationBLatLng = stationBLatLng.value,
                     destinationLatLng = finalDest
             )
@@ -1075,7 +1038,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
         finalDestinationLatLng.observeForever {
             dockTableComp.value = TotalTripTimeComparatorForDockTable(
-                    userLatLng = userLoc.value,
+                    userLatLng = repo.userLocation.value?.asLatLng(),
                     stationALatLng = stationALatLng.value,
                     destinationLatLng = it
             )
@@ -1161,10 +1124,6 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
 
         (getApplication<Application>().applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
                 .unregisterNetworkCallback(connectivityManagerNetworkCallback)
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication() as Context)
-
-        //TODO: activity lifecycle methods should remove and re request to save battery
-        fusedLocationClient.removeLocationUpdates(locationCallback)
         super.onCleared()
     }
 

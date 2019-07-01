@@ -106,4 +106,7 @@
     <string name="registration_failed" translatable="false">"Registration failed"</string>
     <string name="action_unregistering" translatable="false">Unregister</string>
     <string name="pref_cozy_login_dialog_title" translatable="false">Cozy cloud setup</string>
+    <string name="open_app">open app</string>
+    <string name="cancel_tracing">cancel</string>
+    <string name="location_updated"><![CDATA[<string name=\"location_updated\">Location Updated: %1$s</string>]]></string>
 </resources>

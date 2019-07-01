@@ -3,6 +3,7 @@ package com.ludoscity.findmybikes.data
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.location.Location
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,6 +11,7 @@ import androidx.work.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.gson.Gson
+import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.data.database.AnalDatapointPurgeWorker
 import com.ludoscity.findmybikes.data.database.AnalDatapointUploadWorker
 import com.ludoscity.findmybikes.data.database.GeoDatapointPurgeWorker
@@ -27,6 +29,7 @@ import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetwork
 import com.ludoscity.findmybikes.data.network.cozy.*
 import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
 import com.ludoscity.findmybikes.utils.Utils
+import com.ludoscity.findmybikes.utils.asLatLng
 import com.nimbusds.oauth2.sdk.ResponseType
 import com.nimbusds.oauth2.sdk.Scope
 import com.nimbusds.oauth2.sdk.id.ClientID
@@ -544,6 +547,21 @@ class FindMyBikesRepository private constructor(
     // @see https://developer.android.com/training/articles/keystore
     var userCred: UserCredentialTokens? = null
         private set
+
+    private val _userLoc = MutableLiveData<Location>()
+
+    val userLocation: LiveData<Location>
+        get() = _userLoc
+
+    fun onNewLocation(loc: Location?) {
+        loc?.let {
+            if (SphericalUtil.computeDistanceBetween(_userLoc.value?.asLatLng() ?: LatLng(0.0, 0.0),
+                            loc.asLatLng()) >= 5.0) {
+                Log.d(TAG, "Posting new Location !! : $loc")
+                _userLoc.postValue(loc)
+            }
+        }
+    }
 
     val isAuthorizedOnCozy: Boolean
         get() = userCred != null
