@@ -177,7 +177,9 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
         val MIGRATION_12_13: Migration = object : Migration(12, 13) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP TABLE AnalTrackingDatapoint")
+                database.execSQL("DROP TABLE GeoTrackingDatapoint")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `AnalTrackingDatapoint` (`app_version` TEXT NOT NULL, `api_level` INTEGER NOT NULL, `device_model` TEXT NOT NULL, `language` TEXT NOT NULL, `country` TEXT NOT NULL, `battery_level` INTEGER, `timestamp_epoch` INTEGER NOT NULL, `description` TEXT NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `GeoTrackingDatapoint` (`timestamp_epoch` INTEGER NOT NULL, `altitude` REAL, `accuracy_horizontal_meters` REAL NOT NULL, `accuracy_vertical_meters` REAL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
             }
         }
     }
