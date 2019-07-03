@@ -467,6 +467,9 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     val userLocation: LiveData<Location>
         get() = repo.userLocation
 
+    val isLoggedInCozy: LiveData<Boolean>
+        get() = repo.isLoggedInCozy
+
     //TODO: have finalDesBikeStation the same way we have finalDestPlace and finalDestFavoriteEntityBase
     fun addFinalDestToFavoriteList() {
         coroutineScopeIO.launch {

@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.utils
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -25,10 +26,10 @@ import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.network.cozy.CozyCloudAPI
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel
 import okhttp3.OkHttpClient
+import org.jetbrains.anko.bundleOf
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
-import java.text.DateFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -41,13 +42,44 @@ import java.util.*
 fun Location.asLatLng(): LatLng = LatLng(latitude, longitude)
 
 fun LatLng.asString(): String = "$latitude|$longitude"
+
+/**
+ * Extension function to start foreground services
+ *
+ * @param service   the intent of service to be started
+ */
+fun Context.startServiceForeground(service: Intent) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        startForegroundService(service)
+    } else {
+        startService(service)
+    }
+}
+
+/**
+ * Extension function to create intents
+ *
+ * @param action    the action to be added to the intent
+ * @param flags     the flags to be added to the intent
+ * @param extras    the extras to be added to the intent
+ * @return          the created intent
+ */
+inline fun <reified T : Any> Context.intentFor(action: String? = null,
+                                               flags: Array<Int>? = null,
+                                               vararg extras: Pair<String, Any>): Intent =
+        Intent(this, T::class.java).apply {
+            if (action != null) setAction(action)
+            flags?.forEach { setFlags(it) }
+            putExtras(bundleOf(*extras))
+        }
 object Utils {
 
     val TAG = Utils::class.java.simpleName
 
     fun getTracingNotificationTitle(ctx: Context): String {
-        return ctx.getString(R.string.location_updated,
-                DateFormat.getDateTimeInstance().format(Date()))
+        return "Waiting for next bike trip"
+        //return ctx.getString(R.string.location_updated,
+        //        DateFormat.getDateTimeInstance().format(Date()))
     }
 
     fun getSimpleDateFormatPattern(): String {

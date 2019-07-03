@@ -46,6 +46,7 @@ import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
 import com.ludoscity.findmybikes.data.geolocation.LocationTrackingService
+import com.ludoscity.findmybikes.data.geolocation.TransitionRecognitionService
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.DOCK_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
@@ -54,9 +55,7 @@ import com.ludoscity.findmybikes.ui.sheet.EditableMaterialSheetFab
 import com.ludoscity.findmybikes.ui.sheet.Fab
 import com.ludoscity.findmybikes.ui.sheet.FavoriteListFragment
 import com.ludoscity.findmybikes.ui.webview.WebViewActivity
-import com.ludoscity.findmybikes.utils.InjectorUtils
-import com.ludoscity.findmybikes.utils.Utils
-import com.ludoscity.findmybikes.utils.asLatLng
+import com.ludoscity.findmybikes.utils.*
 import de.psdev.licensesdialog.LicensesDialog
 import java.text.NumberFormat
 
@@ -376,6 +375,16 @@ class FindMyBikesActivity : AppCompatActivity(),
         findMyBikesActivityViewModel.hasLocationPermission.observe(this, Observer {
             it?.let {
                 locService?.requestLocationUpdates()
+            }
+        })
+
+        findMyBikesActivityViewModel.isLoggedInCozy.observe(this, Observer {
+            //starting foreground service to monitor user activity transitions
+            if (it == true) {
+                startServiceForeground(intentFor<TransitionRecognitionService>())
+            } else {
+                //stop service
+                stopService(intentFor<TransitionRecognitionService>())
             }
         })
 

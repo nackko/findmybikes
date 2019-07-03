@@ -548,6 +548,11 @@ class FindMyBikesRepository private constructor(
     var userCred: UserCredentialTokens? = null
         private set
 
+    //TODO: rework how logged in user data is exposed
+    //this is new way of doing things
+    private val _isLoggedInCozy = MutableLiveData<Boolean>()
+    val isLoggedInCozy: LiveData<Boolean> = _isLoggedInCozy
+
     private val _userLoc = MutableLiveData<Location>()
 
     val userLocation: LiveData<Location>
@@ -559,6 +564,18 @@ class FindMyBikesRepository private constructor(
                             loc.asLatLng()) >= 5.0) {
                 Log.d(TAG, "Posting new Location !! : $loc")
                 _userLoc.postValue(loc)
+            }
+
+            if (isTrackingGeolocation.value == true) {
+                //Log.d(TAG, "Tracking -- inserting loc in db : $loc")
+                insertInDatabase(GeoTrackingDatapoint(
+                        latitude = loc.latitude,
+                        longitude = loc.longitude,
+                        altitude = loc.altitude,
+                        accuracyVerticalMeters = 0.0f,//loc.verticalAccuracyMeters, //TODO: requires API LEVEL 26
+                        //TODO: add speed
+                        accuracyHorizontalMeters = loc.accuracy
+                ))
             }
         }
     }
@@ -585,7 +602,7 @@ class FindMyBikesRepository private constructor(
     }
 
     fun purgeGeoTable() {
-        geoTrackingDao.deleteAll()
+        geoTrackingDao.deleteUploadedAll()
     }
 
     fun getAnalDatapointListReadyForUpload(): List<AnalTrackingDatapoint> {
@@ -600,6 +617,7 @@ class FindMyBikesRepository private constructor(
         this.userCred = userCred
 
         if (userCred != null) {
+            _isLoggedInCozy.postValue(true)
             Log.d(TAG, "Setting up upload and purge tasks")
             //WorkManager task for periodic db upload
             //https://medium.com/androiddevelopers/workmanager-periodicity-ff35185ff006
@@ -659,10 +677,22 @@ class FindMyBikesRepository private constructor(
                     description = "Cozy Cloud file API access configured"
             ))
         } else {
+            _isLoggedInCozy.postValue(false)
             Log.d(TAG, "Cancelling uploading recurring tasks")
             workManager.cancelUniqueWork(UPLOAD_ANAL_PERIODIC_WORKER_UNIQUE_NAME)
             workManager.cancelUniqueWork(UPLOAD_GEO_PERIODIC_WORKER_UNIQUE_NAME)
         }
+    }
+
+    private val _isTrackingGeolocation = MutableLiveData<Boolean>()
+    val isTrackingGeolocation: LiveData<Boolean> = _isTrackingGeolocation
+
+    fun startTrackingGeolocation() {
+        _isTrackingGeolocation.postValue(true)
+    }
+
+    fun stopTrackingGeolocaiton() {
+        _isTrackingGeolocation.postValue(false)
     }
 
     @SuppressLint("ApplySharedPref")
