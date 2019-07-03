@@ -5,13 +5,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="22" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="22" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:allowBackup="true"
@@ -33,7 +30,19 @@
         </activity>
         <activity
             android:name=".ui.settings.SettingsActivity"
-            android:parentActivityName=".ui.main.FindMyBikesActivity" />
+            android:launchMode="singleTask"
+            android:parentActivityName=".ui.main.FindMyBikesActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="com.f8full.findmybikes.oauth2redirect"
+                    android:scheme="findmybikes" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.webview.WebViewActivity"
             android:parentActivityName=".ui.main.FindMyBikesActivity" />
@@ -46,6 +55,29 @@
             android:name=".data.network.twitter.PushToTwitterDataIntentService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true" />
+
+        <service
+            android:name=".data.network.cozy.CozyDataPipeIntentService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true" />
+
+        <!-- Foreground services in Q+ require type. -->
+        <service
+            android:name=".data.geolocation.LocationTrackingService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:foregroundServiceType="location" />
+
+        <service
+            android:name=".data.geolocation.TransitionRecognitionIntentService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name=".data.geolocation.TransitionRecognitionService"
+            android:enabled="true"
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.gms.version"

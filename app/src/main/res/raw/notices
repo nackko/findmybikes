@@ -6,11 +6,11 @@
         <copyright>Copyright © 2015 Gordon Wong</copyright>
         <license>MIT License</license>
     </notice>
-    <notice>
-            <name>material-dialogs</name>
-            <url>https://github.com/afollestad/material-dialogs</url>
-            <copyright>Copyright © 2014-2016 Aidan Michael Follestad</copyright>
-            <license>MIT License</license>
+        <notice>
+        <name>material-dialogs</name>
+        <url>https://github.com/afollestad/material-dialogs</url>
+        <copyright>Copyright © 2014-2016 Aidan Michael Follestad</copyright>
+        <license>MIT License</license>
     </notice>
     <notice>
         <name>Retrofit</name>
@@ -31,22 +31,34 @@
         <license>Apache Software License 2.0</license>
     </notice>
     <notice>
+        <name>Nimbus OAuth 2.0 SDK with OpenID Connect extensions</name>
+        <url>https://connect2id.com/products/nimbus-oauth-openid-connect-sdk</url>
+        <copyright>Copyright © 2012-2016, Connect2id Ltd and contributors.</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
         <name>ProgressFloatingActionButton</name>
         <url>https://github.com/DmitryMalkovich/circular-with-floating-action-button</url>
         <copyright>Copyright © 2016 Dmitry Malkovich</copyright>
         <license>Apache Software License 2.0</license>
-     </notice>
-     <notice>
+    </notice>
+    <notice>
+        <name>Android Device Names</name>
+        <url>https://github.com/jaredrummler/AndroidDeviceNames</url>
+        <copyright>Copyright © 2015 Jared Rummler</copyright>
+        <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
         <name>KPermissions</name>
         <url>https://github.com/Fondesa/KPermissions</url>
         <copyright>Copyright © 2018 Fondesa</copyright>
         <license>Apache Software License 2.0</license>
-     </notice>
-     <notice>
-         <name>CircleProgressBar</name>
-         <url>https://github.com/dinuscxj/CircleProgressBar</url>
-         <copyright>Copyright © 2015-2019 dinuscxj</copyright>
-         <license>Apache Software License 2.0</license>
+    </notice>
+    <notice>
+        <name>CircleProgressBar</name>
+        <url>https://github.com/dinuscxj/CircleProgressBar</url>
+        <copyright>Copyright © 2015-2019 dinuscxj</copyright>
+        <license>Apache Software License 2.0</license>
     </notice>
     <notice>
         <name>ShowcaseView</name>
@@ -60,8 +72,6 @@
         <copyright>Copyright © 2016 Amit Shekhar</copyright>
         <license>Apache Software License 2.0</license>
     </notice>
-
-
     <notice>
         <name>Android Support Library (v7, v14)</name>
         <url>http://developer.android.com/tools/support-library/index.html</url>
@@ -86,6 +96,4 @@
         <copyright>Copyright © 2008 Google Inc.</copyright>
         <license>Apache Software License 2.0</license>
     </notice>
-
-
 </notices>

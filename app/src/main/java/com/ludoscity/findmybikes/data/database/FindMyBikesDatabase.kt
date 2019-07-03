@@ -16,18 +16,26 @@ import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStationDao
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.database.station.BikeStationDao
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDao
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
+import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDao
+import com.ludoscity.findmybikes.data.database.tracking.GeoTrackingDatapoint
 
 /**
  * Created by F8Full on 2017-12-17.
  * This file is part of #findmybikes
  */
-@Database(entities = [BikeSystem::class, BikeStation::class, FavoriteEntityStation::class, FavoriteEntityPlace::class], version = 11)
+@Database(entities = [BikeSystem::class, BikeStation::class,
+    FavoriteEntityStation::class, FavoriteEntityPlace::class,
+    GeoTrackingDatapoint::class, AnalTrackingDatapoint::class], version = 13)
 @TypeConverters(LatLngTypeConverter::class)
 abstract class FindMyBikesDatabase : RoomDatabase() {
     abstract fun bikeSystemDao(): BikeSystemDao
     abstract fun bikeStationDao(): BikeStationDao
     abstract fun favoriteEntityStationDao(): FavoriteEntityStationDao
     abstract fun favoriteEntityPlaceDao(): FavoriteEntityPlaceDao
+    abstract fun geoTrackingDao(): GeoTrackingDao
+    abstract fun analTrackingDao(): AnalTrackingDao
 
     companion object {
 
@@ -55,6 +63,8 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
                         .addMigrations(MIGRATION_8_9)
                         .addMigrations(MIGRATION_9_10)
                         .addMigrations(MIGRATION_10_11)
+                        .addMigrations(MIGRATION_11_12)
+                        .addMigrations(MIGRATION_12_13)
 
                 if (BuildConfig.DEBUG)
                     builder.setJournalMode(JournalMode.TRUNCATE)
@@ -154,6 +164,22 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
 
                 database.execSQL("DROP TABLE BikeSystem")
                 database.execSQL("CREATE TABLE IF NOT EXISTS `BikeSystem` (`id` TEXT NOT NULL, `last_status_update` INTEGER NOT NULL, `citybik_dot_es_url` TEXT NOT NULL, `name` TEXT NOT NULL, `hashtaggableName` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `city` TEXT NOT NULL, `country` TEXT NOT NULL, `bbox_north_east_lat` REAL, `bbox_north_east_lng` REAL, `bbox_south_west_lat` REAL, `bbox_south_west_lng` REAL, PRIMARY KEY(`id`))")
+            }
+        }
+
+        val MIGRATION_11_12: Migration = object : Migration(11, 12) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `GeoTrackingDatapoint` (`timestamp_epoch` INTEGER NOT NULL, `altitude` REAL, `accuracy_horizontal_meters` REAL NOT NULL, `accuracy_vertical_meters` REAL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `AnalTrackingDatapoint` (`app_version` TEXT NOT NULL, `os_version` TEXT NOT NULL, `device_model` TEXT NOT NULL, `language` TEXT NOT NULL, `country` TEXT NOT NULL, `battery_level` INTEGER, `timestamp_epoch` INTEGER NOT NULL, `description` TEXT NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
+            }
+        }
+
+        val MIGRATION_12_13: Migration = object : Migration(12, 13) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE AnalTrackingDatapoint")
+                database.execSQL("DROP TABLE GeoTrackingDatapoint")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `AnalTrackingDatapoint` (`app_version` TEXT NOT NULL, `api_level` INTEGER NOT NULL, `device_model` TEXT NOT NULL, `language` TEXT NOT NULL, `country` TEXT NOT NULL, `battery_level` INTEGER, `timestamp_epoch` INTEGER NOT NULL, `description` TEXT NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `GeoTrackingDatapoint` (`timestamp_epoch` INTEGER NOT NULL, `altitude` REAL, `accuracy_horizontal_meters` REAL NOT NULL, `accuracy_vertical_meters` REAL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `upload_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL)")
             }
         }
     }

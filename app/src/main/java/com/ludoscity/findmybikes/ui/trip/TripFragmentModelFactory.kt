@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.ui.trip
 
 import android.app.Application
+import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -12,7 +13,7 @@ import java.text.NumberFormat
  * Factory class to retrieve model for station map
  */
 class TripFragmentModelFactory(private val application: Application,
-                               private val userLoc: LiveData<LatLng>,
+                               private val userLoc: LiveData<Location>,
                                private val stationALatLng: LiveData<LatLng>,
                                private val stationBLatLng: LiveData<LatLng>,
                                private val finalDest: LiveData<LatLng>,

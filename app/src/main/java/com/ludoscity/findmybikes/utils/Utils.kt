@@ -1,24 +1,37 @@
 package com.ludoscity.findmybikes.utils
 
 import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.location.Location
+import android.os.Build
 import android.text.Html
 import android.text.Spanned
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.core.content.res.ResourcesCompat
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.R
+import com.ludoscity.findmybikes.data.network.cozy.CozyCloudAPI
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel
+import okhttp3.OkHttpClient
+import org.jetbrains.anko.bundleOf
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -26,7 +39,129 @@ import java.util.*
  *
  * Class with static utilities
  */
+fun Location.asLatLng(): LatLng = LatLng(latitude, longitude)
+
+fun LatLng.asString(): String = "$latitude|$longitude"
+
+/**
+ * Extension function to start foreground services
+ *
+ * @param service   the intent of service to be started
+ */
+fun Context.startServiceForeground(service: Intent) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        startForegroundService(service)
+    } else {
+        startService(service)
+    }
+}
+
+/**
+ * Extension function to create intents
+ *
+ * @param action    the action to be added to the intent
+ * @param flags     the flags to be added to the intent
+ * @param extras    the extras to be added to the intent
+ * @return          the created intent
+ */
+inline fun <reified T : Any> Context.intentFor(action: String? = null,
+                                               flags: Array<Int>? = null,
+                                               vararg extras: Pair<String, Any>): Intent =
+        Intent(this, T::class.java).apply {
+            if (action != null) setAction(action)
+            flags?.forEach { setFlags(it) }
+            putExtras(bundleOf(*extras))
+        }
 object Utils {
+
+    val TAG = Utils::class.java.simpleName
+
+    fun getTracingNotificationTitle(ctx: Context): String {
+        return "Waiting for next bike trip"
+        //return ctx.getString(R.string.location_updated,
+        //        DateFormat.getDateTimeInstance().format(Date()))
+    }
+
+    fun getSimpleDateFormatPattern(): String {
+        //see: https://developer.android.com/reference/java/text/SimpleDateFormat
+        //https://stackoverflow.com/questions/28373610/android-parse-string-to-date-unknown-pattern-character-x
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+        else
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+    }
+
+    fun toISO8601UTC(date: Date?): String? {
+        val tz = TimeZone.getTimeZone("UTC")
+        val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.US)
+        df.timeZone = tz
+        return if (date != null) df.format(date) else null
+    }
+
+    fun fromISO8601UTC(dateStr: String): Date? {
+        val tz = TimeZone.getTimeZone("UTC")
+        val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.US)
+        df.timeZone = tz
+
+        var toReturn: Date? = null
+
+        try {
+            toReturn = df.parse(dateStr)
+        } catch (e: Exception) {
+
+        }
+
+        return toReturn
+
+    }
+
+    fun getCozyCloudAPI(ctx: Context): CozyCloudAPI {
+        //see: https://www.coderdump.net/2018/04/automatic-refresh-api-token-with-retrofit-and-okhttp-authenticator.html
+        val httpClientBuilder = OkHttpClient.Builder()
+
+
+        //interceptor to add authorization header with token to every request
+        httpClientBuilder.addInterceptor {
+            it.proceed(it.request().newBuilder().addHeader("Authorization",
+                    "Bearer ${InjectorUtils.provideRepository(ctx).userCred?.accessToken}").build()
+            )
+        }
+
+        //authenticator to grab 401 errors, refresh access token and retry the original request
+        httpClientBuilder.authenticator { _, response ->
+
+            val refreshResult = InjectorUtils.provideRepository(ctx).refreshCozyAccessToken()
+
+            if (refreshResult is com.ludoscity.findmybikes.data.Result.Success)
+                response.request().newBuilder().addHeader("Authorization", "Bearer ${refreshResult.data.accessToken}").build()
+            else
+                null
+        }
+
+        Log.d(TAG, "Building a Cozy API instance")
+        return Retrofit.Builder()
+                //TODO: should auth also happen through this intent service ?
+                .baseUrl(InjectorUtils.provideRepository(ctx).cozyOAuthClient?.stackBaseUrl!!)
+                .client(httpClientBuilder.build())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(CozyCloudAPI::class.java)
+    }
+
+    private const val sharedPrefFilename = "findmybikes_secure_prefs"
+
+    fun getSecureSharedPref(ctx: Context): SharedPreferences {
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+
+        return EncryptedSharedPreferences
+                .create(
+                        sharedPrefFilename,
+                        masterKeyAlias,
+                        ctx,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                )
+    }
 
     fun getBikeSpeedPaddedBounds(ctx: Context, boundsToPad: LatLngBounds): LatLngBounds {
         return padLatLngBounds(boundsToPad, getAverageBikingSpeedKmh(ctx).toDouble())
@@ -289,7 +424,7 @@ object Utils {
 
     fun fromHtml(html: String): Spanned {
         val result: Spanned
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             result = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
         } else {
             @Suppress("DEPRECATION")

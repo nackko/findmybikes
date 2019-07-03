@@ -1,6 +1,7 @@
 package com.ludoscity.findmybikes.ui.map
 
 import android.app.Application
+import android.location.Location
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -15,6 +16,7 @@ import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
+import com.ludoscity.findmybikes.utils.asLatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,7 +31,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                            val hasLocationPermission: LiveData<Boolean>,
                            val isLookingForBike: LiveData<Boolean>,
                            val isDataOutOfDate: LiveData<Boolean>,
-                           private val userLoc: LiveData<LatLng>,
+                           private val userLoc: LiveData<Location>,
                            private val stationA: LiveData<BikeStation>,
                            private val stationB: LiveData<BikeStation>,
                            private val finalDestPlace: LiveData<Place>,
@@ -110,7 +112,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
     val isScrollGesturesEnabled: LiveData<Boolean>
         get() = scrollGesturesEnabled
 
-    private val userLocationObserver: Observer<LatLng>
+    private val userLocationObserver: Observer<Location>
     private val stationAObserver: Observer<BikeStation>
     private val stationBObserver: Observer<BikeStation>
     private val isDataOutOfDateObserver: Observer<Boolean>
@@ -171,7 +173,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                     hideMapItems()
 
                     if (userLocation != null) {
-                        latLngBoundbuilder.include(userLocation)
+                        latLngBoundbuilder.include(userLocation.asLatLng())
 
                         val camPaddingResId = when {
                             finalDestPlace.value != null || finalDestFavorite.value != null -> R.dimen.camera_search_infowindow_padding
@@ -186,7 +188,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                     }
                 } else if (userLocation != null) {
                     hideMapItems()
-                    camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(userLocation, 15.0f)
+                    camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(userLocation.asLatLng(), 15.0f)
                 } else {
                     //TODO: no user location
                 }
@@ -269,7 +271,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                     val stationALoc = stationA.value?.location
                     if (stationALoc != null) {
 
-                        latLngBoundbuilder.include(stationALoc).include(it)
+                        latLngBoundbuilder.include(stationALoc).include(it.asLatLng())
                         val camPaddingResId = when {
                             finalDestPlace.value != null || finalDestFavorite.value != null -> R.dimen.camera_search_infowindow_padding
                             stationB.value == null -> R.dimen.camera_fab_padding
@@ -280,7 +282,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                                 getApplication<Application>().resources.getDimension(camPaddingResId).toInt())
                     } else {
                         hideMapItems()
-                        camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(it, 15.0f)
+                        camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(it.asLatLng(), 15.0f)
                     }
                 }
 
@@ -305,7 +307,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                     hideMapItems()
 
                     if (userLocation != null) {
-                        latLngBoundbuilder.include(userLocation)
+                        latLngBoundbuilder.include(userLocation.asLatLng())
 
                         val camPaddingResId = when {
                             finalDestPlace.value != null || finalDestFavorite.value != null -> R.dimen.camera_search_infowindow_padding
@@ -325,7 +327,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
                     hideMapItems()
                     mapPaddingRight.value = 0
                     mapPaddingLeft.value = 0
-                    camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(userLocation, 15.0f)
+                    camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(userLocation.asLatLng(), 15.0f)
                 } else {
                     //TODO: no user location. Go to Montréal ?
                 }
@@ -417,7 +419,7 @@ class MapFragmentViewModel(repo: FindMyBikesRepository, application: Application
 
                             hideMapItems()
                             camAnimTarget.value = CameraUpdateFactory.newLatLngZoom(
-                                    usLoc, 13.0f)
+                                    usLoc.asLatLng(), 13.0f)
                         }
                     }
                 } else {

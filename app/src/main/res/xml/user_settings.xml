@@ -7,9 +7,15 @@
         android:summaryOn="@string/pref_manual_refresh_mode_all"
         android:defaultValue="false" />
 
-    <com.ludoscity.findmybikes.ui.settings.AvailabilitySettingsDialogPreference
+    <com.ludoscity.findmybikes.ui.settings.SettingsMapDialogPreference
 
         android:title="@string/pref_availability_settings_dialog_title"
+
+        />
+
+    <com.ludoscity.findmybikes.ui.settings.SettingsCozyDialogPreference
+
+        android:title="@string/pref_cozy_login_dialog_title"
 
         />
 

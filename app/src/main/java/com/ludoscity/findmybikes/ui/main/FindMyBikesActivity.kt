@@ -2,10 +2,14 @@ package com.ludoscity.findmybikes.ui.main
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -40,6 +44,9 @@ import com.google.android.material.tabs.TabLayout
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
+import com.ludoscity.findmybikes.data.database.tracking.AnalTrackingDatapoint
+import com.ludoscity.findmybikes.data.geolocation.LocationTrackingService
+import com.ludoscity.findmybikes.data.geolocation.TransitionRecognitionService
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.DOCK_STATIONS
 import com.ludoscity.findmybikes.ui.map.StationMapFragment
@@ -48,8 +55,7 @@ import com.ludoscity.findmybikes.ui.sheet.EditableMaterialSheetFab
 import com.ludoscity.findmybikes.ui.sheet.Fab
 import com.ludoscity.findmybikes.ui.sheet.FavoriteListFragment
 import com.ludoscity.findmybikes.ui.webview.WebViewActivity
-import com.ludoscity.findmybikes.utils.InjectorUtils
-import com.ludoscity.findmybikes.utils.Utils
+import com.ludoscity.findmybikes.utils.*
 import de.psdev.licensesdialog.LicensesDialog
 import java.text.NumberFormat
 
@@ -156,6 +162,9 @@ class FindMyBikesActivity : AppCompatActivity(),
         val modelFactory = InjectorUtils.provideMainActivityViewModelFactory(this.application)
         findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(FindMyBikesActivityViewModel::class.java)
 
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onCreate"
+        ))
 
         setContentView(R.layout.activity_findmybikes)
         setSupportActionBar(findViewById<View>(R.id.toolbar_main) as Toolbar)
@@ -363,6 +372,22 @@ class FindMyBikesActivity : AppCompatActivity(),
             }
         })
 
+        findMyBikesActivityViewModel.hasLocationPermission.observe(this, Observer {
+            it?.let {
+                locService?.requestLocationUpdates()
+            }
+        })
+
+        findMyBikesActivityViewModel.isLoggedInCozy.observe(this, Observer {
+            //starting foreground service to monitor user activity transitions
+            if (it == true) {
+                startServiceForeground(intentFor<TransitionRecognitionService>())
+            } else {
+                //stop service
+                stopService(intentFor<TransitionRecognitionService>())
+            }
+        })
+
         stationTableViewPager = findViewById(R.id.station_table_viewpager)
         stationTableViewPager.adapter = StationTablePagerAdapter(supportFragmentManager,
                 InjectorUtils.provideTableFragmentViewModelFactory(application,
@@ -447,7 +472,7 @@ class FindMyBikesActivity : AppCompatActivity(),
 
         directionsLocToAFab.setOnClickListener {
 
-            launchGoogleMapsForDirections(findMyBikesActivityViewModel.userLocation.value,
+            launchGoogleMapsForDirections(findMyBikesActivityViewModel.userLocation.value?.asLatLng(),
                     findMyBikesActivityViewModel.stationALatLng.value,
                     true)
         }
@@ -585,7 +610,71 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     }
 
+    override fun onPause() {
+        super.onPause()
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onPause"
+        ))
+    }
+
+    private var locService: LocationTrackingService? = null
+    // Tracks the isLocServiceBound state of the service.
+    private var isLocServiceBound = false
+    // Monitors the state of the connection to the service.
+    private val serviceConnection = object : ServiceConnection {
+
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val binder = service as LocationTrackingService.LocalBinder
+            locService = binder.service
+            isLocServiceBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {
+            locService = null
+            isLocServiceBound = false
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Bind to the service. If the service is in foreground mode, this signals to the service
+        // that since this activity is in the foreground, the service can exit foreground mode.
+        bindService(Intent(this, LocationTrackingService::class.java), serviceConnection,
+                Context.BIND_AUTO_CREATE)
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onStart"
+        ))
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        if (isLocServiceBound) {
+            // Unbind from the service. This signals to the service that this activity is no longer
+            // in the foreground, and the service can respond by promoting itself to a foreground
+            // service.
+            unbindService(serviceConnection)
+            isLocServiceBound = false
+        }
+
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onStop"
+        ))
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        locService?.removeLocationUpdates()
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onDestroy"
+        ))
+    }
+
     override fun onResume() {
+
+        findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
+                description = "$TAG::onResume"
+        ))
 
         if (findMyBikesActivityViewModel.hasLocationPermission.value != true) {
             val request = permissionsBuilder(android.Manifest.permission.ACCESS_FINE_LOCATION).build()

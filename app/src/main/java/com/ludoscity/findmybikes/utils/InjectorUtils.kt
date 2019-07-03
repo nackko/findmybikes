@@ -2,7 +2,9 @@ package com.ludoscity.findmybikes.utils
 
 import android.app.Application
 import android.content.Context
+import android.location.Location
 import androidx.lifecycle.LiveData
+import androidx.work.WorkManager
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.compat.Place
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
@@ -12,10 +14,12 @@ import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityBase
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetworkDataSource
+import com.ludoscity.findmybikes.data.network.cozy.CozyDataPipe
 import com.ludoscity.findmybikes.data.network.twitter.TwitterNetworkDataExhaust
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.ui.main.FindMyBikesModelFactory
 import com.ludoscity.findmybikes.ui.map.MapFragmentModelFactory
+import com.ludoscity.findmybikes.ui.settings.SettingsActivityModelFactory
 import com.ludoscity.findmybikes.ui.sheet.FavoriteSheetListFragmentModelFactory
 import com.ludoscity.findmybikes.ui.table.TableFragmentModelFactory
 import com.ludoscity.findmybikes.ui.trip.TripFragmentModelFactory
@@ -37,13 +41,21 @@ class InjectorUtils {
         }
 
         fun provideTwitterNetworkDataExhaust(ctx: Context): TwitterNetworkDataExhaust {
+            //see provideBikeSystemStatusNetworkDataSource
             provideRepository(ctx)
             return TwitterNetworkDataExhaust.getInstance()
         }
 
         fun provideBikeSystemListNetworkDataSource(ctx: Context): BikeSystemListNetworkDataSource {
+            //see provideBikeSystemStatusNetworkDataSource
             provideRepository(ctx)
             return BikeSystemListNetworkDataSource.getInstance()
+        }
+
+        fun provideCozyNetworkDataPipe(ctx: Context): CozyDataPipe {
+            //see provideBikeSystemStatusNetworkDataSource
+            provideRepository(ctx)
+            return CozyDataPipe.getInstance()
         }
 
         fun provideRepository(ctx: Context): FindMyBikesRepository {
@@ -52,13 +64,20 @@ class InjectorUtils {
             val systemListNetworkDataSource = BikeSystemListNetworkDataSource.getInstance()
             val systemStatusNetworkDataSource = BikeSystemStatusNetworkDataSource.getInstance()
             val twitterNetworkDataExhaust = TwitterNetworkDataExhaust.getInstance()
+            val cozyNetworkDataPipe = CozyDataPipe.getInstance()
+
             return FindMyBikesRepository.getInstance(database.bikeSystemDao(),
                     database.bikeStationDao(),
                     database.favoriteEntityPlaceDao(),
                     database.favoriteEntityStationDao(),
+                    database.geoTrackingDao(),
+                    database.analTrackingDao(),
                     systemListNetworkDataSource,
                     systemStatusNetworkDataSource,
-                    twitterNetworkDataExhaust)
+                    twitterNetworkDataExhaust,
+                    cozyNetworkDataPipe,
+                    Utils.getSecureSharedPref(ctx),
+                    WorkManager.getInstance(ctx))
         }
 
         fun provideMainActivityViewModelFactory(app: Application): FindMyBikesModelFactory {
@@ -70,7 +89,7 @@ class InjectorUtils {
                                                hasLocationPermission: LiveData<Boolean>,
                                                isLookingForBike: LiveData<Boolean>,
                                                isDataOutOfDate: LiveData<Boolean>,
-                                               userLoc: LiveData<LatLng>,
+                                               userLoc: LiveData<Location>,
                                                stationA: LiveData<BikeStation>,
                                                stationB: LiveData<BikeStation>,
                                                finalDestPlace: LiveData<Place>,
@@ -119,6 +138,12 @@ class InjectorUtils {
                     numFormat)
         }
 
+        fun provideSettingsActivityViewModelFactory(app: Application): SettingsActivityModelFactory {
+            val repository = provideRepository(app.applicationContext)
+
+            return SettingsActivityModelFactory(repository, app)
+        }
+
         fun provideFavoriteSheetListFragmentViewModelFactory(app: Application,
                                                              isSheetEditInProgress: LiveData<Boolean>,
                                                              curBikeSystemDataSource: LiveData<BikeSystem>): FavoriteSheetListFragmentModelFactory {
@@ -128,7 +153,7 @@ class InjectorUtils {
         }
 
         fun provideTripFragmentViewModelFactory(app: Application,
-                                                userLoc: LiveData<LatLng>,
+                                                userLoc: LiveData<Location>,
                                                 stationALoc: LiveData<LatLng>,
                                                 stationBLoc: LiveData<LatLng>,
                                                 finalDestLoc: LiveData<LatLng>,
