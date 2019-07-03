@@ -36,8 +36,6 @@ class CozyDataPipeIntentService : JobIntentService() {
     override fun onCreate() {
         super.onCreate()
 
-        repo = InjectorUtils.provideRepository(applicationContext)
-
         //see: https://www.coderdump.net/2018/04/automatic-refresh-api-token-with-retrofit-and-okhttp-authenticator.html
         val httpClientBuilder = OkHttpClient.Builder()
 
