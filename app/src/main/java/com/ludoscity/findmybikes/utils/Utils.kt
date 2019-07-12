@@ -7,11 +7,14 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Location
 import android.os.Build
+import android.text.Editable
 import android.text.Html
 import android.text.Spanned
+import android.text.TextWatcher
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
+import android.widget.EditText
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.core.content.res.ResourcesCompat
@@ -42,6 +45,21 @@ import java.util.*
 fun Location.asLatLng(): LatLng = LatLng(latitude, longitude)
 
 fun LatLng.asString(): String = "$latitude|$longitude"
+
+/**
+ * Extension function to simplify setting an afterTextChanged action to EditText components.
+ */
+fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
+    this.addTextChangedListener(object : TextWatcher {
+        override fun afterTextChanged(editable: Editable?) {
+            afterTextChanged.invoke(editable.toString())
+        }
+
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+
+        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+    })
+}
 
 /**
  * Extension function to start foreground services

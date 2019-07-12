@@ -24,6 +24,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.ludoscity.findmybikes.R
 import com.ludoscity.findmybikes.data.Result
 import com.ludoscity.findmybikes.utils.InjectorUtils
+import com.ludoscity.findmybikes.utils.afterTextChanged
 
 /**
  * Created by F8Full on 2016-04-10. This file is part of #findmybikes
@@ -75,36 +76,42 @@ class SettingsCozyDialogPreference(context: Context, attrs: AttributeSet) : Dial
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
-                        model?.registerOAuthClient(
-                                (username as EditText).text.toString())
+                        model?.registerOAuthClient()
                 }
                 false
             }
-
-            registering?.setOnClickListener {
-                loading?.visibility = View.VISIBLE
-                if (model?.isRegistered() != true) {
-                    model?.registerOAuthClient((username as EditText).text.toString())
-
-                } else
-                    model?.unregisterAuthclient()
-            }
-
-            authenticate?.setOnClickListener {
-                if (model?.isRegistered() == true)
-                    model?.authenticate()
-            }
-
-            cozyTest?.setOnClickListener {
-                //if (model?.isAuthorized() == true){
-                loading?.visibility = View.VISIBLE
-                model?.testCozyCloud()
-                //}
+            afterTextChanged {
+                model?.urlChanged(username?.text.toString())
             }
         }
 
         model = ViewModelProviders.of(context as SettingsActivity, InjectorUtils.provideSettingsActivityViewModelFactory((context as SettingsActivity).application))
                 .get(SettingsActivityViewModel::class.java)
+
+        model?.liveCozyUrl?.observe(context as SettingsActivity, Observer {
+            cozyUrl?.text = it
+        })
+
+        registering?.setOnClickListener {
+            loading?.visibility = View.VISIBLE
+            if (model?.isRegistered() != true) {
+                model?.registerOAuthClient()
+
+            } else
+                model?.unregisterAuthclient()
+        }
+
+        authenticate?.setOnClickListener {
+            if (model?.isRegistered() == true)
+                model?.authenticate()
+        }
+
+        cozyTest?.setOnClickListener {
+            //if (model?.isAuthorized() == true){
+            loading?.visibility = View.VISIBLE
+            model?.testCozyCloud()
+            //}
+        }
 
         model?.clientRegistrationResult?.observe(context as SettingsActivity, Observer {
             if (it == null) {

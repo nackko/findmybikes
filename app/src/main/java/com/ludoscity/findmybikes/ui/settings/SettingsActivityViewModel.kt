@@ -47,6 +47,9 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
     private val _cozyTestResult = MutableLiveData<Result<Boolean>>()
     val cozyTestResult: LiveData<Result<Boolean>> = _cozyTestResult
 
+    private val _liveCozyUrl = MutableLiveData<String>()
+    val liveCozyUrl: LiveData<String> = _liveCozyUrl
+
     init {
 
         //TODO: could being in a background thread lead to issues ?
@@ -91,32 +94,32 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
         CozyDataPipeIntentService.enqueueWork(ctx, intentToFetch)
     }
 
-    fun registerOAuthClient(cozyUrlUserInput: String) {
+    fun registerOAuthClient() {
 
-        val finalUrl = getCozyUrl(cozyUrlUserInput)
+        _liveCozyUrl.value?.let { finalUrl ->
+            coroutineScopeIO.launch {
+                val result = repo.registerCozyOAuthClient(finalUrl)
 
-        coroutineScopeIO.launch {
-            val result = repo.registerCozyOAuthClient(finalUrl)
-
-            if (result is Result.Success) {
-                _OAuthClientRegistrationResult.postValue(
-                        OAuthClientRegistrationResult(
-                                success =
-                                LoggedOAuthClientView(
-                                        stackBaseUrl = result.data.stackBaseUrl,
-                                        registrationAccessToken = result.data.registrationAccessToken,
-                                        clientId = result.data.clientId,
-                                        clientSecret = result.data.clientSecret
-                                )
-                        )
-                )
-            } else {
-                _OAuthClientRegistrationResult.postValue(
-                        OAuthClientRegistrationResult(
-                                error =
-                                R.string.registration_failed
-                        )
-                )
+                if (result is Result.Success) {
+                    _OAuthClientRegistrationResult.postValue(
+                            OAuthClientRegistrationResult(
+                                    success =
+                                    LoggedOAuthClientView(
+                                            stackBaseUrl = result.data.stackBaseUrl,
+                                            registrationAccessToken = result.data.registrationAccessToken,
+                                            clientId = result.data.clientId,
+                                            clientSecret = result.data.clientSecret
+                                    )
+                            )
+                    )
+                } else {
+                    _OAuthClientRegistrationResult.postValue(
+                            OAuthClientRegistrationResult(
+                                    error =
+                                    R.string.registration_failed
+                            )
+                    )
+                }
             }
         }
     }
@@ -251,5 +254,9 @@ class SettingsActivityViewModel(private val repo: FindMyBikesRepository, applica
                 }
             }
         }
+    }
+
+    fun urlChanged(newInput: String) {
+        _liveCozyUrl.value = getCozyUrl(newInput)
     }
 }
