@@ -47,6 +47,7 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                                         description = "TransitionRecognitionIntentService--STILL-ACTIVITY_TRANSITION_ENTER",
                                         ctx = applicationContext
                                 ))
+                                repo.stopTrackingGeolocation()
                             } else {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_EXIT")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
@@ -64,6 +65,7 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                                         description = "TransitionRecognitionIntentService--WALKING-ACTIVITY_TRANSITION_ENTER",
                                         ctx = applicationContext
                                 ))
+                                repo.stopTrackingGeolocation()
                             } else {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_EXIT")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
@@ -81,6 +83,7 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                                         description = "TransitionRecognitionIntentService--RUNNING-ACTIVITY_TRANSITION_ENTER",
                                         ctx = applicationContext
                                 ))
+                                repo.stopTrackingGeolocation()
                             } else {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_EXIT")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
@@ -94,20 +97,19 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                             Log.d("TransitionsIntentServic", "ON_BICYCLE")
                             if (it.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
-                                repo.startTrackingGeolocation()
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_ENTER-startTrackingGeolocation",
+                                        description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_ENTER",
                                         ctx = applicationContext
                                 ))
+                                repo.startTrackingGeolocation()
                             } else {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_EXIT")
-                                repo.stopTrackingGeolocaiton()
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_EXIT-stopTrackingGeolocation",
+                                        description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_EXIT",
                                         ctx = applicationContext
                                 ))
+                                repo.stopTrackingGeolocation()
                             }
-
                         }
                     }
                 }

@@ -688,10 +688,16 @@ class FindMyBikesRepository private constructor(
     val isTrackingGeolocation: LiveData<Boolean> = _isTrackingGeolocation
 
     fun startTrackingGeolocation() {
+        insertInDatabase(AnalTrackingDatapoint(
+                description = "$TAG::startTrackingGeolocation"
+        ))
         _isTrackingGeolocation.postValue(true)
     }
 
-    fun stopTrackingGeolocaiton() {
+    fun stopTrackingGeolocation() {
+        insertInDatabase(AnalTrackingDatapoint(
+                description = "$TAG::stopTrackingGeolocation"
+        ))
         _isTrackingGeolocation.postValue(false)
     }
 
