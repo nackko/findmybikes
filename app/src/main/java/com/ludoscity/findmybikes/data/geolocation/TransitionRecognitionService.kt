@@ -121,7 +121,8 @@ class TransitionRecognitionService : Service() {
                     notifManager.notify(FOREGROUND_SERVICE_NOTIFICATION_ID, notifBuilder.build())
 
                     repo.insertInDatabase(AnalTrackingDatapoint(
-                            description = "TransitionRecognitionService--requestLocationUpdates-success"
+                            description = "TransitionRecognitionService--requestLocationUpdates-success",
+                            ctx = applicationContext
                     ))
                 } catch (unlikely: SecurityException) {
                     //Utils.setRequestingLocationUpdates(this, false)
@@ -138,7 +139,8 @@ class TransitionRecognitionService : Service() {
                     notifBuilder.setContentTitle("Waiting for next bike trip")
                     notifManager.notify(FOREGROUND_SERVICE_NOTIFICATION_ID, notifBuilder.build())
                     repo.insertInDatabase(AnalTrackingDatapoint(
-                            description = "TransitionRecognitionService--removeLocationUpdates-success"
+                            description = "TransitionRecognitionService--removeLocationUpdates-success",
+                            ctx = applicationContext
                     ))
                 } catch (unlikely: SecurityException) {
                     //Utils.setRequestingLocationUpdates(this, true)
@@ -273,13 +275,15 @@ class TransitionRecognitionService : Service() {
         task.addOnSuccessListener {
             isTrackingActivityTransition = true
             repo.insertInDatabase(AnalTrackingDatapoint(
-                    description = "TransitionRecognitionService--startTransitionUpdate-success"
+                    description = "TransitionRecognitionService--startTransitionUpdate-success",
+                    ctx = applicationContext
             ))
         }
 
         task.addOnFailureListener { e ->
             repo.insertInDatabase(AnalTrackingDatapoint(
-                    description = "TransitionRecognitionService--startTransitionUpdate-failure"
+                    description = "TransitionRecognitionService--startTransitionUpdate-failure",
+                    ctx = applicationContext
             ))
             //stopSelf()
         }
@@ -296,13 +300,15 @@ class TransitionRecognitionService : Service() {
             pendingIntent.cancel()
             isTrackingActivityTransition = false
             repo.insertInDatabase(AnalTrackingDatapoint(
-                    description = "TransitionRecognitionService--removeActivityTransitionUpdates-success"
+                    description = "TransitionRecognitionService--removeActivityTransitionUpdates-success",
+                    ctx = applicationContext
             ))
         }
 
         task.addOnFailureListener { e ->
             repo.insertInDatabase(AnalTrackingDatapoint(
-                    description = "TransitionRecognitionService--removeActivityTransitionUpdates-failure"
+                    description = "TransitionRecognitionService--removeActivityTransitionUpdates-failure",
+                    ctx = applicationContext
             ))
         }
     }

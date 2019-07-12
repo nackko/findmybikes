@@ -163,7 +163,8 @@ class FindMyBikesActivity : AppCompatActivity(),
         findMyBikesActivityViewModel = ViewModelProviders.of(this, modelFactory).get(FindMyBikesActivityViewModel::class.java)
 
         findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
-                description = "$TAG::onCreate"
+                description = "$TAG::onCreate",
+                ctx = applicationContext
         ))
 
         setContentView(R.layout.activity_findmybikes)
@@ -613,7 +614,8 @@ class FindMyBikesActivity : AppCompatActivity(),
     override fun onPause() {
         super.onPause()
         findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
-                description = "$TAG::onPause"
+                description = "$TAG::onPause",
+                ctx = applicationContext
         ))
     }
 
@@ -642,7 +644,8 @@ class FindMyBikesActivity : AppCompatActivity(),
         bindService(Intent(this, LocationTrackingService::class.java), serviceConnection,
                 Context.BIND_AUTO_CREATE)
         findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
-                description = "$TAG::onStart"
+                description = "$TAG::onStart",
+                ctx = applicationContext
         ))
     }
 
@@ -658,7 +661,8 @@ class FindMyBikesActivity : AppCompatActivity(),
         }
 
         findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
-                description = "$TAG::onStop"
+                description = "$TAG::onStop",
+                ctx = applicationContext
         ))
     }
 
@@ -666,14 +670,16 @@ class FindMyBikesActivity : AppCompatActivity(),
         super.onDestroy()
         locService?.removeLocationUpdates()
         findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
-                description = "$TAG::onDestroy"
+                description = "$TAG::onDestroy",
+                ctx = applicationContext
         ))
     }
 
     override fun onResume() {
 
         findMyBikesActivityViewModel.addDatapoint(AnalTrackingDatapoint(
-                description = "$TAG::onResume"
+                description = "$TAG::onResume",
+                ctx = applicationContext
         ))
 
         if (findMyBikesActivityViewModel.hasLocationPermission.value != true) {

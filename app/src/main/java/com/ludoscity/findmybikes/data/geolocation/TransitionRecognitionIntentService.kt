@@ -44,12 +44,14 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                             if (it.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "TransitionRecognitionIntentService--STILL-ACTIVITY_TRANSITION_ENTER"
+                                        description = "TransitionRecognitionIntentService--STILL-ACTIVITY_TRANSITION_ENTER",
+                                        ctx = applicationContext
                                 ))
                             } else {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_EXIT")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "TransitionRecognitionIntentService--STILL-ACTIVITY_TRANSITION_EXIT"
+                                        description = "TransitionRecognitionIntentService--STILL-ACTIVITY_TRANSITION_EXIT",
+                                        ctx = applicationContext
                                 ))
                             }
 
@@ -59,12 +61,14 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                             if (it.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "TransitionRecognitionIntentService--WALKING-ACTIVITY_TRANSITION_ENTER"
+                                        description = "TransitionRecognitionIntentService--WALKING-ACTIVITY_TRANSITION_ENTER",
+                                        ctx = applicationContext
                                 ))
                             } else {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_EXIT")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "TransitionRecognitionIntentService--WALKING-ACTIVITY_TRANSITION_EXIT"
+                                        description = "TransitionRecognitionIntentService--WALKING-ACTIVITY_TRANSITION_EXIT",
+                                        ctx = applicationContext
                                 ))
                             }
 
@@ -74,12 +78,14 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                             if (it.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "TransitionRecognitionIntentService--RUNNING-ACTIVITY_TRANSITION_ENTER"
+                                        description = "TransitionRecognitionIntentService--RUNNING-ACTIVITY_TRANSITION_ENTER",
+                                        ctx = applicationContext
                                 ))
                             } else {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_EXIT")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "TransitionRecognitionIntentService--WALKING-ACTIVITY_TRANSITION_EXIT"
+                                        description = "TransitionRecognitionIntentService--WALKING-ACTIVITY_TRANSITION_EXIT",
+                                        ctx = applicationContext
                                 ))
                             }
 
@@ -90,13 +96,15 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
                                 repo.startTrackingGeolocation()
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_ENTER-startTrackingGeolocation"
+                                        description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_ENTER-startTrackingGeolocation",
+                                        ctx = applicationContext
                                 ))
                             } else {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_EXIT")
                                 repo.stopTrackingGeolocaiton()
                                 repo.insertInDatabase(AnalTrackingDatapoint(
-                                        description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_EXIT-stopTrackingGeolocation"
+                                        description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_EXIT-stopTrackingGeolocation",
+                                        ctx = applicationContext
                                 ))
                             }
 
