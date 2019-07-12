@@ -61,27 +61,32 @@ class CozyDataPipe {
 
         cozySpecialSauce.accept = "application/json"
 
-        val regHTTPResponse = cozySpecialSauce.send()
+        try {
+            val regHTTPResponse = cozySpecialSauce.send()
 
 // Parse and check response
-        val registrationResponse = OIDCClientRegistrationResponseParser.parse(regHTTPResponse)
+            val registrationResponse = OIDCClientRegistrationResponseParser.parse(regHTTPResponse)
 
-        if (registrationResponse is ClientRegistrationErrorResponse) {
-            val error = registrationResponse
-                    .errorObject
-            return Result.Error(IOException("Error registering client : ${error.toJSONObject()}"))
+            if (registrationResponse is ClientRegistrationErrorResponse) {
+                val error = registrationResponse
+                        .errorObject
+                return Result.Error(IOException("Error registering client : ${error.toJSONObject()}"))
+            }
+
+            val clientInformation = (registrationResponse as OIDCClientInformationResponse).oidcClientInformation
+
+            return Result.Success(
+                    RegisteredOAuthClient(
+                            stackBaseUrl = cozyBaseUrlString,
+                            clientId = clientInformation.id.value,
+                            clientSecret = clientInformation.secret.value,
+                            registrationAccessToken = clientInformation.registrationAccessToken.value
+                    )
+            )
+        } catch (e: IOException) {
+            return Result.Error(e)
         }
 
-        val clientInformation = (registrationResponse as OIDCClientInformationResponse).oidcClientInformation
-
-        return Result.Success(
-                RegisteredOAuthClient(
-                        stackBaseUrl = cozyBaseUrlString,
-                        clientId = clientInformation.id.value,
-                        clientSecret = clientInformation.secret.value,
-                        registrationAccessToken = clientInformation.registrationAccessToken.value
-                )
-        )
     }
 
     fun unregister(cozyBaseUrlString: String,

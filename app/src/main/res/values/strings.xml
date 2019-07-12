@@ -97,7 +97,7 @@
     <string name="onboarding_showcase_itinerary_title">#last tip</string>
     <string name="onboarding_showcase_itinerary_favorite_text">To view your itinerary and a more precise time estimate in Google Maps, use the \'directions\' buttons. Press back when done.</string>
 
-    <string name="prompt_cozy" translatable="false">.mycozy.cloud</string>
+    <string name="prompt_cozy" translatable="false">username or custom domain</string>
     <string name="client_info_default" translatable="false">Tap \'Register\'</string>
     <string name="action_registering" translatable="false">Register</string>
     <string name="tap_authenticate" translatable="false">Tap \'Authenticate\'</string>
