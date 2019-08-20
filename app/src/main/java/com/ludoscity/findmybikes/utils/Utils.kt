@@ -26,6 +26,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.R
+import com.ludoscity.findmybikes.data.Result
 import com.ludoscity.findmybikes.data.network.cozy.CozyCloudAPI
 import com.ludoscity.findmybikes.ui.table.TableFragmentViewModel
 import okhttp3.OkHttpClient
@@ -134,23 +135,39 @@ object Utils {
     }
 
     fun getCozyCloudAPI(ctx: Context): CozyCloudAPI {
+        //TODO: code duplicated in CozyPipeDataIntentService::onCreate
         //see: https://www.coderdump.net/2018/04/automatic-refresh-api-token-with-retrofit-and-okhttp-authenticator.html
         val httpClientBuilder = OkHttpClient.Builder()
 
 
         //interceptor to add authorization header with token to every request
         httpClientBuilder.addInterceptor {
-            it.proceed(it.request().newBuilder().addHeader("Authorization",
+            var response = it.proceed(it.request().newBuilder().addHeader("Authorization",
                     "Bearer ${InjectorUtils.provideRepository(ctx).userCred?.accessToken}").build()
             )
+
+            //When access token is expired, cozy replies with code 400 -- Bad request
+            if (response.code() == 400) {
+                if (response.body()?.string()?.contains("Expired token") != null) {
+                    Log.i(TAG, "Captured 400 error Expired token - initiating token refresh")
+                    val refreshResult = InjectorUtils.provideRepository(ctx).refreshCozyAccessToken()
+
+                    //We're clear to retry the original request from it.request
+                    if (refreshResult is Result.Success)
+                        response = it.proceed(it.request().newBuilder().addHeader("Authorization", "Bearer ${refreshResult.data.accessToken}").build())
+                }
+            }
+
+            response
         }
 
         //authenticator to grab 401 errors, refresh access token and retry the original request
         httpClientBuilder.authenticator { _, response ->
 
+            Log.i(TAG, "Captured 401 error - initiating token refresh")
             val refreshResult = InjectorUtils.provideRepository(ctx).refreshCozyAccessToken()
 
-            if (refreshResult is com.ludoscity.findmybikes.data.Result.Success)
+            if (refreshResult is Result.Success)
                 response.request().newBuilder().addHeader("Authorization", "Bearer ${refreshResult.data.accessToken}").build()
             else
                 null
