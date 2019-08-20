@@ -148,7 +148,7 @@ object Utils {
 
             //When access token is expired, cozy replies with code 400 -- Bad request
             if (response.code() == 400) {
-                if (response.body()?.string()?.contains("Expired token") != null) {
+                if (response.body()?.string()?.equals("Expired token") == true) {
                     Log.i(TAG, "Captured 400 error Expired token - initiating token refresh")
                     val refreshResult = InjectorUtils.provideRepository(ctx).refreshCozyAccessToken()
 
