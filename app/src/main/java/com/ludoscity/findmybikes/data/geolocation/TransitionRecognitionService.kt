@@ -77,9 +77,10 @@ class TransitionRecognitionService : Service() {
                     .setContentText(text)
                     .setContentTitle(Utils.getTracingNotificationTitle(this))
                     .setOngoing(true)
-                    .setPriority(Notification.PRIORITY_HIGH)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setTicker(text)
+                    .setOnlyAlertOnce(true)
                     .setWhen(System.currentTimeMillis())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 notifBuilder.setChannelId(CHANNEL_ID)
