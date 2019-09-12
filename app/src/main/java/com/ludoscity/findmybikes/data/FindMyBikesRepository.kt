@@ -795,11 +795,12 @@ class FindMyBikesRepository private constructor(
     companion object {
         private val TAG = FindMyBikesRepository::class.java.simpleName
 
+        const val OAUTH_ACCESS_TOKEN_PREF_KEY = "fmb_oauth_access_token"
+
         private const val OAUTH_STACK_BASEURL_PREF_KEY = "fmb_oauth_stack_baseurl"
         private const val OAUTH_CLIENT_ID_PREF_KEY = "fmb_oauth_client_id"
         private const val OAUTH_CLIENT_SECRET_PREF_KEY = "fmb_oauth_client_secret"
         private const val OAUTH_CLIENT_REG_TOKEN_PREF_KEY = "fmb_oauth_client_registration_token"
-        private const val OAUTH_ACCESS_TOKEN_PREF_KEY = "fmb_oauth_access_token"
         private const val OAUTH_REFRESH_TOKEN_PREF_KEY = "fmb_oauth_refresh_token"
 
         private const val COZY_DIRECTORY_ID_PREF_KEY = "fmb_cozy_directory_id"
