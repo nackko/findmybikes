@@ -206,13 +206,13 @@ class TransitionRecognitionService : Service() {
         pendingIntent = PendingIntent.getService(applicationContext,
                 999, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
+        notifManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
         // Android O requires a Notification Channel.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.app_name)
             // Create the channel for the notification
             val mChannel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT)
-
-            notifManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             // Set the Notification Channel for the Notification Manager.
             notifManager.createNotificationChannel(mChannel)
         }
