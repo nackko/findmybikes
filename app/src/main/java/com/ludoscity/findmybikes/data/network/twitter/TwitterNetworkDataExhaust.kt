@@ -170,7 +170,7 @@ class TwitterNetworkDataExhaust private constructor() {
 
                 } catch (e: TwitterException) {
                     val errorMessage = e.errorMessage
-                    if (errorMessage.contains("Status is a duplicate.")) {
+                    if (errorMessage != null && errorMessage.contains("Status is a duplicate.")) {
                         ++deduplicateCounter
 
                         deduplicate = "deduplicate$deduplicateCounter"
