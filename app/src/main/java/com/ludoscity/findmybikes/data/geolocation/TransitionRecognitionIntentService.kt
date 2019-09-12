@@ -37,11 +37,11 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
 
             if (ActivityTransitionResult.hasResult(intent)) {
                 val result = ActivityTransitionResult.extractResult(intent)
-                result?.transitionEvents?.forEach {
-                    when (it.activityType) {
+                for (event in result?.transitionEvents ?: emptyList()) {
+                    when (event.activityType) {
                         DetectedActivity.STILL -> {
                             Log.d("TransitionsIntentServic", "STILL")
-                            if (it.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
+                            if (event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
                                         description = "TransitionRecognitionIntentService--STILL-ACTIVITY_TRANSITION_ENTER",
@@ -59,7 +59,7 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                         }
                         DetectedActivity.WALKING -> {
                             Log.d("TransitionsIntentServic", "WALKING")
-                            if (it.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
+                            if (event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
                                         description = "TransitionRecognitionIntentService--WALKING-ACTIVITY_TRANSITION_ENTER",
@@ -77,7 +77,7 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                         }
                         DetectedActivity.RUNNING -> {
                             Log.d("TransitionsIntentServic", "RUNNING")
-                            if (it.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
+                            if (event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
                                         description = "TransitionRecognitionIntentService--RUNNING-ACTIVITY_TRANSITION_ENTER",
@@ -95,7 +95,7 @@ class TransitionRecognitionIntentService : IntentService("TransitionRecognitionI
                         }
                         DetectedActivity.ON_BICYCLE -> {
                             Log.d("TransitionsIntentServic", "ON_BICYCLE")
-                            if (it.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
+                            if (event.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
                                 Log.d("TransitionsIntentServic", "ACTIVITY_TRANSITION_ENTER")
                                 repo.insertInDatabase(AnalTrackingDatapoint(
                                         description = "$TAG::onHandleIntent--ON_BICYCLE-ACTIVITY_TRANSITION_ENTER",
