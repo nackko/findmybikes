@@ -30,23 +30,11 @@
     <dimen name="map_infowindow_padding">20dp</dimen>
     <dimen name="camera_search_infowindow_padding">60dp</dimen>
 
-    <dimen name="trip_details_widget_width">122dp</dimen>
-    <dimen name="navigation_drawer_width">240dp</dimen>
-    <dimen name="trip_details_widget_marginStart">3dp</dimen>
-    <dimen name="trip_details_widget_marginLeft">3dp</dimen>
-    <dimen name="trip_details_widget_marginEnd">3dp</dimen>
-    <dimen name="trip_details_widget_marginRight">3dp</dimen>
-    <dimen name="trip_details_widget_paddingTop">0dp</dimen>
-    <dimen name="trip_details_widget_paddingBottom">0dp</dimen>
-    <dimen name="trip_details_widget_paddingStart">0dp</dimen>
-    <dimen name="trip_details_widget_paddingEnd">@dimen/trip_details_widget_paddingStart</dimen>
-    <dimen name="trip_details_widget_row_height">62dp</dimen>
-    <dimen name="trip_details_widget_row_PaddingTop">1dp</dimen>
-    <dimen name="trip_details_widget_row_PaddingBottom">3dp</dimen>
-    <dimen name="trip_details_widget_row_imageview_start_marginRight">-12dp</dimen>
-    <dimen name="trip_details_widget_row_imageview_end_marginLeft">-13dp</dimen>
-    <dimen name="trip_details_widget_sum_separator_marginBottom">0dp</dimen>
-
+    <dimen name="trip_details_margin_small">3dp</dimen>
+    <dimen name="trip_details_margin_medium">5dp</dimen>
+    <dimen name="trip_details_margin_large">10dp</dimen>
+    <dimen name="trip_details_margin_overlap">17dp</dimen>
+    <dimen name="trip_details_text_size_small">12sp</dimen>
 
     <!-- fabs in recyclerView -->
     <dimen name="station_availability_margin_default">0dp</dimen>
