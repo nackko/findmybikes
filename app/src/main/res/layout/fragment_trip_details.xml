@@ -2,8 +2,7 @@
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:viewBindingIgnore="true">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -213,7 +212,7 @@
                     android:id="@+id/trip_details_proximity_total"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/trip_details_margin_large"
+                    android:layout_marginTop="@dimen/trip_details_margin_medium"
                     android:layout_marginEnd="@dimen/trip_details_margin_large"
                     android:layout_marginBottom="@dimen/trip_details_margin_medium"
                     android:fontFamily="droid-sans-mono"
@@ -222,8 +221,7 @@
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.8" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

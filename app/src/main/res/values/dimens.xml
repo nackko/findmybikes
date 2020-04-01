@@ -31,7 +31,7 @@
     <dimen name="camera_search_infowindow_padding">60dp</dimen>
 
     <dimen name="trip_details_margin_small">3dp</dimen>
-    <dimen name="trip_details_margin_medium">5dp</dimen>
+    <dimen name="trip_details_margin_medium">4dp</dimen>
     <dimen name="trip_details_margin_large">10dp</dimen>
     <dimen name="trip_details_margin_overlap">17dp</dimen>
     <dimen name="trip_details_text_size_small">12sp</dimen>
