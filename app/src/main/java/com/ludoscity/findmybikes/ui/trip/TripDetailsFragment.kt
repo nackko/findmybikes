@@ -1,65 +1,26 @@
 package com.ludoscity.findmybikes.ui.trip
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.ludoscity.findmybikes.R
+import com.ludoscity.findmybikes.databinding.FragmentTripDetailsBinding
 import com.ludoscity.findmybikes.ui.main.FindMyBikesActivityViewModel
 import com.ludoscity.findmybikes.utils.InjectorUtils
 import java.text.NumberFormat
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [TripDetailsFragment.newInstance] factory method to
- * create an instance of this fragment.
- *
- */
 class TripDetailsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    private lateinit var tripDetailsProximityA: TextView
-    private lateinit var tripDetailsProximityB: TextView
-    private lateinit var tripDetailsProximitySearch: TextView
-    private lateinit var tripDetailsProximityTotal: TextView
-    private var tripDetailsSumSeparator: FrameLayout? = null
-    private var tripDetailsBToDestinationRow: View? = null
-    private lateinit var tripDetailsPinFinalDest: ImageView
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        val inflatedView = inflater.inflate(R.layout.fragment_trip_details, container, false)
-
-        tripDetailsProximityA = inflatedView.findViewById(R.id.trip_details_proximity_a)
-        tripDetailsProximityB = inflatedView.findViewById(R.id.trip_details_proximity_b)
-        tripDetailsProximitySearch = inflatedView.findViewById(R.id.trip_details_proximity_search)
-        tripDetailsProximityTotal = inflatedView.findViewById(R.id.trip_details_proximity_total)
-        tripDetailsSumSeparator = inflatedView.findViewById(R.id.trip_details_sum_separator)
-        tripDetailsBToDestinationRow = inflatedView.findViewById(R.id.trip_details_b_to_final_dest)
-        tripDetailsPinFinalDest = inflatedView.findViewById(R.id.trip_details_final_dest)
+        val binding: FragmentTripDetailsBinding = DataBindingUtil.inflate(
+                inflater, R.layout.fragment_trip_details, container, false)
 
         val activityModelFactory = InjectorUtils.provideMainActivityViewModelFactory(activity!!.application)
 
@@ -74,77 +35,56 @@ class TripDetailsFragment : Fragment() {
                 findMyBikesActivityModel.isFinalDestinationFavorite,
                 NumberFormat.getInstance())
 
-        val fragmentModel = ViewModelProviders.of(this, modelFactory).get(TripFragmentViewModel::class.java)
+        val tripFragmentViewModel = ViewModelProviders.of(this, modelFactory).get(TripFragmentViewModel::class.java)
 
-        fragmentModel.isLastRowVisible.observe(this, Observer {
+        tripFragmentViewModel.isLastRowVisible.observe(this, Observer {
             if (it == true)
-                tripDetailsBToDestinationRow!!.visibility = View.VISIBLE
+                binding.tripDetailsBToFinalDest.visibility = View.VISIBLE
             else
-                tripDetailsBToDestinationRow!!.visibility = View.GONE
+                binding.tripDetailsBToFinalDest.visibility = View.GONE
         })
 
-        fragmentModel.locToStationAText.observe(this, Observer {
-            tripDetailsProximityA.text = it ?: "XXmin"
+        tripFragmentViewModel.locToStationAText.observe(this, Observer {
+            binding.tripDetailsProximityA.text = it
         })
 
-        fragmentModel.stationAToStationBText.observe(this, Observer {
-            tripDetailsProximityB.text = it ?: "XXmin"
+        tripFragmentViewModel.stationAToStationBText.observe(this, Observer {
+            binding.tripDetailsProximityB.text = it
         })
 
-        fragmentModel.stationBToFinalDestText.observe(this, Observer {
-            tripDetailsProximitySearch.text = it ?: "XXmin"
+        tripFragmentViewModel.stationBToFinalDestText.observe(this, Observer {
+            binding.tripDetailsProximitySearch.text = it
         })
 
-        fragmentModel.totalTripText.observe(this, Observer {
-            tripDetailsProximityTotal.text = it ?: "XXmin"
+        tripFragmentViewModel.totalTripText.observe(this, Observer {
+            binding.tripDetailsProximityTotal.text = it
         })
 
-        fragmentModel.finalDestinationIconResId.observe(this, Observer {
+        tripFragmentViewModel.finalDestinationIconResId.observe(this, Observer {
             it?.let { resId ->
-                tripDetailsPinFinalDest.setImageResource(resId)
+                binding.tripDetailsFinalDest.setImageResource(resId)
             }
         })
 
-        fragmentModel.lastStartActivityIntent.observe(this, Observer {
+        tripFragmentViewModel.lastStartActivityIntent.observe(this, Observer {
             it?.let { intent ->
-                fragmentModel.clearLastStartActivityRequest()
+                tripFragmentViewModel.clearLastStartActivityRequest()
                 startActivity(intent)
             }
         })
 
-        inflatedView.findViewById<View>(R.id.trip_details_directions_loc_to_a).setOnClickListener {
-            fragmentModel.locToStationADirectionsFabClick()
+        binding.tripDetailsDirectionsLocToA.setOnClickListener {
+            tripFragmentViewModel.locToStationADirectionsFabClick()
         }
 
-        inflatedView.findViewById<View>(R.id.trip_details_directions_a_to_b).setOnClickListener {
-            fragmentModel.stationAToStationBDirectionsFabClick()
+        binding.tripDetailsDirectionsAToB.setOnClickListener {
+            tripFragmentViewModel.stationAToStationBDirectionsFabClick()
         }
 
-        inflatedView.findViewById<View>(R.id.trip_details_directions_b_to_destination).setOnClickListener {
-            fragmentModel.stationBTofinalDestinationDirectionsFabClick()
+        binding.tripDetailsDirectionsBToDestination.setOnClickListener {
+            tripFragmentViewModel.stationBTofinalDestinationDirectionsFabClick()
         }
 
-        return inflatedView
-    }
-
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment TripDetailsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-                TripDetailsFragment().apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_PARAM1, param1)
-                        putString(ARG_PARAM2, param2)
-                    }
-                }
+        return binding.root
     }
 }
