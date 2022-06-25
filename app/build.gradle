@@ -5,15 +5,15 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 28
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/ASL2.0', 'META-INF/LICENSE', 'META-INF/NOTICE']
+            pickFirsts += ['META-INF/atomicfu.kotlin_module']
+        }
+    }
 
     // workaround for "duplicate files during packaging of APK" issue
     // see https://groups.google.com/d/msg/adt-dev/bl5Rc4Szpzg/wC8cylTWuIEJ
-    packagingOptions {
-        exclude 'META-INF/ASL2.0'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/NOTICE'
-        pickFirst("META-INF/atomicfu.kotlin_module")
-    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -83,25 +83,11 @@ android {
         }
     }
 
-    lintOptions {
-
-        // set to true to turn off analysis progress reporting by lint
-        quiet false
-        // if true, stop the gradle build if errors are found
+    lint {
         abortOnError false
-        // if true, only report errors
-        ignoreWarnings false
-
-        // set to true to have all release builds run lint on issues with severity=fatal
-
-        // and abort the build (controlled by abortOnError above) if fatal issues are found
-
         checkReleaseBuilds true
-    }
-
-    dexOptions {
-        // Skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
-        preDexLibraries = preDexEnabled && !travisBuild
+        ignoreWarnings false
+        quiet false
     }
 }
 
