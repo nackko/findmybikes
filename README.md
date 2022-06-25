@@ -1,4 +1,4 @@
-# # findmybikes -- part of [#ludOScity]
+# # findmybikes -
 [![Build Status](https://travis-ci.org/f8full/findmybikes.svg?branch=master)](https://travis-ci.org/f8full/findmybikes)
 
 <a href='https://play.google.com/store/apps/details?id=com.ludoscity.findmybikes&utm_source=global_co&utm_medium=prtnr&utm_content=Mar2515&utm_campaign=PartBadge&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
@@ -33,8 +33,10 @@ All status updates (root or replies) are geotagged with the location of the desc
 Station names are provided for readability. Station id is provided by citibik.es API
 To retrieve corresponding station data, see the great API and fantastic project : https://citybik.es/#about
 
+-- part of [ludos.city]
+
 [privacy policy]:https://github.com/f8full/ludOScity/blob/master/FindMyBikes/Privacy_policy.md
 [@findmybikesdata]:https://twitter.com/findmybikesdata
 [GET IT ON GOOGLE PLAY]:https://play.google.com/store/apps/details?id=com.ludoscity.findmybikes
-[#ludOScity]:http://ludoscity.com
+[ludos.city]:http://ludos.city
 
