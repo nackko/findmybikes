@@ -4,7 +4,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
     packagingOptions {
         resources {
             excludes += ['META-INF/ASL2.0', 'META-INF/LICENSE', 'META-INF/NOTICE']
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId "com.ludoscity.findmybikes"
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 31
         versionCode 999
         versionName "v2019.1 (99)"
 
@@ -97,6 +97,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(':common')
+
     //implementation project(path: ':backend', configuration: 'android-endpoints')
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
@@ -111,9 +113,9 @@ dependencies {
     implementation 'com.google.maps.android:android-maps-utils:0.5'
     implementation 'com.google.code.gson:gson:2.8.5'
 
-    implementation 'androidx.room:room-runtime:2.0.0'
+    implementation 'androidx.room:room-runtime:2.4.2'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    kapt 'androidx.room:room-compiler:2.0.0'
+    kapt 'androidx.room:room-compiler:2.4.2'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.0'

@@ -50,7 +50,7 @@ class BikeSystemStatusNetworkDataSource private constructor() {
         //Work manager
     }*/
 
-    fun fetchBikeSystemStatus(citybik_esAPI: Citybik_esAPI, bikeSystemHRef: String) {
+    fun fetchBikeSystemStatus(citybik_esAPI: Citybik_esAPI, bikeSystemHRef: String?) {
         coroutineScopeIO.launch {
             val UrlParams = HashMap<String, String>()
             UrlParams["fields"] = "stations,id"

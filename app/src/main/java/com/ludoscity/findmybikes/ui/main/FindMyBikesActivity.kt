@@ -39,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener
 import com.ludoscity.findmybikes.R
+import com.ludoscity.findmybikes.common.Greeting
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.BIKE_STATIONS
 import com.ludoscity.findmybikes.ui.main.StationTablePagerAdapter.Companion.DOCK_STATIONS
@@ -144,6 +145,8 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.FindMyBikesTheme) //https://developer.android.com/topic/performance/launch-time.html
+
+        Log.i("Login Activity", "Hello from shared module: " + (Greeting().greeting()))
 
         super.onCreate(savedInstanceState)
 
