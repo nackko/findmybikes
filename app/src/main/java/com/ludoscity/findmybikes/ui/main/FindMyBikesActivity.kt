@@ -24,6 +24,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.viewpager.widget.ViewPager
+import city.ludos.f8f.findmybikes.common.Greeting
 import com.afollestad.materialdialogs.MaterialDialog
 import com.fondesa.kpermissions.extension.listeners
 import com.fondesa.kpermissions.extension.permissionsBuilder
@@ -144,6 +145,8 @@ class FindMyBikesActivity : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.FindMyBikesTheme) //https://developer.android.com/topic/performance/launch-time.html
+
+        Log.i("Login Activity", "Hello from shared module: " + (Greeting().greeting()))
 
         super.onCreate(savedInstanceState)
 
