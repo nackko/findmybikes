@@ -1,3 +1,0 @@
-//include ':app', ':backend'
-include ':app'
-include ':common'
