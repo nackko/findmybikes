@@ -854,7 +854,7 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
                 updateNetworkAvailability()
             }
 
-            override fun onLost(network: Network?) {
+            override fun onLost(network: Network) {
                 availabilityByNetworkToStringMap[network.toString()] = false
                 updateNetworkAvailability()
             }
