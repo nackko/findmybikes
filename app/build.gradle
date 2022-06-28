@@ -2,6 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
+//apply plugin: 'com.squareup.sqldelight'
+
+/*sqldelight {
+    MyDatabase {
+        packageName = "com.ludoscity.findmybikes.common.data.database"
+        dialect = "mysql"
+    }
+}*/
 
 android {
     compileSdkVersion 31
@@ -61,7 +69,7 @@ android {
 
     }
     buildTypes {
-        alpha {
+        /*alpha {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "DATABASE_NAME", "\"findmybikes-database\""
@@ -70,7 +78,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "DATABASE_NAME", "\"findmybikes-database\""
-        }
+        }*/
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -139,6 +147,8 @@ dependencies {
 
     implementation 'com.afollestad.material-dialogs:core:0.9.4.2'
 
+    //implementation("com.squareup.sqldelight:android-driver:1.5.3")
+
     implementation 'com.dmitrymalkovich.android:progress-fab:1.6'
     implementation 'com.dinuscxj:circleprogressbar:1.1.1'
     implementation 'com.github.fondesa:kpermissions:1.0.0'
@@ -156,5 +166,6 @@ dependencies {
     // Optional -- UI testing with UI Automator
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
 }
+
+
