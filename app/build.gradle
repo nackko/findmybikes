@@ -139,8 +139,6 @@ dependencies {
 
     implementation 'com.afollestad.material-dialogs:core:0.9.4.2'
 
-    //implementation("com.squareup.sqldelight:android-driver:1.5.3")
-
     implementation 'com.dmitrymalkovich.android:progress-fab:1.6'
     implementation 'com.dinuscxj:circleprogressbar:1.1.1'
     implementation 'com.github.fondesa:kpermissions:1.0.0'
@@ -159,5 +157,3 @@ dependencies {
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
-
-
