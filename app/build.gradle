@@ -61,7 +61,7 @@ android {
 
     }
     buildTypes {
-        alpha {
+        /*alpha {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "DATABASE_NAME", "\"findmybikes-database\""
@@ -70,7 +70,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "DATABASE_NAME", "\"findmybikes-database\""
-        }
+        }*/
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -156,5 +156,4 @@ dependencies {
     // Optional -- UI testing with UI Automator
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
 }

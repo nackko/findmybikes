@@ -1,0 +1,39 @@
+
+CREATE TABLE bikeSystem(
+    id TEXT NOT NULL PRIMARY KEY,
+    citybik_dot_es_url TEXT NOT NULL,
+    name TEXT NOT NULL,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    city TEXT NOT NULL,
+    country TEXT NOT NULL,
+    bbox_north_east_lat REAL,
+    bbox_north_east_lng REAL,
+    bbox_south_west_lat REAL,
+    bbox_south_west_lng REAL
+);
+
+
+insertOrReplace:
+INSERT OR REPLACE INTO bikeSystem(
+    id,
+    citybik_dot_es_url,
+    name,
+    latitude,
+    longitude,
+    city,
+    country,
+    bbox_north_east_lat,
+    bbox_north_east_lng,
+    bbox_south_west_lat,
+    bbox_south_west_lng
+    ) VALUES ?;
+
+getById:
+SELECT * FROM bikeSystem WHERE id = ?;
+
+selectAll:
+SELECT * FROM bikeSystem;
+
+deleteById:
+DELETE FROM bikeSystem WHERE id = ?;
