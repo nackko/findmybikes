@@ -4,12 +4,6 @@ plugins {
     id("com.squareup.sqldelight")
 }
 
-sqldelight {
-    database("FindmybikesDatabase") {
-        packageName = "com.ludoscity.findmybikes.common.data.database"
-    }
-}
-
 kotlin {
     android()
     
@@ -73,5 +67,11 @@ android {
     defaultConfig {
         minSdk = 21
         targetSdk = 28
+    }
+}
+
+sqldelight {
+    database("FindmybikesDatabase") {
+        packageName = "com.ludoscity.findmybikes.common.data.database"
     }
 }
