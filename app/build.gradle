@@ -2,14 +2,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
-//apply plugin: 'com.squareup.sqldelight'
-
-/*sqldelight {
-    MyDatabase {
-        packageName = "com.ludoscity.findmybikes.common.data.database"
-        dialect = "mysql"
-    }
-}*/
 
 android {
     compileSdkVersion 31
