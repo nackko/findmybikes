@@ -1,8 +1,10 @@
 
 CREATE TABLE bikeSystem(
     id TEXT NOT NULL PRIMARY KEY,
+    last_status_update INTEGER NOT NULL,
     citybik_dot_es_url TEXT NOT NULL,
     name TEXT NOT NULL,
+    hashtaggableName TEXT NOT NULL,
     latitude REAL NOT NULL,
     longitude REAL NOT NULL,
     city TEXT NOT NULL,
@@ -18,7 +20,9 @@ insertOrReplace:
 INSERT OR REPLACE INTO bikeSystem(
     id,
     citybik_dot_es_url,
+    last_status_update,
     name,
+    hashtaggableName,
     latitude,
     longitude,
     city,
@@ -32,8 +36,23 @@ INSERT OR REPLACE INTO bikeSystem(
 getById:
 SELECT * FROM bikeSystem WHERE id = ?;
 
-selectAll:
+getHashtaggableName:
+SELECT hashtaggableName FROM bikeSystem;
+
+updateLastUpdateTimestamp:
+UPDATE bikeSystem SET last_status_update = ? WHERE id = ?;
+
+updateBounds:
+UPDATE bikeSystem SET bbox_north_east_lat = ?, bbox_north_east_lng = ?, bbox_south_west_lat = ?, bbox_south_west_lng = ? WHERE id = ?;
+
+idCount:
+SELECT COUNT(id) FROM bikeSystem;
+
+getAll:
 SELECT * FROM bikeSystem;
 
 deleteById:
 DELETE FROM bikeSystem WHERE id = ?;
+
+deleteAll:
+DELETE FROM bikeSystem;

@@ -2,11 +2,12 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("com.squareup.sqldelight")
+    id("com.codingfeline.buildkonfig")
 }
 
 kotlin {
     android()
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -22,6 +23,7 @@ kotlin {
             dependencies {
                 implementation("io.insert-koin:koin-core:3.2.0")
                 implementation("com.squareup.sqldelight:runtime:1.5.3")
+                implementation("com.squareup.sqldelight:coroutines-extensions:1.5.3")
             }
         }
         val commonTest by getting {
@@ -68,6 +70,59 @@ android {
         minSdk = 21
         targetSdk = 28
     }
+}
+
+buildkonfig {
+    packageName = "com.ludoscity.findmybikes"
+
+    exposeObjectWithName = "FindmybikesBuildKonfig"
+
+    /*********
+     * Flavored TargetConfig > TargetConfig > Flavored DefaultConfig > DefaultConfig
+     *********/
+
+    // default config is required
+    defaultConfigs {
+        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "DATABASE_NAME", "findmybikes-database")
+    }
+    // flavor is passed as a first argument of defaultConfigs
+    defaultConfigs("debug") {
+        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "DATABASE_NAME", "findmybikes-database-dev")
+    }
+
+    defaultConfigs("release") {
+        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "DATABASE_NAME", "findmybikes-database")
+    }
+
+    /*targetConfigs {
+        create("android") {
+            buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "name", "valueAndroid")
+        }
+
+        create("ios") {
+            buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "name", "valueIos")
+        }
+    }*/
+    // flavor s passed as a first argument of targetConfigs
+    /*targetConfigs("dev") {
+        create("ios") {
+            buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "name", "findmybikes-database-dev")
+        }
+
+        create("android") {
+            buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "name", "findmybikes-database-dev")
+        }
+    }
+
+    targetConfigs("release") {
+        create("ios") {
+            buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "name", "findmybikes-database")
+        }
+
+        create("android") {
+            buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "name", "findmybikes-database")
+        }
+    }*/
 }
 
 sqldelight {
