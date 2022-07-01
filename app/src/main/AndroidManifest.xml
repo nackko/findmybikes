@@ -18,6 +18,7 @@
         android:allowBackup="true"
         android:backupAgent=".data.database.PrefsBackupAgent"
         android:fullBackupOnly="true"
+        android:name=".ui.main.FindmybikesApp"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/FindMyBikesTheme">

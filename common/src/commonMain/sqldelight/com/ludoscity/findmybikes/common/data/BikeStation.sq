@@ -1,0 +1,71 @@
+
+CREATE TABLE bikeStation(
+    uid TEXT NOT NULL PRIMARY KEY,
+    empty_slots INTEGER NOT NULL,
+    free_bikes INTEGER NOT NULL,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    name TEXT,
+    timestamp_epoch TEXT NOT NULL,
+    location_hash TEXT NOT NULL,
+    extra_locked INTEGER,
+    extra_name TEXT,
+    extra_uid TEXT,
+    extra_renting INTEGER,
+    extra_returning INTEGER,
+    extra_status TEXT,
+    extra_lastUpdated INTEGER
+);
+
+
+insertOrReplace:
+INSERT OR REPLACE INTO bikeStation(
+    uid,
+    empty_slots,
+    free_bikes,
+    latitude,
+    longitude,
+    name,
+    timestamp_epoch,
+    location_hash,
+    extra_locked,
+    extra_name,
+    extra_uid,
+    extra_renting,
+    extra_returning,
+    extra_status,
+    extra_lastUpdated
+    ) VALUES ?;
+
+getAll:
+SELECT * FROM bikeStation;
+
+getByLocationHash:
+SELECT * FROM bikeStation WHERE location_hash = ?;
+
+getById:
+SELECT * FROM bikeStation WHERE uid = ?;
+
+updateById:
+UPDATE bikeStation
+SET empty_slots = ?,
+free_bikes = ?,
+latitude = ?,
+longitude = ?,
+name = ?,
+timestamp_epoch = ?,
+location_hash = ?,
+extra_locked = ?,
+extra_name = ?,
+extra_uid = ?,
+extra_renting = ?,
+extra_returning = ?,
+extra_status = ?,
+extra_lastUpdated = ?
+WHERE uid = ?;
+
+deleteAll:
+DELETE FROM bikeStation;
+
+deleteById:
+DELETE FROM bikeStation WHERE uid = ?;

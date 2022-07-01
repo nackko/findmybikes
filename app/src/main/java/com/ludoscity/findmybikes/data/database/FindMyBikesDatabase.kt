@@ -16,6 +16,7 @@ import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStation
 import com.ludoscity.findmybikes.data.database.favorite.FavoriteEntityStationDao
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.database.station.BikeStationDao
+import com.ludoscity.findmybikes.FindmybikesBuildKonfig
 
 /**
  * Created by F8Full on 2017-12-17.
@@ -44,7 +45,7 @@ abstract class FindMyBikesDatabase : RoomDatabase() {
             }
             synchronized(this) {
                 val builder = Room.databaseBuilder(ctx.applicationContext,
-                        FindMyBikesDatabase::class.java, BuildConfig.DATABASE_NAME)
+                        FindMyBikesDatabase::class.java, FindmybikesBuildKonfig.DATABASE_NAME)
                         .addMigrations(MIGRATION_1_2)
                         .addMigrations(MIGRATION_2_3)
                         .addMigrations(MIGRATION_3_4)
