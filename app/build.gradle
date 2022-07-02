@@ -124,8 +124,8 @@ dependencies {
     kapt 'androidx.room:room-compiler:2.4.2'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2'
 
     implementation('io.insert-koin:koin-core:3.2.0')
 
