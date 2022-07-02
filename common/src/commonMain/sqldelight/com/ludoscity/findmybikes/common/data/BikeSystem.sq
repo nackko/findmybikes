@@ -36,8 +36,8 @@ INSERT OR REPLACE INTO bikeSystem(
 getById:
 SELECT * FROM bikeSystem WHERE id = ?;
 
-getHashtaggableName:
-SELECT hashtaggableName FROM bikeSystem;
+getHashtaggableNameById:
+SELECT hashtaggableName FROM bikeSystem WHERE id = ?;
 
 updateLastUpdateTimestamp:
 UPDATE bikeSystem SET last_status_update = ? WHERE id = ?;

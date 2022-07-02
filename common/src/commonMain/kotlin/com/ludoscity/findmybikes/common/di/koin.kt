@@ -1,9 +1,10 @@
 package com.ludoscity.findmybikes.common.di
 
 import com.ludoscity.findmybikes.common.data.database.FindmybikesDatabase
-import com.ludoscity.findmybikes.common.data.database.dao.BikeStationDao
-import com.ludoscity.findmybikes.common.data.database.dao.BikeSystemDao
-import com.ludoscity.findmybikes.common.data.repository.FindmybikesRepositorySqlDelight
+import com.ludoscity.findmybikes.common.data.datasource.LocalDataStore
+import com.ludoscity.findmybikes.common.presentation.data.repository.FindmybikesRepositoryImpl
+import com.ludoscity.findmybikes.common.presentation.data.datasource.dao.BikeStationDaoImpl
+import com.ludoscity.findmybikes.common.presentation.data.datasource.dao.BikeSystemDaoImpl
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -29,11 +30,13 @@ fun initKoin(appModule: Module): KoinApplication {
 private val coreModule = module {
     single { FindmybikesDatabase(get()) }
 
+    single { LocalDataStore() }
+
     //dao
-    single { BikeSystemDao(get()) }
-    single { BikeStationDao(get()) }
+    single { BikeSystemDaoImpl(get()) }
+    single { BikeStationDaoImpl(get()) }
     // repo
-    single { FindmybikesRepositorySqlDelight() }
+    single { FindmybikesRepositoryImpl() }
 }
 
 internal inline fun <reified T> Scope.getWith(vararg params: Any?): T {

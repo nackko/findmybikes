@@ -1,5 +1,6 @@
-package com.ludoscity.findmybikes.common.data.database
+package com.ludoscity.findmybikes.common.data.dbdriver
 
+import com.ludoscity.findmybikes.common.data.database.FindmybikesDatabase
 import com.squareup.sqldelight.db.SqlDriver
 
 expect class DbArgs

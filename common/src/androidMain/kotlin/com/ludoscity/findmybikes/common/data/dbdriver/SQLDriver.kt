@@ -1,9 +1,9 @@
-package com.ludoscity.findmybikes.common.data.database
+package com.ludoscity.findmybikes.common.data.dbdriver
 
 import android.content.Context
+import com.ludoscity.findmybikes.common.data.database.FindmybikesDatabase
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
-import com.ludoscity.findmybikes.common.data.database.FindmybikesDatabase
 
 
 actual class DbArgs(
