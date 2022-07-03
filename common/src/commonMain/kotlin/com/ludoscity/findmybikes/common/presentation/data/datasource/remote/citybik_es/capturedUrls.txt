@@ -1,0 +1,2 @@
+Response{protocol=http/1.1, code=200, message=OK, url=http://api.citybik.es/%2Fv2%2Fnetworks%2Fvelov?fields=stations,id}
+Response{protocol=http/1.1, code=200, message=OK, url=http://api.citybik.es/%2Fv2%2Fnetworks%2Fbixi?fields=stations,id}

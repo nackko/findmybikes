@@ -28,6 +28,7 @@ import com.google.android.libraries.places.compat.Place
 import com.google.android.libraries.places.compat.ui.PlaceAutocomplete
 import com.google.maps.android.SphericalUtil
 import com.ludoscity.findmybikes.R
+import com.ludoscity.findmybikes.common.domain.usecase.GetBikeSystemList
 import com.ludoscity.findmybikes.data.FindMyBikesRepository
 import com.ludoscity.findmybikes.data.database.SharedPrefHelper
 import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystem
@@ -40,6 +41,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.text.NumberFormat
 import java.util.*
 import kotlin.concurrent.timer
@@ -49,7 +52,9 @@ import kotlin.concurrent.timer
  * ViewModel for handling favoritelistFragment data prep for UI and business logic
  */
 
-class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app) {
+class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app: Application) : AndroidViewModel(app), KoinComponent {
+
+    private val getBikeSystemList: GetBikeSystemList by inject()
 
     private val locationPermissionGranted = MutableLiveData<Boolean>()
 
@@ -568,6 +573,17 @@ class FindMyBikesActivityViewModel(private val repo: FindMyBikesRepository, app:
     }
 
     init {
+
+        // sample use case flow collection
+        coroutineScopeIO.launch {
+            getBikeSystemList().onSuccess {
+                it.collect { newList ->
+
+                    Log.e("WOW", newList[0].toString())
+
+                }
+            }
+        }
 
         //Initially we have no selection in B tab
         setStationB(null)

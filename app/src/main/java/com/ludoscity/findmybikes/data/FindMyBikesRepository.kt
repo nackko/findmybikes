@@ -11,7 +11,7 @@ import com.ludoscity.findmybikes.data.database.bikesystem.BikeSystemDao
 import com.ludoscity.findmybikes.data.database.favorite.*
 import com.ludoscity.findmybikes.data.database.station.BikeStation
 import com.ludoscity.findmybikes.data.database.station.BikeStationDao
-import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListAnswerRoot
+import com.ludoscity.findmybikes.common.presentation.data.datasource.remote.citybik_es.BikeSystemListAnswerRoot
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemListNetworkDataSource
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatus
 import com.ludoscity.findmybikes.data.network.citybik_es.BikeSystemStatusNetworkDataSource
@@ -22,13 +22,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class FindMyBikesRepository private constructor(
-        private val currentBikeSystemDao: BikeSystemDao,
-        private val stationDao: BikeStationDao,
-        private val favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
-        private val favoriteEntityStationDao: FavoriteEntityStationDao,
-        private val bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
-        private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
-        private val twitterNetworkDataExhaust: TwitterNetworkDataExhaust) {
+    private val currentBikeSystemDao: BikeSystemDao,
+    private val stationDao: BikeStationDao,
+    private val favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
+    private val favoriteEntityStationDao: FavoriteEntityStationDao,
+    private val bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
+    private val bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
+    private val twitterNetworkDataExhaust: TwitterNetworkDataExhaust) {
 
     private val coroutineScopeIO = CoroutineScope(Dispatchers.IO)
 
@@ -343,13 +343,13 @@ class FindMyBikesRepository private constructor(
 
         @Synchronized
         fun getInstance(
-                bikeSystemDao: BikeSystemDao,
-                bikeStationDao: BikeStationDao,
-                favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
-                favoriteEntityStationDao: FavoriteEntityStationDao,
-                bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
-                bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
-                twitterNetworkDataExhaust: TwitterNetworkDataExhaust): FindMyBikesRepository {
+            bikeSystemDao: BikeSystemDao,
+            bikeStationDao: BikeStationDao,
+            favoriteEntityPlaceDao: FavoriteEntityPlaceDao,
+            favoriteEntityStationDao: FavoriteEntityStationDao,
+            bikeSystemListNetworkDataSource: BikeSystemListNetworkDataSource,
+            bikeSystemStatusNetworkDataSource: BikeSystemStatusNetworkDataSource,
+            twitterNetworkDataExhaust: TwitterNetworkDataExhaust): FindMyBikesRepository {
             //Log.d(TAG, "Getting the repository")
             if (sInstance == null) {
                 synchronized(LOCK) {

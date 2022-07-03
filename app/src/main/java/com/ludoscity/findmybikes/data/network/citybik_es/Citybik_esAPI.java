@@ -1,5 +1,7 @@
 package com.ludoscity.findmybikes.data.network.citybik_es;
 
+import com.ludoscity.findmybikes.common.presentation.data.datasource.remote.citybik_es.BikeSystemListAnswerRoot;
+
 import java.util.Map;
 
 import retrofit2.Call;
