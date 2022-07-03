@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization") version "1.7.0"
     id("com.android.library")
     id("com.squareup.sqldelight")
     id("com.codingfeline.buildkonfig")
@@ -25,6 +26,11 @@ kotlin {
                 implementation("com.squareup.sqldelight:runtime:1.5.3")
                 implementation("com.squareup.sqldelight:coroutines-extensions:1.5.3")
                 implementation("io.ktor:ktor-client-core:2.0.3")
+                implementation("io.ktor:ktor-client-content-negotiation:2.0.3")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:2.0.3")
+                implementation("io.ktor:ktor-client-logging:2.0.3")
+                implementation("ch.qos.logback:logback-classic:1.2.11")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
             }
         }
         val commonTest by getting {

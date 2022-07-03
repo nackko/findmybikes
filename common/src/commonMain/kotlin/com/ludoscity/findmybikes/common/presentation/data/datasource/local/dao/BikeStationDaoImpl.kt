@@ -1,4 +1,4 @@
-package com.ludoscity.findmybikes.common.presentation.data.datasource.dao
+package com.ludoscity.findmybikes.common.presentation.data.datasource.local.dao
 
 import com.ludoscity.findmybikes.common.data.BikeStation
 import com.ludoscity.findmybikes.common.data.database.FindmybikesDatabase

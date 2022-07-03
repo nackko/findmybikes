@@ -5,6 +5,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.ludoscity.findmybikes.common.presentation.data.datasource.remote.citybik_es.BikeSystemListAnswerRoot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,7 +58,8 @@ class BikeSystemListNetworkDataSource private constructor() {
             //Log.d(TAG, "Getting bike system list network data source")
             if (sInstance == null) {
                 synchronized(LOCK) {
-                    sInstance = BikeSystemListNetworkDataSource()
+                    sInstance =
+                        BikeSystemListNetworkDataSource()
                     Log.d(TAG, "Made new bike system list network data source")
                 }
             }
